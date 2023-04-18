@@ -1,16 +1,18 @@
 import { ConfigService } from '@nestjs/config';
 import { DataSourceOptions } from 'typeorm';
+import * as dotenv from 'dotenv';
+dotenv.config()
 
 const databaseConfig: DataSourceOptions = {
   type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  database: 'nest_db',
-  username: 'admin',
-  password: 'pass2word',
-  entities: ['dist/modules/**/**/*.entity.js'],
+  host: process.env.DATABASE_HOST,
+  port: parseInt(process.env.DATABASE_PORT,10),
+  database: process.env.DATABASE_NAME,
+  username: process.env.DATABASE_USER,
+  password: process.env.DATABASE_PASSWORD,
+  entities: ['dist/**/*.entity{.js,.ts}'],
   synchronize: false,
-  migrations: ['dist/migrations/*.js'],
+  migrations: ['database/migrations/*.{ts,js}'],
   logging: true,
   migrationsRun: true
 };

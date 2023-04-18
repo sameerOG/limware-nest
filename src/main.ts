@@ -4,21 +4,19 @@ import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
 import * as cookieParser from 'cookie-parser';
+import * as dotenv from 'dotenv';
 
 async function bootstrap() {
   const app: NestExpressApplication = await NestFactory.create(AppModule);
-  const config: ConfigService = app.get(ConfigService);
-  const port: number = config.get<number>('PORT');
+  dotenv.config();
+  const port: number = parseInt(process.env.SERVER_PORT);
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
-  app.enableCors({
-    allowedHeaders: "*",
-    origin: ["http://localhost:3000"]
-  });
+  app.enableCors();
   app.use(cookieParser());
 
   await app.listen(port, () => {
-    console.log("[API UP]", config.get<string>('BASE_URL'));
+    console.log("[API UP]", port);
   });
 }
 bootstrap();

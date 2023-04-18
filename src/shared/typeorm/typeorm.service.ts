@@ -1,26 +1,26 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { TypeOrmOptionsFactory, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import * as dotenv from 'dotenv';
+
 @Injectable()
 export class TypeOrmConfigService implements TypeOrmOptionsFactory {
-  @Inject(ConfigService)
-  private readonly config: ConfigService;
-
   /** 
    * @description configurations related to DB 
    * @returns TypeOrmModuleOptions 
    */
   public createTypeOrmOptions(): TypeOrmModuleOptions {
+    dotenv.config();
+    console.log("config",process.env.DATABASE_HOST)
     return {
       type: 'postgres',
-      host: this.config.get<string>('DATABASE_HOST'),
-      port: this.config.get<number>('DATABASE_PORT'),
-      database: this.config.get<string>('DATABASE_NAME'),
-      username: this.config.get<string>('DATABASE_USER'),
-      password: this.config.get<string>('DATABASE_PASSWORD'),
-      entities: ['dist/modules/**/*.entity.js'],
+      host: process.env.DATABASE_HOST,
+      port: parseInt(process.env.DATABASE_PORT,10),
+      database: process.env.DATABASE_NAME,
+      username: process.env.DATABASE_USER,
+      password: process.env.DATABASE_PASSWORD,
+      entities: ['dist/**/*.entity{.js,.ts}'],
       synchronize: false,
-      migrations: ['dist/migrations/*.js'],
+      migrations: ['src/database/migrations/*.{ts,js}'],
       migrationsTableName: 'migration',
     };
   }
