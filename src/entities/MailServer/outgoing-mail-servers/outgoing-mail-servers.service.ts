@@ -69,6 +69,21 @@ export class OutgoingMailServersService {
     });
   }
 
+  async getOutgoingMailServers(): Promise<OutgoingMailServersDto[]> {
+    const data = await this.osm.find({
+      select: [
+        '_id',
+        'title',
+        'is_default',
+        'host',
+        'port',
+        'encryption',
+        'username',
+      ],
+    });
+    return data;
+  }
+
   async add(
     body: OutgoingMailServersRequestDto,
   ): Promise<OutgoingMailServersDto> {

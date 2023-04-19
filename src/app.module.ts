@@ -17,6 +17,7 @@ import { CustomersModule } from './entities/customer/customers/customers.module'
 import { TestCategoriesModule } from './entities/test/test-categories/test-categories.module';
 import { UomModule } from './entities/uom/uom/uom.module';
 import { OutgoingMailServersModule } from './entities/MailServer/outgoing-mail-servers/outgoing-mail-servers.module';
+import { EmailTemplatesModule } from './entities/MailServer/email-templates/email-templates.module';
 
 const envFilePath: string = getEnvPath(`/common/envs`);
 dotenv.config();
@@ -54,6 +55,7 @@ dotenv.config();
     TestCategoriesModule,
     UomModule,
     OutgoingMailServersModule,
+    EmailTemplatesModule,
   ],
   controllers: [],
   providers: [],

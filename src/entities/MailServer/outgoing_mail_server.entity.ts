@@ -6,6 +6,7 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
 import { EmailTemplate } from './email_template.entity';
 
@@ -23,7 +24,7 @@ export class OutgoingMailServer {
   @Column()
   host: string;
 
-  @OneToOne(() => EmailTemplate, (email) => email.outgoing_mail_server_id)
+  @OneToMany(() => EmailTemplate, (email) => email.outgoing_mail_server_id)
   email_template_id!: EmailTemplate;
 
   @Column()
