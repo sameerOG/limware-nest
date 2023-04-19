@@ -7,6 +7,7 @@ import {
   OneToMany,
   JoinColumn,
   ManyToOne,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Test } from '../test/test.entity';
 
@@ -31,4 +32,8 @@ export class UOM {
   @Column()
   @UpdateDateColumn()
   updated_at!: Date;
+
+  @Column()
+  @DeleteDateColumn()
+  deleted_at!: Date;
 }

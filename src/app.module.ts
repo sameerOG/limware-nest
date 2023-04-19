@@ -15,6 +15,7 @@ import { RolesModule } from './entities/role/roles/roles.module';
 import { SpecimensModule } from './entities/specimen/specimens/specimens.module';
 import { CustomersModule } from './entities/customer/customers/customers.module';
 import { TestCategoriesModule } from './entities/test/test-categories/test-categories.module';
+import { UomModule } from './entities/uom/uom/uom.module';
 
 const envFilePath: string = getEnvPath(`/common/envs`);
 dotenv.config();
@@ -50,6 +51,7 @@ dotenv.config();
     RolesModule,
     SpecimensModule,
     TestCategoriesModule,
+    UomModule,
   ],
   controllers: [],
   providers: [],

@@ -25,13 +25,13 @@ export class TestCategoriesService {
     if (text) {
       where.name = Like(`%${text}%`);
     }
-    const customers = await this.testCategoryRep.find({
+    const data = await this.testCategoryRep.find({
       select: ['_id', 'name', 'title_for_print', 'description'],
       where,
       skip,
       take,
     });
-    return customers;
+    return data;
   }
 
   async getSingle(id: string, expand?: string): Promise<TestCategoryDto> {
@@ -40,7 +40,7 @@ export class TestCategoriesService {
     if (id) {
       where._id = id;
     }
-    const testCategory = await this.testCategoryRep.findOne({
+    const data = await this.testCategoryRep.findOne({
       select: [
         '_id',
         'name',
@@ -55,17 +55,17 @@ export class TestCategoriesService {
       ],
       where,
     });
-    return testCategory;
+    return data;
   }
 
-  async add(data: TestCategoryRequestDto): Promise<SingleTestCategory> {
+  async add(body: TestCategoryRequestDto): Promise<SingleTestCategory> {
     try {
-      const testCategory = await this.testCategoryRep.save(data);
-      const { ...rest } = testCategory;
+      const data = await this.testCategoryRep.save(body);
+      const { ...rest } = data;
       return new SingleTestCategory({
         ...rest,
-        created_at: testCategory.created_at.getTime(),
-        updated_at: testCategory.updated_at.getTime(),
+        created_at: data.created_at.getTime(),
+        updated_at: data.updated_at.getTime(),
         updated_by: '',
         tests: [],
       });
@@ -76,11 +76,11 @@ export class TestCategoriesService {
 
   async update(
     id: string,
-    data: TestCategoryRequestDto,
+    body: TestCategoryRequestDto,
   ): Promise<SingleTestCategory> {
     try {
-      await this.testCategoryRep.update(id, data);
-      const savedTestCategory = await this.testCategoryRep.findOne({
+      await this.testCategoryRep.update(id, body);
+      const data = await this.testCategoryRep.findOne({
         select: [
           '_id',
           'name',
@@ -95,11 +95,11 @@ export class TestCategoriesService {
         ],
         where: { _id: id },
       });
-      const { ...rest } = savedTestCategory;
+      const { ...rest } = data;
       return new SingleTestCategory({
         ...rest,
-        created_at: savedTestCategory.created_at.getTime(),
-        updated_at: savedTestCategory.updated_at.getTime(),
+        created_at: data.created_at.getTime(),
+        updated_at: data.updated_at.getTime(),
         updated_by: '',
       });
     } catch (err) {

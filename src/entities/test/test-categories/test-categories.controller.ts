@@ -29,7 +29,7 @@ export class TestCategoriesController {
     try {
       const perpage = query['per-page'] ? query['per-page'] : 25;
       const page = query['page'] ? query['page'] : 1;
-      const text = query.filter?.username?.like;
+      const text = query.filter?.name;
       const skip = (page - 1) * perpage;
 
       let data = await this.testCategoryService.getAll(skip, perpage, text);
@@ -81,7 +81,7 @@ export class TestCategoriesController {
   async update(
     @Res() response: Response,
     @Body() body: TestCategoryRequestDto,
-    @Param('id') id,
+    @Param('id') id: string,
   ): Promise<SingleTestCategory> {
     try {
       let data = await this.testCategoryService.update(id, body);
@@ -98,7 +98,10 @@ export class TestCategoriesController {
   }
 
   @Delete('/test-categories/:id')
-  async delete(@Res() response: Response, @Param('id') id): Promise<any> {
+  async delete(
+    @Res() response: Response,
+    @Param('id') id: string,
+  ): Promise<any> {
     try {
       let data = await this.testCategoryService.delete(id);
       if (data.affected > 0) {
