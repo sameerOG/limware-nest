@@ -1,9 +1,17 @@
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  OneToOne,
+  CreateDateColumn,
+  DeleteDateColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { EmailTemplate } from './email_template.entity';
 
 @Entity({ name: 'outgoing_mail_server' })
 export class OutgoingMailServer {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   _id: string;
 
   @Column()
@@ -15,7 +23,7 @@ export class OutgoingMailServer {
   @Column()
   host: string;
 
-  @OneToOne(() => EmailTemplate, email => email.outgoing_mail_server_id)
+  @OneToOne(() => EmailTemplate, (email) => email.outgoing_mail_server_id)
   email_template_id!: EmailTemplate;
 
   @Column()
@@ -29,4 +37,16 @@ export class OutgoingMailServer {
 
   @Column()
   password: string;
+
+  @Column()
+  @CreateDateColumn()
+  created_at!: Date;
+
+  @Column()
+  @UpdateDateColumn()
+  updated_at!: Date;
+
+  @Column()
+  @DeleteDateColumn()
+  deleted_at!: Date;
 }
