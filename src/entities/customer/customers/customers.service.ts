@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 import { Customers } from '../customer.entity';
 import { CustomerRequestDto } from '../dto/request.dto';
 import { CustomerDto, SingleCustomerDto } from '../dto/response.dto';
@@ -44,6 +44,7 @@ export class CustomersService {
         'email',
         'mobile_number',
         'status',
+        'address',
         'updated_at',
         'created_at',
       ],
@@ -74,6 +75,7 @@ export class CustomersService {
           'status',
           'updated_at',
           'created_at',
+          'address',
         ],
         where: { _id: id },
       });

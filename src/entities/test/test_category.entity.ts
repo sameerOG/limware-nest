@@ -7,6 +7,7 @@ import {
   OneToMany,
   JoinColumn,
   ManyToOne,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Department } from '../department/department.entity';
 import { Facility } from '../Facility/facility.entity';
@@ -43,7 +44,7 @@ export class TestCategory {
   type!: string;
 
   @Column()
-  report_template!: string;
+  report_template!: number;
 
   @Column({ default: null })
   description!: string;
@@ -67,4 +68,8 @@ export class TestCategory {
   @Column()
   @UpdateDateColumn()
   updated_at!: Date;
+
+  @Column()
+  @DeleteDateColumn()
+  deleted_at!: Date;
 }

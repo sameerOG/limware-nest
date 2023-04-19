@@ -9,11 +9,10 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
+import { CustomerRequestDto } from '../dto/request.dto';
 import { CustomerDto, SingleCustomerDto } from '../dto/response.dto';
 import { CustomersService } from './customers.service';
 import { Response } from 'express';
-import { CustomerRequestDto } from '../dto/request.dto';
-
 @Controller('customers')
 export class CustomersController {
   constructor(private customerService: CustomersService) {}
@@ -23,7 +22,6 @@ export class CustomersController {
     @Res() response: Response,
     @Query() query,
   ): Promise<CustomerDto[]> {
-    console.log('runnnnnnnnnnnnnnnnn');
     try {
       const perpage = query['per-page'] ? query['per-page'] : 25;
       const page = query['page'] ? query['page'] : 1;
@@ -39,7 +37,7 @@ export class CustomersController {
     }
   }
 
-  @Get('/')
+  @Get('/:id')
   async getCustomer(
     @Res() response: Response,
     @Param('id') id,
@@ -74,7 +72,7 @@ export class CustomersController {
     }
   }
 
-  @Post('/test')
+  @Post('/')
   async addCustomer(
     @Res() response: Response,
     @Body() body: CustomerRequestDto,

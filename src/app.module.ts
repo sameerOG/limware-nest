@@ -13,7 +13,8 @@ import { UsersModule } from './entities/user/users/users.module';
 import { UsersRolesModule } from './entities/user_role/users-roles/users-roles.module';
 import { RolesModule } from './entities/role/roles/roles.module';
 import { SpecimensModule } from './entities/specimen/specimens/specimens.module';
-import { Customers } from './entities/customer/customer.entity';
+import { CustomersModule } from './entities/customer/customers/customers.module';
+import { TestCategoriesModule } from './entities/test/test-categories/test-categories.module';
 
 const envFilePath: string = getEnvPath(`/common/envs`);
 dotenv.config();
@@ -43,11 +44,12 @@ dotenv.config();
         from: `${process.env.EMAIL_FROM_NAME} <${process.env.EMAIL_FROM_MAIL}>`,
       },
     }),
-    Customers,
+    CustomersModule,
     UsersModule,
     UsersRolesModule,
     RolesModule,
     SpecimensModule,
+    TestCategoriesModule,
   ],
   controllers: [],
   providers: [],
