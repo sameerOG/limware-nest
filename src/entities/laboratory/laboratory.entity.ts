@@ -8,6 +8,7 @@ import {
   OneToOne,
   OneToMany,
   ManyToOne,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Customers } from '../customer/customer.entity';
 import { Department } from '../department/department.entity';
@@ -39,10 +40,10 @@ export class Laboratory {
   @Column()
   mobile_number!: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, default: null })
   unique_id!: string;
 
-  @Column({ type: 'json' })
+  @Column({ type: 'json', default: null })
   contact_numbers!: string;
 
   @OneToMany(() => TestCategory, (tc) => tc.laboratory_id)
@@ -97,4 +98,8 @@ export class Laboratory {
   @Column()
   @UpdateDateColumn()
   updated_at!: Date;
+
+  @Column()
+  @DeleteDateColumn()
+  deleted_at!: Date;
 }

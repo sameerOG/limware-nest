@@ -8,6 +8,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToOne,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Customers } from '../customer/customer.entity';
 import { Department } from '../department/department.entity';
@@ -108,4 +109,8 @@ export class Facility {
   @Column()
   @UpdateDateColumn()
   updated_at!: Date;
+
+  @Column()
+  @DeleteDateColumn()
+  deleted_at!: Date;
 }

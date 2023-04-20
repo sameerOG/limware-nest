@@ -18,6 +18,8 @@ import { TestCategoriesModule } from './entities/test/test-categories/test-categ
 import { UomModule } from './entities/uom/uom/uom.module';
 import { OutgoingMailServersModule } from './entities/MailServer/outgoing-mail-servers/outgoing-mail-servers.module';
 import { EmailTemplatesModule } from './entities/MailServer/email-templates/email-templates.module';
+import { FacilitiesModule } from './entities/Facility/facilities/facilities.module';
+import { LaboratoriesModule } from './entities/laboratory/laboratories/laboratories.module';
 
 const envFilePath: string = getEnvPath(`/common/envs`);
 dotenv.config();
@@ -56,6 +58,8 @@ dotenv.config();
     UomModule,
     OutgoingMailServersModule,
     EmailTemplatesModule,
+    FacilitiesModule,
+    LaboratoriesModule,
   ],
   controllers: [],
   providers: [],
