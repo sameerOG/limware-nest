@@ -42,7 +42,7 @@ export class Customers {
   @OneToOne(() => HospitalClinic, (laboratory) => laboratory.customer_id)
   clinic!: HospitalClinic;
 
-  @OneToOne(() => Employee, (employee) => employee.customer_id)
+  @OneToMany(() => Employee, (employee) => employee.customer_id)
   employee_id!: Employee;
 
   @OneToMany(() => Facility, (facility) => facility.customer_id)

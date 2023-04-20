@@ -41,7 +41,7 @@ export class Facility {
   @OneToMany(() => TestCategory, (tc) => tc.facility_id)
   test_category: TestCategory[];
 
-  @OneToOne(() => Employee, (employee) => employee.facility_id)
+  @OneToMany(() => Employee, (employee) => employee.facility_id)
   employee_id!: Employee;
 
   @OneToOne(() => LabTestRateList, (ltrl) => ltrl.facility_id)

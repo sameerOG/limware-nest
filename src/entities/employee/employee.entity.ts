@@ -8,6 +8,7 @@ import {
   JoinColumn,
   ManyToOne,
   OneToOne,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Customers } from '../customer/customer.entity';
 import { Facility } from '../Facility/facility.entity';
@@ -26,7 +27,7 @@ export class Employee {
   @JoinColumn({ name: 'user_id' })
   user_id!: Users;
 
-  @OneToOne(() => Facility, (facility) => facility.employee_id)
+  @ManyToOne(() => Facility, (facility) => facility.employee_id)
   @JoinColumn({ name: 'facility_id' })
   facility_id!: Facility;
 
@@ -45,7 +46,7 @@ export class Employee {
   @Column({ type: 'json', default: null })
   contact_numbers!: string;
 
-  @OneToOne(() => Customers, (customer) => customer.employee_id)
+  @ManyToOne(() => Customers, (customer) => customer.employee_id)
   @JoinColumn({ name: 'customer_id' })
   customer_id!: Customers;
 
@@ -68,4 +69,8 @@ export class Employee {
   @Column()
   @UpdateDateColumn()
   updated_at!: Date;
+
+  @Column()
+  @DeleteDateColumn()
+  deleted_at!: Date;
 }
