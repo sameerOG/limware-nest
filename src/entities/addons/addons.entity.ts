@@ -15,7 +15,7 @@ export class Addons {
   _id!: string;
 
   @Column()
-  facility_id!: number;
+  facility_id!: string;
 
   @Column({ type: 'json', default: null })
   sms!: string;

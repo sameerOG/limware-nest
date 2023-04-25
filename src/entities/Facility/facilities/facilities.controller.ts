@@ -61,7 +61,7 @@ export class FacilitiesController {
     @Query() query,
   ): Promise<any> {
     try {
-      const queryFields = query.expand.split(',');
+      const queryFields = query?.expand?.split(',');
       let data = await this.facilityService.getSingle(id, queryFields);
       response.status(200).send(data);
     } catch (err) {

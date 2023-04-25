@@ -21,6 +21,7 @@ import { EmailTemplatesModule } from './entities/MailServer/email-templates/emai
 import { FacilitiesModule } from './entities/Facility/facilities/facilities.module';
 import { LaboratoriesModule } from './entities/laboratory/laboratories/laboratories.module';
 import { EmployeesModule } from './entities/employee/employees/employees.module';
+import { AddonsModule } from './entities/addons/addons/addons.module';
 
 const envFilePath: string = getEnvPath(`/common/envs`);
 dotenv.config();
@@ -62,6 +63,7 @@ dotenv.config();
     FacilitiesModule,
     LaboratoriesModule,
     EmployeesModule,
+    AddonsModule,
   ],
   controllers: [],
   providers: [],

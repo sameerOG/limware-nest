@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Addons } from 'src/entities/addons/addons.entity';
 import { Customers } from 'src/entities/customer/customer.entity';
-import { Like, Repository } from 'typeorm';
+import { getRepository, Like, Repository } from 'typeorm';
 import { FacilityRequestDto } from '../dto/request.dto';
 import { FacilityDto } from '../dto/response.dto';
 import { Facility } from '../facility.entity';
@@ -13,6 +14,8 @@ export class FacilitiesService {
     private facilityRep: Repository<Facility>,
     @InjectRepository(Customers)
     private customerRep: Repository<Customers>,
+    @InjectRepository(Addons)
+    private addonsRep: Repository<Addons>,
   ) {}
 
   async getAll(
@@ -83,7 +86,7 @@ export class FacilitiesService {
       relations: ['customer_id', 'laboratory_id'],
       where,
     });
-    queryFields.map((query) => {
+    queryFields?.map((query) => {
       if (query == 'customer') {
         Object.assign(data, { customer: data.customer_id });
       } else if (query == 'laboratories') {
@@ -106,6 +109,26 @@ export class FacilitiesService {
     });
     body.customer_id = customer;
     const data = await this.facilityRep.save(body);
+    const addon = new Addons();
+    addon.facility_id = data._id;
+    addon.sms = JSON.stringify({
+      status: false,
+      settings: {
+        registration: false,
+        payment_done: false,
+        reports_done: true,
+      },
+    });
+    addon.whatsapp = JSON.stringify({
+      status: true,
+      settings: {
+        registration: true,
+        payment_done: false,
+        reports_done: true,
+      },
+    });
+    await this.addonsRep.save(addon);
+
     const { ...rest } = data;
     return new FacilityDto({
       ...rest,
