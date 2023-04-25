@@ -9,43 +9,25 @@ import {
   Query,
   Res,
 } from '@nestjs/common';
+import { DepartmentsService } from './departments.service';
 import { Response } from 'express';
-import { FacilityRequestDto } from '../dto/request.dto';
-import { FacilityDto } from '../dto/response.dto';
-import { FacilitiesService } from './facilities.service';
+import { DepartmentDto } from '../dto/response.dto';
+import { DepartmentRequest, EditDepartmentRequest } from '../dto/request.dto';
+@Controller('departments')
+export class DepartmentsController {
+  constructor(private departmentService: DepartmentsService) {}
 
-@Controller('facilities')
-export class FacilitiesController {
-  constructor(private facilityService: FacilitiesService) {}
-
-  @Get('/')
+  @Get('/get-facility-departments')
   async getAll(
     @Res() response: Response,
     @Query() query,
-  ): Promise<FacilityDto[]> {
+  ): Promise<DepartmentDto[]> {
     try {
-      const perpage = query['per-page'] ? query['per-page'] : 25;
-      const page = query['page'] ? query['page'] : 1;
-      const text = query.filter?.name;
-      const skip = (page - 1) * perpage;
+      const facility_id = query['facility_id'];
+      const parent = query['parent'];
+      const parent_id = query['parent_id'];
 
-      let data = await this.facilityService.getAll(skip, perpage, text);
-      response.status(200).send(data);
-      return data;
-    } catch (err) {
-      console.log('err in catch', err);
-      response.status(400).send([]);
-    }
-  }
-
-  @Get('/get-by-customer')
-  async getAllByCustomer(
-    @Res() response: Response,
-    @Query() query,
-  ): Promise<FacilityDto[]> {
-    try {
-      const customer_id: string = query['customer_id'];
-      const data = await this.facilityService.getAllByCustomer(customer_id);
+      let data = await this.departmentService.getAll(facility_id, parent_id);
       response.status(200).send(data);
       return data;
     } catch (err) {
@@ -58,25 +40,24 @@ export class FacilitiesController {
   async getSingle(
     @Res() response: Response,
     @Param('id') id: string,
-    @Query() query,
-  ): Promise<any> {
+  ): Promise<DepartmentDto> {
     try {
-      const queryFields = query?.expand?.split(',');
-      let data = await this.facilityService.getSingle(id, queryFields);
+      const data = await this.departmentService.getSingle(id);
       response.status(200).send(data);
+      return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(400).send([]);
     }
   }
 
   @Post('/')
   async add(
     @Res() response: Response,
-    @Body() body: FacilityRequestDto,
-  ): Promise<FacilityDto> {
+    @Body() body: DepartmentRequest,
+  ): Promise<DepartmentDto> {
     try {
-      let data = await this.facilityService.add(body);
+      let data = await this.departmentService.add(body);
       if (data) {
         response.status(200).send(data);
         return data;
@@ -92,11 +73,11 @@ export class FacilitiesController {
   @Put('/:id')
   async update(
     @Res() response: Response,
-    @Body() body: FacilityRequestDto,
+    @Body() body: EditDepartmentRequest,
     @Param('id') id: string,
-  ): Promise<FacilityDto> {
+  ): Promise<DepartmentDto> {
     try {
-      let data = await this.facilityService.update(id, body);
+      let data = await this.departmentService.update(id, body);
       if (data) {
         response.status(200).send(data);
         return data;
@@ -113,9 +94,9 @@ export class FacilitiesController {
   async delete(
     @Res() response: Response,
     @Param('id') id: string,
-  ): Promise<any> {
+  ): Promise<Object> {
     try {
-      let data = await this.facilityService.delete(id);
+      let data = await this.departmentService.delete(id);
       if (data.affected > 0) {
         response.status(200).send(data);
         return data;

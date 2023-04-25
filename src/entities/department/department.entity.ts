@@ -7,6 +7,7 @@ import {
   JoinColumn,
   OneToOne,
   OneToMany,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Facility } from '../Facility/facility.entity';
 import { Laboratory } from '../laboratory/laboratory.entity';
@@ -63,4 +64,8 @@ export class Department {
   @Column()
   @UpdateDateColumn()
   updated_at!: Date;
+
+  @Column()
+  @DeleteDateColumn()
+  deleted_at!: Date;
 }

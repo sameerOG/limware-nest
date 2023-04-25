@@ -22,6 +22,7 @@ import { FacilitiesModule } from './entities/Facility/facilities/facilities.modu
 import { LaboratoriesModule } from './entities/laboratory/laboratories/laboratories.module';
 import { EmployeesModule } from './entities/employee/employees/employees.module';
 import { AddonsModule } from './entities/addons/addons/addons.module';
+import { DepartmentsModule } from './entities/department/departments/departments.module';
 
 const envFilePath: string = getEnvPath(`/common/envs`);
 dotenv.config();
@@ -64,6 +65,7 @@ dotenv.config();
     LaboratoriesModule,
     EmployeesModule,
     AddonsModule,
+    DepartmentsModule,
   ],
   controllers: [],
   providers: [],
