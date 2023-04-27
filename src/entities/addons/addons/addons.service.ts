@@ -24,10 +24,15 @@ export class AddonsService {
   }
 
   async update(facility_id: string, body: any): Promise<AddonDto> {
-    await this.addonRep.update({ facility_id: facility_id }, body);
     const data: any = await this.addonRep.findOne({
       where: { facility_id: facility_id },
     });
+    if (data) {
+      await this.addonRep.update({ facility_id: facility_id }, body);
+    } else {
+      body.facility_id = facility_id;
+      await this.addonRep.save(body);
+    }
     const { ...rest } = data;
     return new AddonDto({
       ...rest,

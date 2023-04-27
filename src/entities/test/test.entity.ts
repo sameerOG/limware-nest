@@ -62,7 +62,7 @@ export class Test {
   @Column()
   title_for_print!: string;
 
-  @Column({ default: null })
+  @Column({ default: null, type: 'json' })
   sample_quantity!: string;
 
   @Column({ default: null })
@@ -80,7 +80,7 @@ export class Test {
   @Column({ default: null })
   default_notes!: string;
 
-  @Column({ default: null })
+  @Column({ default: null, type: 'json' })
   duration!: string;
 
   @Column()
@@ -96,7 +96,7 @@ export class Test {
   print_or_seperate_page!: boolean;
 
   @Column({ default: null })
-  reports_template!: string;
+  report_template!: number;
 
   @Column({ default: null })
   tags!: string;
@@ -105,7 +105,7 @@ export class Test {
   parametric_only!: boolean;
 
   @Column({ default: false })
-  archived!: string;
+  archived!: boolean;
 
   @Column({ default: null })
   parent_test_id!: number;

@@ -25,10 +25,11 @@ export class LaboratoriesService {
       skip,
       take,
     });
+    console.log('dataaa', data);
     data.forEach((item) => {
       Object.assign(item, {
-        customer_id: item.customer_id._id,
-        facility_id: item.facility_id._id,
+        customer_id: item.customer_id?._id,
+        facility_id: item.facility_id?._id,
       });
     });
     return data;
@@ -76,8 +77,8 @@ export class LaboratoriesService {
     const { ...rest } = data;
     return new LabRequestDto({
       ...rest,
-      customer_id: data.customer_id._id,
-      facility_id: data.facility_id._id,
+      customer_id: data.customer_id?._id,
+      facility_id: data.facility_id?._id,
       created_at: data.created_at?.getTime(),
       updated_at: data.updated_at?.getTime(),
       updated_by: '',
@@ -115,8 +116,8 @@ export class LaboratoriesService {
       const { ...rest } = data;
       return new LabRequestDto({
         ...rest,
-        customer_id: data.customer_id._id,
-        facility_id: data.facility_id._id,
+        customer_id: data.customer_id?._id,
+        facility_id: data.facility_id?._id,
         created_at: data.created_at?.getTime(),
         updated_at: data.updated_at?.getTime(),
         updated_by: '',

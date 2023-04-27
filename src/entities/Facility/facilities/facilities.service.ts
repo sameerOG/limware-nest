@@ -45,7 +45,7 @@ export class FacilitiesService {
       take,
     });
     data.forEach((item) => {
-      Object.assign(item, { customer_id: item.customer_id._id });
+      Object.assign(item, { customer_id: item.customer_id?._id });
     });
     return data;
   }
@@ -96,7 +96,7 @@ export class FacilitiesService {
     const { ...rest } = data;
     return new FacilityDto({
       ...rest,
-      customer_id: data.customer_id._id,
+      customer_id: data.customer_id?._id,
       created_at: data.created_at?.getTime(),
       updated_at: data.updated_at?.getTime(),
       updated_by: '',
@@ -163,7 +163,7 @@ export class FacilitiesService {
       const { ...rest } = data;
       return new FacilityDto({
         ...rest,
-        customer_id: data.customer_id._id,
+        customer_id: data.customer_id?._id,
         created_at: data.created_at?.getTime(),
         updated_at: data.updated_at?.getTime(),
         updated_by: '',

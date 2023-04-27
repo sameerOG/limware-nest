@@ -27,6 +27,13 @@ export class UomService {
     return data;
   }
 
+  async getAllComplete(): Promise<UomDto[]> {
+    const data = await this.uomRep.find({
+      select: ['_id', 'name', 'description'],
+    });
+    return data;
+  }
+
   async add(body: any): Promise<SingleUomDto> {
     const data = await this.uomRep.save(body);
     const { ...rest } = data;

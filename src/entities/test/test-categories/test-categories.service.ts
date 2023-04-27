@@ -34,6 +34,13 @@ export class TestCategoriesService {
     return data;
   }
 
+  async getAllComplete(): Promise<TestCategoryDto[]> {
+    const data = await this.testCategoryRep.find({
+      select: ['_id', 'name', 'report_template'],
+    });
+    return data;
+  }
+
   async getSingle(id: string, expand?: string): Promise<TestCategoryDto> {
     let where: any = {};
 

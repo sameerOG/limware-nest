@@ -34,6 +34,18 @@ export class UomController {
     }
   }
 
+  @Get('/get-all')
+  async getAllComplete(@Res() response: Response): Promise<UomDto[]> {
+    try {
+      let data = await this.uomService.getAllComplete();
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(400).send([]);
+    }
+  }
+
   @Post('/')
   async add(
     @Res() response: Response,

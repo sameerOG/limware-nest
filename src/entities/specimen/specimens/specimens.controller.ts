@@ -39,6 +39,18 @@ export class SpecimensController {
     }
   }
 
+  @Get('/get-all')
+  async getAll(@Res() response: Response): Promise<SpecimenDto[]> {
+    try {
+      let data = await this.specimenService.getAll();
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(400).send([]);
+    }
+  }
+
   @Put('/:id')
   async update(
     @Res() response: Response,

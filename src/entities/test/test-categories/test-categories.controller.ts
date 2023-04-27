@@ -41,6 +41,21 @@ export class TestCategoriesController {
     }
   }
 
+  @Get('/test-categories/get-all')
+  async getAllComplete(
+    @Res() response: Response,
+    @Query() query,
+  ): Promise<TestCategoryDto[]> {
+    try {
+      let data = await this.testCategoryService.getAllComplete();
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(400).send([]);
+    }
+  }
+
   @Get('/test-categories/:id')
   async getSingle(
     @Res() response: Response,

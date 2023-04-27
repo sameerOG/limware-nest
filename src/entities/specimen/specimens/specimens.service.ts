@@ -30,6 +30,13 @@ export class SpecimensService {
     return specimens;
   }
 
+  async getAll(): Promise<SpecimenDto[]> {
+    const specimens = await this.specimenRep.find({
+      select: ['_id', 'name', 'description'],
+    });
+    return specimens;
+  }
+
   async updateSpecimen(
     id: string,
     data: SpecimenRequestDto,

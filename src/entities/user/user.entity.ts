@@ -92,7 +92,7 @@ export class Users {
   status!: number;
 
   @Column({ default: null })
-  otp!: number;
+  otp!: string;
 
   @Column({ default: null })
   password_reset_pin!: number;

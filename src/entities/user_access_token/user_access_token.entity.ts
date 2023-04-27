@@ -17,9 +17,12 @@ export class UserAccessToken {
   @PrimaryGeneratedColumn('uuid')
   _id!: string;
 
-  @OneToOne(() => Facility, (facility) => facility.user_token)
-  @JoinColumn({ name: 'facility_id' })
-  facility_id!: Facility;
+  // @OneToOne(() => Facility, (facility) => facility.user_token)
+  // @JoinColumn({ name: 'facility_id' })
+  // facility_id!: Facility;
+
+  @Column({ default: null })
+  facility_id: string;
 
   @OneToOne(() => Users, (user) => user.user_token)
   @JoinColumn({ name: 'user_id' })

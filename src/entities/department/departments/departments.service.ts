@@ -12,8 +12,6 @@ export class DepartmentsService {
   constructor(
     @InjectRepository(Department)
     private departmentRep: Repository<Department>,
-    @InjectRepository(Facility)
-    private facilityRep: Repository<Facility>,
   ) {}
 
   async getAll(
