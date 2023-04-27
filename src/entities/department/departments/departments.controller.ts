@@ -8,12 +8,15 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { DepartmentsService } from './departments.service';
 import { Response } from 'express';
 import { DepartmentDto } from '../dto/response.dto';
 import { DepartmentRequest, EditDepartmentRequest } from '../dto/request.dto';
+import { AuthGuard } from 'src/guard/auth.guard';
 @Controller('departments')
+@UseGuards(AuthGuard)
 export class DepartmentsController {
   constructor(private departmentService: DepartmentsService) {}
 

@@ -8,7 +8,7 @@ import {
   RegisterRequest,
   ValidateOtpRequest,
 } from './dto/request.dto';
-import { AuthDto, AuthRegisterDto } from './dto/response.dto';
+import { AuthDto, AuthRegisterDto, ProfileResponse } from './dto/response.dto';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { UserAccessToken } from '../user_access_token/user_access_token.entity';
@@ -127,6 +127,33 @@ export class AuthService {
     } else {
       return null;
     }
+  }
+
+  async logout(token: string): Promise<boolean> {
+    const userToken: any = await this.userTokenRep.findOne({
+      where: { access_token: token },
+    });
+    if (userToken) {
+      await this.userTokenRep.delete(userToken._id)
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  async getProfile(id: string): Promise<ProfileResponse> {
+    const user: Users = await this.userRep.findOne({
+      select:['address','city','created_at','email','full_name','mobile_number','password_hash','status','updated_at','username','_id','contact_numbers'],
+      where: { _id: id },
+    });
+    const {...rest} = user;
+    return new ProfileResponse({
+      ...rest,
+      created_at:user.created_at.getTime(),
+      updated_by:id,
+      updated_at:user.updated_at.getTime()
+    })
+    
   }
 
   async loginIntoFacility(body: LoginIntoFacility): Promise<boolean> {

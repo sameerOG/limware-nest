@@ -8,13 +8,16 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { AuthGuard } from 'src/guard/auth.guard';
 import { LaboratoryRequestDto } from '../dto/request.dto';
 import { LabRequestDto, LabResponseDto } from '../dto/response.dto';
 import { LaboratoriesService } from './laboratories.service';
 
 @Controller('laboratories')
+@UseGuards(AuthGuard)
 export class LaboratoriesController {
   constructor(private labService: LaboratoriesService) {}
 

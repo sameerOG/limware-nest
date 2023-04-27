@@ -8,13 +8,16 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { AuthGuard } from 'src/guard/auth.guard';
 import { SpecimenRequestDto } from '../dto/request.dto';
 import { SingleSpecimenDto, SpecimenDto } from '../dto/response.dto';
 import { SpecimensService } from './specimens.service';
 
 @Controller('specimens')
+@UseGuards(AuthGuard)
 export class SpecimensController {
   constructor(private specimenService: SpecimensService) {}
 

@@ -8,13 +8,16 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { AuthGuard } from 'src/guard/auth.guard';
 import { FacilityRequestDto } from '../dto/request.dto';
 import { FacilityDto } from '../dto/response.dto';
 import { FacilitiesService } from './facilities.service';
 
 @Controller('facilities')
+@UseGuards(AuthGuard)
 export class FacilitiesController {
   constructor(private facilityService: FacilitiesService) {}
 

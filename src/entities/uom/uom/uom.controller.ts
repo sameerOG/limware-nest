@@ -8,12 +8,15 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { SingleUomDto, UomDto } from '../dto/response.dto';
 import { UomService } from './uom.service';
 import { Response } from 'express';
 import { UomRequestDto } from '../dto/request.dto';
+import { AuthGuard } from 'src/guard/auth.guard';
 @Controller('uom')
+@UseGuards(AuthGuard)
 export class UomController {
   constructor(private uomService: UomService) {}
 

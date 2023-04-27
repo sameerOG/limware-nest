@@ -9,9 +9,11 @@ import {
   Query,
   Res,
   Headers,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
+import { AuthGuard } from 'src/guard/auth.guard';
 import { TestNormalRangeRequest, TestRequestDto } from '../dto/test-category/request.dto';
 import {
   SingleTestResponseDto,
@@ -21,6 +23,7 @@ import {
 import { TestsService } from './tests.service';
 
 @Controller('')
+@UseGuards(AuthGuard)
 export class TestsController {
   constructor(private testService: TestsService) {}
 

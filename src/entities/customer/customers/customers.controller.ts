@@ -8,12 +8,15 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { CustomerRequestDto } from '../dto/request.dto';
 import { CustomerDto, SingleCustomerDto } from '../dto/response.dto';
 import { CustomersService } from './customers.service';
 import { Response } from 'express';
+import { AuthGuard } from 'src/guard/auth.guard';
 @Controller('customers')
+@UseGuards(AuthGuard)
 export class CustomersController {
   constructor(private customerService: CustomersService) {}
 

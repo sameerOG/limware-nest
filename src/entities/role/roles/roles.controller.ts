@@ -8,12 +8,15 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { AuthGuard } from 'src/guard/auth.guard';
 import { RoleRequestDto } from '../dto/request.dto';
 import { RoleDto, SingleRoleDto } from '../dto/response.dto';
 import { RolesService } from './roles.service';
 @Controller('roles')
+@UseGuards(AuthGuard)
 export class RolesController {
   constructor(private roleService: RolesService) {}
 

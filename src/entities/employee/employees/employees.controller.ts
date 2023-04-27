@@ -8,12 +8,15 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { Response } from 'express';
 import { EmployeeResponseDto } from '../dto/response.dto';
 import { EmployeeRequestDto } from '../dto/request.dto';
+import { AuthGuard } from 'src/guard/auth.guard';
 @Controller('')
+@UseGuards(AuthGuard)
 export class EmployeesController {
   constructor(private empService: EmployeesService) {}
 

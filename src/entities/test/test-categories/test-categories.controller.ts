@@ -8,6 +8,7 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ReportTemplate,
@@ -17,7 +18,9 @@ import {
 import { TestCategoriesService } from './test-categories.service';
 import { query, Response } from 'express';
 import { TestCategoryRequestDto } from '../dto/test-category/request.dto';
+import { AuthGuard } from 'src/guard/auth.guard';
 @Controller('')
+@UseGuards(AuthGuard)
 export class TestCategoriesController {
   constructor(private testCategoryService: TestCategoriesService) {}
 

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Post, Res, Headers, Get } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import {
@@ -7,7 +7,8 @@ import {
   RegisterRequest,
   ValidateOtpRequest,
 } from './dto/request.dto';
-import { AuthDto, AuthRegisterDto } from './dto/response.dto';
+import { AuthDto, AuthRegisterDto, ProfileResponse } from './dto/response.dto';
+import jwtDecode from 'jwt-decode';
 
 @Controller('')
 export class AuthController {
@@ -20,7 +21,63 @@ export class AuthController {
   ): Promise<AuthDto> {
     try {
       let data = await this.authService.login(body);
-      console.log('data', data);
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        response.status(400).send({});
+      }
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(400).send({});
+    }
+  }
+
+  @Get('/profile')
+  async getProfile(
+    @Res() response: Response,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<ProfileResponse> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token)
+      let data = await this.authService.getProfile(loggedInUser['user_id']['$oid']);
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        response.status(400).send({});
+      }
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(400).send({});
+    }
+  }
+
+  @Get('/profile/get-profile-image')
+  async getProfileImage(
+    @Res() response: Response,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<boolean> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token)
+      response.status(200).send(true);
+      return true
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(400).send({});
+    }
+  }
+
+  @Post('/accounts/logout')
+  async logout(
+    @Res() response: Response,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<boolean> {
+    try {
+      const token = authHeader.split(' ')[1];
+      let data = await this.authService.logout(token);
       if (data) {
         response.status(200).send(data);
         return data;

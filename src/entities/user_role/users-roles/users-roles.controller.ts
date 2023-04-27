@@ -7,12 +7,15 @@ import {
   Post,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { UsersRolesService } from './users-roles.service';
 import { Response } from 'express';
 import { UserRoleDto } from '../dto/response.dto';
 import { UserRoleRequestDto, UserRoleResponseDto } from '../dto/request.dto';
+import { AuthGuard } from 'src/guard/auth.guard';
 @Controller('users-roles')
+@UseGuards(AuthGuard)
 export class UsersRolesController {
   constructor(private userRoleService: UsersRolesService) {}
 

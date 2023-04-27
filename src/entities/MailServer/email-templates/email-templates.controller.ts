@@ -8,12 +8,15 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { EmailTemplatesDto } from '../dto/email-templates/response.dto';
 import { EmailTemplatesService } from './email-templates.service';
 import { Response } from 'express';
 import { EmailTemplateRequestDto } from '../dto/email-templates/request.dto';
+import { AuthGuard } from 'src/guard/auth.guard';
 @Controller('email-templates')
+@UseGuards(AuthGuard)
 export class EmailTemplatesController {
   constructor(private emailTemplateService: EmailTemplatesService) {}
 

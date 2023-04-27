@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query, Res, UseGuards } from '@nestjs/common';
 import { AddonsService } from './addons.service';
 import { Response } from 'express';
 import {
@@ -7,7 +7,9 @@ import {
   SMS_AND_WHATSAPP_SETTINGS,
 } from '../dto/response.dto';
 import { AddonsRequest } from '../dto/request.dto';
+import { AuthGuard } from 'src/guard/auth.guard';
 @Controller('addons')
+@UseGuards(AuthGuard)
 export class AddonsController {
   constructor(private addonsService: AddonsService) {}
 

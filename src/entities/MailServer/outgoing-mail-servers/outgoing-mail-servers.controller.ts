@@ -8,12 +8,15 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
+import { AuthGuard } from 'src/guard/auth.guard';
 import { OutgoingMailServersRequestDto } from '../dto/outgoing-mail-servers/request.dto';
 import { OutgoingMailServersDto } from '../dto/outgoing-mail-servers/response.dto';
 import { OutgoingMailServersService } from './outgoing-mail-servers.service';
 @Controller('')
+@UseGuards(AuthGuard)
 export class OutgoingMailServersController {
   constructor(private omsRep: OutgoingMailServersService) {}
 
