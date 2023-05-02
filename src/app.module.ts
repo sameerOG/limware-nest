@@ -25,6 +25,7 @@ import { AddonsModule } from './entities/addons/addons/addons.module';
 import { DepartmentsModule } from './entities/department/departments/departments.module';
 import { AuthModule } from './entities/auth/auth.module';
 import { TestsModule } from './entities/test/tests/tests.module';
+import { TestParametersModule } from './entities/test/test-parameters/test-parameters.module';
 
 const envFilePath: string = getEnvPath(`/common/envs`);
 dotenv.config();
@@ -70,6 +71,7 @@ dotenv.config();
     DepartmentsModule,
     AuthModule,
     TestsModule,
+    TestParametersModule,
   ],
   controllers: [],
   providers: [],

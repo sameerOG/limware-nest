@@ -70,7 +70,7 @@ export class SpecimensController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -90,7 +90,7 @@ export class SpecimensController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -108,7 +108,7 @@ export class SpecimensController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 }

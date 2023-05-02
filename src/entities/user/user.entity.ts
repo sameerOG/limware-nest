@@ -80,6 +80,9 @@ export class Users {
   full_name!: string;
 
   @Column({ default: null })
+  profile_image_name!: string;
+
+  @Column({ default: null })
   address!: string;
 
   @Column({ default: null })

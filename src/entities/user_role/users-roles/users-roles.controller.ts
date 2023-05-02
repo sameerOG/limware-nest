@@ -69,7 +69,7 @@ export class UsersRolesController {
       response.status(204).send('User role deleted successfully');
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 }

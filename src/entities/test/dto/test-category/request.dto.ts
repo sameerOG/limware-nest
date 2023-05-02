@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsBoolean,
   IsNotEmpty,
   IsNumber,
@@ -145,4 +146,57 @@ export class TestNormalRangeRequest {
 
   @IsOptional()
   max_value: number;
+}
+
+export class MultiplePayload {
+  @IsString()
+  @IsNotEmpty()
+  parent_test_id: string;
+
+  @IsString()
+  @IsNotEmpty()
+  test_group_id: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  @IsNotEmpty()
+  child_test_ids: string;
+}
+
+export class TestParameterRequest {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  title_for_print: string;
+
+  @IsString()
+  @IsOptional()
+  uom_id: string;
+
+  @IsString()
+  @IsOptional()
+  test_group_name: string;
+
+  @IsString()
+  @IsOptional()
+  res_input_type: string;
+
+  @IsString()
+  @IsOptional()
+  decimal_length: string;
+
+  @IsString()
+  @IsOptional()
+  parent_test_id: string;
+
+  @IsArray()
+  @IsOptional()
+  res_input_options: any;
+
+  @IsArray()
+  @IsOptional()
+  normal_ranges: any;
 }

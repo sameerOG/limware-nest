@@ -55,11 +55,11 @@ export class RolesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send({});
+        response.status(422).send({});
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -79,7 +79,7 @@ export class RolesController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -98,7 +98,7 @@ export class RolesController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -116,7 +116,7 @@ export class RolesController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 }

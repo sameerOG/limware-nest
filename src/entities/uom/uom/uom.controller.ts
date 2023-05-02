@@ -60,11 +60,11 @@ export class UomController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send({});
+        response.status(422).send({});
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -84,7 +84,7 @@ export class UomController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -99,11 +99,11 @@ export class UomController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send({});
+        response.status(422).send({});
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 }

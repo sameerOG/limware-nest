@@ -77,3 +77,47 @@ export class LoginIntoFacility {
   @IsNotEmpty()
   user_id: string;
 }
+
+export class ProfileRequest {
+  @IsString()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  username: string;
+
+  @IsString()
+  @IsNotEmpty()
+  mobile_number: string;
+
+  @IsString()
+  @IsNotEmpty()
+  full_name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  address: string;
+
+  @IsString()
+  @IsNotEmpty()
+  city: string;
+
+  @IsString()
+  @IsNotEmpty()
+  status: number;
+}
+
+export class ChangePasswordRequest {
+  @IsString()
+  @IsNotEmpty()
+  confirm_password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  current_password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  new_password: string;
+}

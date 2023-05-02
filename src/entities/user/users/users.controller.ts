@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Headers,
   Param,
   Post,
   Put,
@@ -11,6 +12,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
+import jwtDecode from 'jwt-decode';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { UserRequestDto } from '../dto/request.dto';
 import { SingleUserDto, UserDto } from '../dto/response.dto';
@@ -38,6 +40,25 @@ export class UsersController {
     } catch (err) {
       console.log('err in catch', err);
       response.status(400).send([]);
+    }
+  }
+
+  @Get('/reload-logged-in-user-permissions')
+  async reLoggedInUserPermissions(
+    @Res() response: Response,
+    @Query() query,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<any> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const data = await this.userService.reLoggedInUserPermissions(
+        loggedInUser,
+      );
+      response.status(200).send(data);
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({});
     }
   }
 
@@ -76,7 +97,7 @@ export class UsersController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -96,7 +117,7 @@ export class UsersController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -114,7 +135,7 @@ export class UsersController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 }

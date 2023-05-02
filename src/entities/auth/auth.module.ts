@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Customers } from '../customer/customer.entity';
 import { Employee } from '../employee/employee.entity';
@@ -19,6 +20,9 @@ import { AuthService } from './auth.service';
       Laboratory,
       Employee,
     ]),
+    ServeStaticModule.forRoot({
+      rootPath: 'src/common/uploads',
+    }),
   ],
   controllers: [AuthController],
   providers: [AuthService],

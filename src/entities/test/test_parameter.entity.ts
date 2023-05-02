@@ -21,7 +21,7 @@ export class TestParameter {
   @Column({ default: null })
   facility_id!: number;
 
-  @Column()
+  @Column({ default: null })
   pl_tp_id!: number;
 
   @Column({ default: null })

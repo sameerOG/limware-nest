@@ -14,7 +14,10 @@ import {
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
 import { AuthGuard } from 'src/guard/auth.guard';
-import { TestNormalRangeRequest, TestRequestDto } from '../dto/test-category/request.dto';
+import {
+  TestNormalRangeRequest,
+  TestRequestDto,
+} from '../dto/test-category/request.dto';
 import {
   SingleTestResponseDto,
   TestNormalRangeResponse,
@@ -58,7 +61,7 @@ export class TestsController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -79,7 +82,7 @@ export class TestsController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -102,7 +105,7 @@ export class TestsController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -119,7 +122,7 @@ export class TestsController {
       response.status(204).send('Test deleted successfully');
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -134,7 +137,7 @@ export class TestsController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -142,22 +145,22 @@ export class TestsController {
   async updateTestNormalRange(
     @Res() response: Response,
     @Param('id') id: string,
-    @Body() body:TestNormalRangeRequest
+    @Body() body: TestNormalRangeRequest,
   ): Promise<TestNormalRangeResponse> {
     try {
-      let data = await this.testService.updateTestNormalRange(id,body);
+      let data = await this.testService.updateTestNormalRange(id, body);
       response.status(200).send(data);
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
   @Post('/test-normal-ranges/')
   async addTestNormalRange(
     @Res() response: Response,
-    @Body() body:TestNormalRangeRequest
+    @Body() body: TestNormalRangeRequest,
   ): Promise<TestNormalRangeResponse> {
     try {
       let data = await this.testService.addTestNormalRange(body);
@@ -165,7 +168,7 @@ export class TestsController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -179,7 +182,7 @@ export class TestsController {
       response.status(204).send();
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 }

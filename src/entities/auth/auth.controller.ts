@@ -1,14 +1,38 @@
-import { Body, Controller, Post, Res, Headers, Get } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Res,
+  Headers,
+  Get,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
+import * as moment from 'moment';
+import * as uuid from 'uuid';
+let uniqueId = uuid.v4();
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import {
   AuthRequest,
+  ChangePasswordRequest,
   LoginIntoFacility,
+  ProfileRequest,
   RegisterRequest,
   ValidateOtpRequest,
 } from './dto/request.dto';
 import { AuthDto, AuthRegisterDto, ProfileResponse } from './dto/response.dto';
 import jwtDecode from 'jwt-decode';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
+import { promisify } from 'util';
+import { existsSync, mkdirSync, mkdir, writeFile } from 'fs';
+import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  addFileName,
+  imageFileFilter,
+} from 'src/common/utils/file-upload.util';
+import { Error } from 'src/common/global-dto.dto';
 
 @Controller('')
 export class AuthController {
@@ -18,18 +42,18 @@ export class AuthController {
   async login(
     @Res() response: Response,
     @Body() body: AuthRequest,
-  ): Promise<AuthDto> {
+  ): Promise<AuthDto | Error[]> {
     try {
       let data = await this.authService.login(body);
       if (data) {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send({});
+        response.status(422).send({});
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send(err);
     }
   }
 
@@ -40,17 +64,73 @@ export class AuthController {
   ): Promise<ProfileResponse> {
     try {
       const token = authHeader.split(' ')[1];
-      const loggedInUser = jwtDecode(token)
-      let data = await this.authService.getProfile(loggedInUser['user_id']['$oid']);
+      const loggedInUser = jwtDecode(token);
+      let data = await this.authService.getProfile(
+        loggedInUser['user_id']['$oid'],
+      );
       if (data) {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send({});
+        response.status(422).send({});
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
+    }
+  }
+
+  async imageFilter(file) {
+    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/i)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  async addFileName(file) {
+    const name = file.originalname.split('.')[0];
+    const fileExtName = extname(file.originalname);
+    let dateCreated: any = moment().format('YYYY-MM-DD HH:mm:ss');
+    var id = uniqueId + '-' + name + '-' + dateCreated + fileExtName;
+    var splitedid = id.replace(/:/gi, '');
+    var finalName = splitedid.replace(/\s/g, '');
+    return finalName;
+  }
+
+  @Post('/profile/update-profile')
+  @UseInterceptors(
+    FileInterceptor('profile_image_file', {
+      storage: diskStorage({
+        destination: './Uploads/images',
+        filename: addFileName,
+      }),
+      fileFilter: imageFileFilter,
+    }),
+  )
+  async updateProfile(
+    @Res() response: Response,
+    @Body() body: any,
+    @UploadedFile() file,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<ProfileResponse> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const fileData = file.filename;
+      let parsedData = JSON.parse(body.data);
+      Object.assign(parsedData, { profile_image_name: fileData });
+      console.log('file before', parsedData);
+      let data = await this.authService.updateProfile(parsedData, loggedInUser);
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        response.status(422).send({});
+      }
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({});
     }
   }
 
@@ -61,12 +141,31 @@ export class AuthController {
   ): Promise<boolean> {
     try {
       const token = authHeader.split(' ')[1];
-      const loggedInUser = jwtDecode(token)
-      response.status(200).send(true);
-      return true
+      const loggedInUser = jwtDecode(token);
+      const profile = await this.authService.getProfileImage(loggedInUser);
+      console.log('profile', profile);
+      response.status(200).send(profile);
+      return true;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
+    }
+  }
+
+  @Post('/profile/change-loggedin-user-password')
+  async changePassword(
+    @Res() response: Response,
+    @Body() body: ChangePasswordRequest,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<any> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const data = await this.authService.changePassword(body, loggedInUser);
+      response.status(200).send(data);
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send(err);
     }
   }
 
@@ -82,11 +181,11 @@ export class AuthController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send({});
+        response.status(422).send({});
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -105,7 +204,7 @@ export class AuthController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 
@@ -121,11 +220,11 @@ export class AuthController {
         response.status(statusCode).send(data);
         return data;
       } else {
-        response.status(400).send({});
+        response.status(422).send(data);
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send(err);
     }
   }
 
@@ -140,11 +239,11 @@ export class AuthController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send({});
+        response.status(422).send({});
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send({});
+      response.status(422).send({});
     }
   }
 }

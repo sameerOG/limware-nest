@@ -197,16 +197,16 @@ export class RestInputOptions {
 export class TestNormalRangeResponse {
   readonly _id: string;
   readonly archived: boolean;
-  readonly condition:string
-  readonly max_op:string;
-  readonly max_value:number;
-  readonly min_op:string;
-  readonly min_value:number;
-  readonly normal_range_for:string;
-  readonly sequence:number;
-  readonly test_id:string;
-  readonly updated_at:number;
-  readonly updated_by:string
+  readonly condition: string;
+  readonly max_op: string;
+  readonly max_value: number;
+  readonly min_op: string;
+  readonly min_value: number;
+  readonly normal_range_for: string;
+  readonly sequence: number;
+  readonly test_id: string;
+  readonly updated_at: number;
+  readonly updated_by: string;
   readonly created_at: number;
 
   constructor(test: TestNormalRangeResponse) {
@@ -223,5 +223,213 @@ export class TestNormalRangeResponse {
       (this.updated_at = test.updated_at),
       (this.updated_by = test.updated_by),
       (this.archived = test.archived);
+  }
+}
+
+export class TestParameterResponse {
+  readonly singleTests: singleTests[];
+  readonly groups: groups[];
+
+  constructor(testParam: TestParameterResponse) {
+    (this.singleTests = testParam.singleTests),
+      (this.groups = testParam.groups);
+  }
+}
+
+export class singleTests {
+  readonly _id: string;
+  readonly parent_test_id: string;
+  readonly child_test_id: string;
+  readonly test_group_id: string;
+  readonly sequence: number;
+  readonly childTestWithDetails: childTestWithDetails;
+
+  constructor(test: singleTests) {
+    (this._id = test._id),
+      (this.parent_test_id = test.parent_test_id),
+      (this.child_test_id = test.child_test_id),
+      (this.test_group_id = test.test_group_id),
+      (this.childTestWithDetails = test.childTestWithDetails),
+      (this.sequence = test.sequence);
+  }
+}
+
+export class childTestWithDetails {
+  readonly _id: string;
+  readonly code: number;
+  readonly name: string;
+  readonly title_for_print: string;
+  readonly sequence: number;
+  readonly single_or_group: string;
+  readonly normal_range: any;
+  readonly uom: Uom;
+
+  constructor(test: childTestWithDetails) {
+    (this._id = test._id),
+      (this.code = test.code),
+      (this.name = test.name),
+      (this.title_for_print = test.title_for_print),
+      (this.single_or_group = test.single_or_group),
+      (this.normal_range = test.normal_range),
+      (this.uom = test.uom),
+      (this.sequence = test.sequence);
+  }
+}
+
+export class Uom {
+  readonly _id: string;
+  readonly name: string;
+  readonly description: string;
+  readonly created_at: number;
+
+  constructor(uom: Uom) {
+    (this._id = uom._id),
+      (this.name = uom.name),
+      (this.description = uom.description),
+      (this.created_at = uom.created_at);
+  }
+}
+
+export class groups {
+  readonly _id: string;
+  readonly name: string;
+  readonly sequence: number;
+
+  constructor(groups: groups) {
+    (this._id = groups._id),
+      (this.name = groups.name),
+      (this.sequence = groups.sequence);
+  }
+}
+
+export class tests {
+  readonly _id: string;
+  readonly name: string;
+  readonly sequence: number;
+  readonly tests: singleTests[];
+
+  constructor(test: tests) {
+    (this._id = test._id),
+      (this.name = test.name),
+      (this.tests = test.tests),
+      (this.sequence = test.sequence);
+  }
+}
+
+export class UnassignedParameters {
+  readonly _id: string;
+  readonly name: string;
+  readonly code: number;
+
+  constructor(unassignedParameter: UnassignedParameters) {
+    (this._id = unassignedParameter._id),
+      (this.name = unassignedParameter.name),
+      (this.code = unassignedParameter.code);
+  }
+}
+
+export class AllGroups {
+  readonly _id: string;
+  readonly parent: string;
+  readonly parent_id: string;
+  readonly name: string;
+  readonly archived: boolean;
+  readonly sequence: number;
+  readonly updated_by: string;
+  readonly created_at: number;
+  readonly updated_at: number;
+
+  constructor(group: AllGroups) {
+    (this._id = group._id),
+      (this.parent = group.parent),
+      (this.parent_id = group.parent_id),
+      (this.name = group.name),
+      (this.archived = group.archived),
+      (this.sequence = group.sequence),
+      (this.updated_by = group.updated_by),
+      (this.created_at = group.created_at),
+      (this.updated_at = group.updated_at);
+  }
+}
+
+export class CreateParameterTestResponse {
+  readonly archived: boolean;
+  readonly created_at: number;
+  readonly code: number;
+  readonly decimal_length: string;
+  readonly default_notes: string;
+  readonly description: string;
+  readonly duration: any;
+  readonly is_template: boolean;
+  readonly name: string;
+  readonly parametric_only: boolean;
+  readonly print_on_separate_page: boolean;
+  readonly report_template: number;
+  readonly res_input_options: any;
+  readonly res_input_type: string;
+  readonly sample_quantity: string;
+  readonly sequence: number;
+  readonly single_or_group: string;
+  readonly specimen_id: string;
+  readonly status: number;
+  readonly tags: string;
+  readonly test_category_id: string;
+  readonly title_for_print: string;
+  readonly uom_id: string;
+  readonly updated_at: number;
+  readonly updated_by: string;
+  readonly _id: string;
+
+  constructor(paramTest: CreateParameterTestResponse) {
+    (this.archived = paramTest.archived),
+      (this.created_at = paramTest.created_at),
+      (this.code = paramTest.code),
+      (this.decimal_length = paramTest.decimal_length),
+      (this.duration = paramTest.duration),
+      (this.default_notes = paramTest.default_notes),
+      (this.description = paramTest.description),
+      (this.is_template = paramTest.is_template),
+      (this.name = paramTest.name),
+      (this.parametric_only = paramTest.parametric_only),
+      (this.print_on_separate_page = paramTest.print_on_separate_page),
+      (this.report_template = paramTest.report_template),
+      (this.res_input_options = paramTest.res_input_options),
+      (this.res_input_type = paramTest.res_input_type),
+      (this.sample_quantity = paramTest.sample_quantity),
+      (this.sequence = paramTest.sequence),
+      (this.single_or_group = paramTest.single_or_group),
+      (this.specimen_id = paramTest.specimen_id),
+      (this.status = paramTest.status),
+      (this.tags = paramTest.tags),
+      (this.test_category_id = paramTest.test_category_id),
+      (this.title_for_print = paramTest.title_for_print),
+      (this.uom_id = paramTest.uom_id),
+      (this.updated_at = paramTest.updated_at),
+      (this.updated_by = paramTest.updated_by),
+      (this._id = paramTest._id);
+  }
+}
+
+export class SingleParameterTestResponse {
+  readonly archived: boolean;
+  readonly child_test_id: string;
+  readonly created_at: number;
+  readonly parent_test_id: string;
+  readonly sequence: number;
+  readonly updated_at: number;
+  readonly updated_by: string;
+  readonly _id: string;
+  readonly childTest: any;
+
+  constructor(unassignedParameter: SingleParameterTestResponse) {
+    (this.archived = unassignedParameter.archived),
+      (this.child_test_id = unassignedParameter.child_test_id),
+      (this.created_at = unassignedParameter.created_at),
+      (this.parent_test_id = unassignedParameter.parent_test_id),
+      (this.sequence = unassignedParameter.sequence),
+      (this.updated_at = unassignedParameter.updated_at),
+      (this._id = unassignedParameter._id),
+      (this.updated_by = unassignedParameter.updated_by),
+      (this.childTest = unassignedParameter.childTest);
   }
 }

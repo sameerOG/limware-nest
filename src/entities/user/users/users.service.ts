@@ -5,12 +5,19 @@ import { UserRequestDto } from '../dto/request.dto';
 import { SingleUserDto, UserDto } from '../dto/response.dto';
 import { Users } from '../user.entity';
 import * as bcrypt from 'bcryptjs';
+import { EmployeeFacility } from 'src/entities/employee/employee_facility.entity';
+import { Role } from 'src/entities/role/role.entity';
 
 const SALT_ROUNDS = 10;
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectRepository(Users) private usersRep: Repository<Users>) {}
+  constructor(
+    @InjectRepository(Users) private usersRep: Repository<Users>,
+    @InjectRepository(EmployeeFacility)
+    private empFacilityRep: Repository<EmployeeFacility>,
+    @InjectRepository(Role) private rolesRep: Repository<Role>,
+  ) {}
 
   async getUsers(
     skip: number,
@@ -29,6 +36,36 @@ export class UsersService {
       take,
     });
     return users;
+  }
+
+  async reLoggedInUserPermissions(user): Promise<any> {
+    if (user.isSuperUser === 0 && user.portal === 'limware') {
+      const employeeFacility = await this.empFacilityRep
+        .createQueryBuilder('employee_facility')
+        .select('employee_facility.*')
+        .where('employee_facility.employee_id = :employee_id', {
+          employee_id: user.employee_id,
+        })
+        .andWhere('employee_facility.facility_id = :facility_id', {
+          facility_id: user.facility_id,
+        })
+        .getRawOne();
+
+      const permissions = [];
+      const role_ids = employeeFacility.role_ids
+        ? JSON.parse(employeeFacility.role_ids)
+        : [];
+      for (let i = 0; i < role_ids.length; i++) {
+        const role = await this.rolesRep.findOne({
+          where: { _id: role_ids[i] },
+        });
+        if (role.permissions) {
+          permissions.push(role.permissions);
+        }
+      }
+      return permissions;
+    }
+    return null;
   }
 
   async getUser(id: string): Promise<SingleUserDto> {

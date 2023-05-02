@@ -58,14 +58,15 @@ export class ProfileResponse {
   readonly created_at: number;
   readonly email: string;
   readonly _id: string;
-  readonly full_name:string;
-  readonly mobile_number:string;
-  readonly password_hash:string;
-  readonly status:number;
-  readonly updated_at:number;
-  readonly updated_by:string;
-  readonly username: string
-  readonly contact_numbers:any
+  readonly full_name: string;
+  readonly mobile_number: string;
+  readonly password_hash: string;
+  readonly status: number;
+  readonly updated_at: number;
+  readonly updated_by: string;
+  readonly username: string;
+  readonly contact_numbers: any;
+  readonly profile_image_name?: string;
 
   constructor(auth: ProfileResponse) {
     (this.address = auth.address),
@@ -80,6 +81,7 @@ export class ProfileResponse {
       (this.updated_by = auth.updated_by),
       (this.username = auth.username),
       (this.contact_numbers = auth.contact_numbers),
+      (this.profile_image_name = auth.profile_image_name),
       (this.email = auth.email);
   }
 }

@@ -8,8 +8,6 @@ import {
   JoinColumn,
   ManyToOne,
 } from 'typeorm';
-import { Department } from '../department/department.entity';
-import { Facility } from '../Facility/facility.entity';
 import { Laboratory } from '../laboratory/laboratory.entity';
 import { TestParameter } from './test_parameter.entity';
 
@@ -37,7 +35,7 @@ export class TestGroup {
   parent!: string;
 
   @Column()
-  parent_id!: number;
+  parent_id!: string;
 
   @Column({ default: null })
   sequence!: number;

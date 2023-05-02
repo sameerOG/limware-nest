@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Users } from '../user/user.entity';
 import {
   AuthRequest,
+  ChangePasswordRequest,
   LoginIntoFacility,
   RegisterRequest,
   ValidateOtpRequest,
@@ -17,6 +18,9 @@ import { Facility } from '../Facility/facility.entity';
 import { Laboratory } from '../laboratory/laboratory.entity';
 import { Employee } from '../employee/employee.entity';
 import ShortUniqueId from 'short-unique-id';
+import axios from 'axios';
+import { Error } from 'src/common/global-dto.dto';
+
 const uid = new ShortUniqueId({ length: 6, dictionary: 'number' });
 @Injectable()
 export class AuthService {
@@ -35,7 +39,7 @@ export class AuthService {
     private empRep: Repository<Employee>,
   ) {}
 
-  async login(body: AuthRequest): Promise<AuthDto> {
+  async login(body: AuthRequest): Promise<AuthDto | Error[]> {
     const user = await this.userRep
       .createQueryBuilder('u')
       .select('u.*, JSON_AGG(f.*) as facilities')
@@ -53,7 +57,6 @@ export class AuthService {
       .getRawOne();
 
     const facilities = [];
-    console.log(user.facilities);
     user.facilities?.map((facility) => {
       if (facility) {
         const { name, type, _id, unique_id } = facility;
@@ -69,7 +72,6 @@ export class AuthService {
         });
       }
     });
-
     if (user) {
       const authenticated = await bcrypt.compare(
         body.password,
@@ -85,6 +87,7 @@ export class AuthService {
           status,
           username,
           facility_id,
+          _id,
         } = user;
         const obj: any = {
           email,
@@ -98,6 +101,7 @@ export class AuthService {
           user_id: {
             $oid: user._id,
           },
+          _id,
         };
 
         const token = jwt.sign(obj, 'secretOrKey');
@@ -122,10 +126,13 @@ export class AuthService {
         }
         return obj;
       } else {
-        return null;
+        console.log('user', authenticated);
+        throw [
+          { field: 'password', message: 'Incorrect username or password' },
+        ];
       }
     } else {
-      return null;
+      return [{ field: 'password', message: 'Incorrect username or password' }];
     }
   }
 
@@ -134,7 +141,7 @@ export class AuthService {
       where: { access_token: token },
     });
     if (userToken) {
-      await this.userTokenRep.delete(userToken._id)
+      await this.userTokenRep.delete(userToken._id);
       return true;
     } else {
       return false;
@@ -143,17 +150,80 @@ export class AuthService {
 
   async getProfile(id: string): Promise<ProfileResponse> {
     const user: Users = await this.userRep.findOne({
-      select:['address','city','created_at','email','full_name','mobile_number','password_hash','status','updated_at','username','_id','contact_numbers'],
+      select: [
+        'address',
+        'city',
+        'created_at',
+        'email',
+        'full_name',
+        'mobile_number',
+        'password_hash',
+        'status',
+        'updated_at',
+        'username',
+        '_id',
+        'contact_numbers',
+      ],
       where: { _id: id },
     });
-    const {...rest} = user;
+    const { ...rest } = user;
     return new ProfileResponse({
       ...rest,
-      created_at:user.created_at.getTime(),
-      updated_by:id,
-      updated_at:user.updated_at.getTime()
-    })
-    
+      created_at: user.created_at.getTime(),
+      updated_by: id,
+      updated_at: user.updated_at.getTime(),
+    });
+  }
+
+  async updateProfile(body: any, loggedInUser): Promise<ProfileResponse> {
+    await this.userRep.update(loggedInUser._id, body);
+    const savedUser = await this.userRep.findOne({
+      where: { _id: loggedInUser._id },
+    });
+    const { ...rest } = savedUser;
+    return new ProfileResponse({
+      ...rest,
+      created_at: savedUser.created_at.getTime(),
+      updated_by: loggedInUser._id,
+      updated_at: savedUser.updated_at.getTime(),
+    });
+  }
+
+  async getProfileImage(user): Promise<any> {
+    const data = await this.userRep.findOne({ where: { _id: user._id } });
+    if (data) {
+      const imageUrl = `${process.env.BASE_URL}/Uploads/images/${data.profile_image_name}`;
+      // const response = await axios.get(imageUrl);
+      // console.log('response', response);
+      // const imageBuffer = response.data;
+      return imageUrl;
+    }
+  }
+
+  async changePassword(body: ChangePasswordRequest, user): Promise<any> {
+    const data = await this.userRep.findOne({ where: { _id: user._id } });
+    if (data) {
+      const authenticated = await bcrypt.compare(
+        body.current_password,
+        data['password'],
+      );
+
+      if (authenticated) {
+        if (body.new_password === body.confirm_password) {
+          const hashed = await bcrypt.hashSync(body.new_password, 10);
+          data.password = hashed;
+          data.password_hash = hashed;
+          await this.userRep.update(data._id, data);
+          return data;
+        } else {
+          return null;
+        }
+      } else {
+        throw [
+          { field: 'current_password', message: 'Incorrect current password' },
+        ];
+      }
+    }
   }
 
   async loginIntoFacility(body: LoginIntoFacility): Promise<boolean> {
@@ -194,9 +264,8 @@ export class AuthService {
         { mobile_number: body.username },
       ],
     });
-    console.log('username', user);
     if (user) {
-      return { errors: true, user_id: user._id, full_name: user.full_name };
+      throw [{ field: 'full_name', message: 'User already exists' }];
     } else {
       const customer = await this.createCustomer(body);
       const facility = await this.createFacility(customer, body);
