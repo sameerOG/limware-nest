@@ -37,7 +37,7 @@ export class FacilitiesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send([]);
+      response.status(422).send([]);
     }
   }
 
@@ -49,11 +49,12 @@ export class FacilitiesController {
     try {
       const customer_id: string = query['customer_id'];
       const data = await this.facilityService.getAllByCustomer(customer_id);
+      console.log('data', data);
       response.status(200).send(data);
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send([]);
+      response.status(422).send([]);
     }
   }
 
@@ -104,7 +105,7 @@ export class FacilitiesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send([]);
+        response.status(422).send([]);
       }
     } catch (err) {
       console.log('err in catch', err);

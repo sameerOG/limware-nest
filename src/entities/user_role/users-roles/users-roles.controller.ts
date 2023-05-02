@@ -39,7 +39,7 @@ export class UsersRolesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send([]);
+      response.status(422).send([]);
     }
   }
 
@@ -54,11 +54,11 @@ export class UsersRolesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send([]);
+        response.status(422).send([]);
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send([]);
+      response.status(422).send([]);
     }
   }
 

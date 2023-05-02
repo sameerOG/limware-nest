@@ -1,47 +1,53 @@
-import { IsString, IsNotEmpty, IsEmail, IsNumber, IsOptional } from "class-validator";
+import {
+  IsString,
+  IsNotEmpty,
+  IsEmail,
+  IsNumber,
+  IsOptional,
+} from 'class-validator';
 
 export class UserRequestDto {
-    @IsString()
-    @IsNotEmpty()
-    full_name: string;
-  
-    @IsEmail()
-    @IsNotEmpty()
-    email: string;
-  
-    @IsNumber()
-    @IsNotEmpty()
-    status: number;
-  
-    @IsString()
-    @IsNotEmpty()
-    username: string;
+  @IsString()
+  @IsNotEmpty()
+  full_name: string;
 
-    @IsNumber()
-    @IsOptional()
-    isSuperUser:number
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
 
-    @IsString()
-    @IsNotEmpty()
-    portal: string;
+  @IsNumber()
+  @IsNotEmpty()
+  status: number;
 
-    @IsString()
-    @IsOptional()
-    password: string;
+  @IsString()
+  @IsNotEmpty()
+  username: string;
 
-    @IsString()
-    @IsOptional()
-    password_hash: string;
+  @IsNumber()
+  @IsOptional()
+  isSuperUser: number;
 
-    @IsString()
-    @IsNotEmpty()
-    mobile_number: string;
+  @IsString()
+  @IsOptional()
+  portal: string;
 
-    @IsString()
-    @IsNotEmpty()
-    address: string;
+  @IsString()
+  @IsOptional()
+  password: string;
 
-    @IsString()
-    @IsNotEmpty()
-    city: string;
+  @IsString()
+  @IsOptional()
+  password_hash: string;
+
+  @IsString()
+  @IsNotEmpty()
+  mobile_number: string;
+
+  @IsString()
+  @IsNotEmpty()
+  address: string;
+
+  @IsString()
+  @IsNotEmpty()
+  city: string;
 }

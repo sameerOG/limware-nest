@@ -85,6 +85,37 @@ export class LaboratoriesService {
     });
   }
 
+  async getByCustomer(id: string): Promise<LabRequestDto[]> {
+    const data: any = await this.labRep.find({
+      select: [
+        '_id',
+        'mobile_number',
+        'name',
+        'status',
+        'type',
+        'unique_id',
+        'created_at',
+        'updated_at',
+      ],
+      relations: ['customer_id', 'facility_id'],
+    });
+    const filterdData = data?.filter((info) => {
+      return info.customer_id?._id === id;
+    });
+    filterdData.map((lab) => {
+      const { ...rest } = lab;
+      return new LabRequestDto({
+        ...rest,
+        customer_id: lab.customer_id?._id,
+        facility_id: lab.facility_id?._id,
+        created_at: lab.created_at?.getTime(),
+        updated_at: lab.updated_at?.getTime(),
+        updated_by: '',
+      });
+    });
+    return filterdData;
+  }
+
   async add(body: LaboratoryRequestDto): Promise<LabRequestDto> {
     const data = await this.labRep.save(body);
     const { ...rest } = data;

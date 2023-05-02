@@ -17,6 +17,7 @@ import { Facility } from '../Facility/facility.entity';
 import { UserAccessToken } from '../user_access_token/user_access_token.entity';
 import { UserDepartment } from '../user_department/user_department.entity';
 import { UserRole } from '../user_role/user_role.entity';
+import { UserMapping } from './user_mapping.entity';
 
 @Entity({ name: 'user' })
 export class Users {
@@ -49,6 +50,9 @@ export class Users {
 
   @OneToMany(() => UserDepartment, (user_department) => user_department.user)
   user_department: UserDepartment[];
+
+  @OneToMany(() => UserMapping, (user_mapping) => user_mapping.user_id)
+  user_mapping: UserMapping[];
 
   @Column({ type: 'json', default: null })
   contact_numbers!: string;

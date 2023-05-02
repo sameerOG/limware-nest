@@ -11,7 +11,7 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { query, Response } from 'express';
 import jwtDecode from 'jwt-decode';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { UserRequestDto } from '../dto/request.dto';
@@ -66,18 +66,25 @@ export class UsersController {
   async getUser(
     @Res() response: Response,
     @Param('id') id,
+    @Query() query,
   ): Promise<SingleUserDto> {
     try {
-      let data = await this.userService.getUser(id);
+      const lab_id = query['laboratory_id'];
+      let data;
+      if (lab_id) {
+        data = await this.userService.getLabUsers(lab_id);
+      } else {
+        data = await this.userService.getUser(id);
+      }
       if (data) {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send([]);
+        response.status(422).send([]);
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send([]);
+      response.status(422).send([]);
     }
   }
 
@@ -107,6 +114,32 @@ export class UsersController {
     @Body() body: UserRequestDto,
   ): Promise<SingleUserDto> {
     try {
+      if (!body.portal) {
+        body.portal = 'limware';
+      }
+      let data = await this.userService.addUser(body);
+      console.log('data', data);
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        response.status(400).send([]);
+      }
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({});
+    }
+  }
+
+  @Post('/')
+  async create(
+    @Res() response: Response,
+    @Body() body: UserRequestDto,
+  ): Promise<SingleUserDto> {
+    try {
+      if (!body.portal) {
+        body.portal = 'limware';
+      }
       let data = await this.userService.addUser(body);
       console.log('data', data);
       if (data) {

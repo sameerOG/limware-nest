@@ -96,6 +96,26 @@ export class UsersService {
     });
   }
 
+  async getLabUsers(id: string): Promise<SingleUserDto[]> {
+    console.log('before');
+    const users = await this.usersRep
+      .createQueryBuilder('user')
+      .leftJoinAndSelect('user.user_mapping', 'user_mapping')
+      .where('user_mapping.laboratory_id = :laboratory_id', {
+        laboratory_id: id,
+      })
+      .getRawMany();
+    users.map((user) => {
+      const { ...rest } = user;
+      return new SingleUserDto({
+        ...rest,
+        contact_numbers: user.contact_numbers,
+        created_at: user.created_at.getTime(), // set created_at field as timestamp
+      });
+    });
+    return users;
+  }
+
   async updateUser(id: string, data: UserRequestDto): Promise<SingleUserDto> {
     try {
       await this.usersRep.update(id, data);

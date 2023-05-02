@@ -38,7 +38,7 @@ export class SpecimensController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send([]);
+      response.status(422).send([]);
     }
   }
 
@@ -50,7 +50,7 @@ export class SpecimensController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send([]);
+      response.status(422).send([]);
     }
   }
 
@@ -66,7 +66,7 @@ export class SpecimensController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send([]);
+        response.status(422).send([]);
       }
     } catch (err) {
       console.log('err in catch', err);
@@ -86,7 +86,7 @@ export class SpecimensController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send([]);
+        response.status(422).send([]);
       }
     } catch (err) {
       console.log('err in catch', err);
@@ -104,7 +104,7 @@ export class SpecimensController {
       if (data.affected > 0) {
         response.status(204).send('Specimen deleted successfully');
       } else {
-        response.status(400).send([]);
+        response.status(422).send([]);
       }
     } catch (err) {
       console.log('err in catch', err);

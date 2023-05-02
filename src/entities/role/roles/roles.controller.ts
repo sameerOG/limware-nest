@@ -36,11 +36,11 @@ export class RolesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send([]);
+        response.status(422).send([]);
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send([]);
+      response.status(422).send([]);
     }
   }
 
@@ -75,7 +75,7 @@ export class RolesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send([]);
+        response.status(422).send([]);
       }
     } catch (err) {
       console.log('err in catch', err);
@@ -94,7 +94,7 @@ export class RolesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send([]);
+        response.status(422).send([]);
       }
     } catch (err) {
       console.log('err in catch', err);
@@ -112,7 +112,7 @@ export class RolesController {
       if (data.affected > 0) {
         response.status(204).send('User deleted successfully');
       } else {
-        response.status(400).send([]);
+        response.status(422).send([]);
       }
     } catch (err) {
       console.log('err in catch', err);

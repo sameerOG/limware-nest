@@ -9,6 +9,7 @@ import {
   ManyToOne,
 } from 'typeorm';
 import { Laboratory } from '../laboratory/laboratory.entity';
+import { Users } from './user.entity';
 
 @Entity({ name: 'user_mapping' })
 export class UserMapping {
@@ -16,6 +17,8 @@ export class UserMapping {
   _id!: string;
 
   @Column()
+  @ManyToOne(() => Users, (user) => user.user_mapping)
+  @JoinColumn({ name: 'user_id' })
   user_id!: number;
 
   @Column()

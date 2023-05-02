@@ -58,20 +58,26 @@ export class LaboratoriesController {
     }
   }
 
-  @Get('/:id')
+  @Get('/:id') // getByCustomer api & get By id APi both handled in this
   async getSingle(
     @Res() response: Response,
     @Param('id') id: string,
     @Query() query,
-  ): Promise<LabRequestDto> {
+  ): Promise<any> {
     try {
       const queryFields = query?.expand?.split(',');
-      let data = await this.labService.getSingle(id, queryFields);
+      const customer_id = query['customer_id'];
+      let data;
+      if (customer_id) {
+        data = await this.labService.getByCustomer(customer_id);
+      } else {
+        data = await this.labService.getSingle(id, queryFields);
+      }
       response.status(200).send(data);
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send([]);
+      response.status(403).send([]);
     }
   }
 
@@ -86,7 +92,7 @@ export class LaboratoriesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        response.status(400).send({});
       }
     } catch (err) {
       console.log('err in catch', err);
@@ -106,7 +112,7 @@ export class LaboratoriesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        response.status(400).send({});
       }
     } catch (err) {
       console.log('err in catch', err);
@@ -125,7 +131,7 @@ export class LaboratoriesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        response.status(400).send({});
       }
     } catch (err) {
       console.log('err in catch', err);
