@@ -265,7 +265,7 @@ export class AuthService {
       ],
     });
     if (user) {
-      throw [{ field: 'full_name', message: 'User already exists' }];
+      throw [{ field: 'username', message: 'User already exists' }];
     } else {
       const customer = await this.createCustomer(body);
       const facility = await this.createFacility(customer, body);
@@ -297,7 +297,17 @@ export class AuthService {
       city,
       status: 1,
     };
-    return await this.customerRep.save(obj);
+    const customer = await this.customerRep.save(obj);
+    if (customer) {
+      return customer;
+    } else {
+      throw [
+        {
+          field: 'Error',
+          message: 'Problem saving customer',
+        },
+      ];
+    }
   }
 
   async createFacility(
@@ -314,7 +324,17 @@ export class AuthService {
       type: 'main',
       customer_id: customer,
     };
-    return await this.facilityRep.save(obj);
+    const facility = await this.facilityRep.save(obj);
+    if (facility) {
+      return facility;
+    } else {
+      throw [
+        {
+          field: 'Error',
+          message: 'Problem saving facility',
+        },
+      ];
+    }
   }
 
   async createLaboratory(
@@ -331,7 +351,17 @@ export class AuthService {
       customer_id: customer,
       facility_id: facility,
     };
-    return await this.labRep.save(obj);
+    const lab = await this.labRep.save(obj);
+    if (lab) {
+      return lab;
+    } else {
+      throw [
+        {
+          field: 'Error',
+          message: 'Problem saving laboratory',
+        },
+      ];
+    }
   }
 
   async createEmployee(
@@ -350,7 +380,17 @@ export class AuthService {
       facility_id: facility,
       gender: '',
     };
-    return await this.empRep.save(obj);
+    const employee = await this.empRep.save(obj);
+    if (employee) {
+      return employee;
+    } else {
+      throw [
+        {
+          field: 'Error',
+          message: 'Problem saving employee',
+        },
+      ];
+    }
   }
 
   async createUser(
@@ -373,7 +413,17 @@ export class AuthService {
       portal: 'limware',
       full_name: data.name,
     };
-    return await this.userRep.save(obj);
+    const user = await this.userRep.save(obj);
+    if (user) {
+      return user;
+    } else {
+      throw [
+        {
+          field: 'Error',
+          message: 'Problem saving user',
+        },
+      ];
+    }
   }
 
   async generateVerificationPin(user_id: string): Promise<Users> {
