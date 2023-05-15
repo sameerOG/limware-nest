@@ -11,7 +11,7 @@ export class UserRequestDto {
   @IsNotEmpty()
   full_name: string;
 
-  @IsEmail()
+  @IsString()
   @IsNotEmpty()
   email: string;
 

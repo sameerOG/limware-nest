@@ -20,9 +20,6 @@ import { AuthService } from './auth.service';
       Laboratory,
       Employee,
     ]),
-    ServeStaticModule.forRoot({
-      rootPath: 'src/common/uploads',
-    }),
   ],
   controllers: [AuthController],
   providers: [AuthService],

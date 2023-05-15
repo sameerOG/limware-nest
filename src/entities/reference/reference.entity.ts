@@ -29,7 +29,7 @@ export class Reference {
   appointment: Appointment[];
 
   @Column()
-  facility_id!: number;
+  facility_id!: string;
 
   @Column({ default: null })
   address!: string;

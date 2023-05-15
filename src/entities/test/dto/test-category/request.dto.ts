@@ -26,7 +26,7 @@ export class TestCategoryRequestDto {
   title_for_print: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   type: string;
 
   @IsNumber()

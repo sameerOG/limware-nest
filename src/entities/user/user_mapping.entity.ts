@@ -19,7 +19,7 @@ export class UserMapping {
   @Column()
   @ManyToOne(() => Users, (user) => user.user_mapping)
   @JoinColumn({ name: 'user_id' })
-  user_id!: number;
+  user_id!: string;
 
   @Column()
   facility_id!: number;

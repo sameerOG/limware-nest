@@ -6,7 +6,10 @@ import { LabTestRateListItem } from 'src/entities/lab_test_rate/lab_test_rate_li
 import { PatientTest } from 'src/entities/patient/patient_test.entity';
 import { PatientTestParameterResult } from 'src/entities/patient/patient_test_parameter_result.entity';
 import { FindOptionsWhere, Like, Repository } from 'typeorm';
-import { TestNormalRangeRequest, TestRequestDto } from '../dto/test-category/request.dto';
+import {
+  TestNormalRangeRequest,
+  TestRequestDto,
+} from '../dto/test-category/request.dto';
 import {
   SingleTestResponseDto,
   Specimen,
@@ -98,7 +101,12 @@ export class TestsService {
           'default_notes',
           'description',
         ],
-        relations: ['specimen_id', 'test_category_id', 'uom_id','test_normal_range'],
+        relations: [
+          'specimen_id',
+          'test_category_id',
+          'uom_id',
+          'test_normal_range',
+        ],
         where: { _id: id },
       });
 
@@ -117,7 +125,7 @@ export class TestsService {
         test_category_id: data.test_category_id?._id,
         specimen_id: data.specimen_id?._id,
         uom_id: data.uom_id?._id,
-        activeNormalRanges:data.test_normal_range
+        activeNormalRanges: data.test_normal_range,
       });
     } catch (err) {
       return err;
@@ -204,7 +212,12 @@ export class TestsService {
           'default_notes',
           'description',
         ],
-        relations: ['specimen_id', 'test_category_id', 'uom_id','test_normal_range'],
+        relations: [
+          'specimen_id',
+          'test_category_id',
+          'uom_id',
+          'test_normal_range',
+        ],
         where: { _id: id },
       });
       const { ...rest } = savedData;
@@ -222,7 +235,7 @@ export class TestsService {
         test_category_id: savedData.test_category_id?._id,
         specimen_id: savedData.specimen_id?._id,
         uom_id: savedData.uom_id?._id,
-        activeNormalRanges:savedData.test_normal_range
+        activeNormalRanges: savedData.test_normal_range,
       });
     } catch (err) {
       return err;
@@ -282,36 +295,40 @@ export class TestsService {
         body.single_or_group === 'single'
           ? await this.createSingleTest(body, user)
           : await this.createGroupTest(body, user);
-          console.log("test",test)
-          const savedData = await this.testRep.findOne({
-            select: [
-              '_id',
-              'name',
-              'ref_code',
-              'title_for_print',
-              'single_or_group',
-              'res_input_type',
-              'tags',
-              'is_template',
-              'res_input_options',
-              'sequence',
-              'code',
-              'status',
-              'parametric_only',
-              'archived',
-              'created_at',
-              'report_template_name',
-              'sample_quantity',
-              'duration',
-              'report_template',
-              'default_notes',
-              'description',
-              'created_at',
-              'updated_at'
-            ],
-            relations: ['specimen_id', 'test_category_id', 'uom_id','test_normal_range'],
-            where: { _id: test._id },
-          });
+      const savedData = await this.testRep.findOne({
+        select: [
+          '_id',
+          'name',
+          'ref_code',
+          'title_for_print',
+          'single_or_group',
+          'res_input_type',
+          'tags',
+          'is_template',
+          'res_input_options',
+          'sequence',
+          'code',
+          'status',
+          'parametric_only',
+          'archived',
+          'created_at',
+          'report_template_name',
+          'sample_quantity',
+          'duration',
+          'report_template',
+          'default_notes',
+          'description',
+          'created_at',
+          'updated_at',
+        ],
+        relations: [
+          'specimen_id',
+          'test_category_id',
+          'uom_id',
+          'test_normal_range',
+        ],
+        where: { _id: test._id },
+      });
       const { ...rest } = savedData;
       return new SingleTestResponseDto({
         ...rest,
@@ -327,7 +344,7 @@ export class TestsService {
         test_category_id: savedData.test_category_id?._id,
         specimen_id: savedData.specimen_id?._id,
         uom_id: savedData.uom_id?._id,
-        activeNormalRanges:savedData.test_normal_range
+        activeNormalRanges: savedData.test_normal_range,
       });
     } catch (err) {
       return err;
@@ -520,7 +537,7 @@ export class TestsService {
         await this.savePrice(rateListData);
       }
     }
-    return savedTest
+    return savedTest;
   }
 
   async checkForCustomTests(user, test_id: string, test_category_id: string) {
@@ -622,7 +639,7 @@ export class TestsService {
       Object.assign(whereCondition, { _id: id });
       console.log('before');
       const test = await this.testRep.findOne({
-        where:whereCondition,
+        where: whereCondition,
         relations: [
           'test_normal_range',
           'test_parameter_parent',
@@ -699,7 +716,7 @@ export class TestsService {
           'test_id',
           'updated_at',
         ],
-        relations:['test_id'],
+        relations: ['test_id'],
         where: { _id: id },
       });
 
@@ -709,19 +726,22 @@ export class TestsService {
         created_at: data.created_at.getTime(),
         updated_at: data.updated_at.getTime(),
         updated_by: '',
-        test_id:data.test_id._id
+        test_id: data.test_id._id,
       });
     } catch (err) {
       return err;
     }
   }
 
-  async updateTestNormalRange(id: string,data:TestNormalRangeRequest): Promise<TestNormalRangeResponse> {
+  async updateTestNormalRange(
+    id: string,
+    data: TestNormalRangeRequest,
+  ): Promise<TestNormalRangeResponse> {
     try {
-      const body:any = {...data}
-      body.min_value = body.min_value == '' ? 0 : body.min_value
-      body.max_value = body.max_value == '' ? 0 : body.max_value
-      await this.testNormalRangeRep.update(id,body)
+      const body: any = { ...data };
+      body.min_value = body.min_value == '' ? 0 : body.min_value;
+      body.max_value = body.max_value == '' ? 0 : body.max_value;
+      await this.testNormalRangeRep.update(id, body);
       const savedData = await this.testNormalRangeRep.findOne({
         select: [
           '_id',
@@ -737,7 +757,7 @@ export class TestsService {
           'test_id',
           'updated_at',
         ],
-        relations:['test_id'],
+        relations: ['test_id'],
         where: { _id: id },
       });
 
@@ -747,19 +767,21 @@ export class TestsService {
         created_at: savedData.created_at.getTime(),
         updated_at: savedData.updated_at.getTime(),
         updated_by: '',
-        test_id:savedData.test_id._id
+        test_id: savedData.test_id._id,
       });
     } catch (err) {
       return err;
     }
   }
 
-  async addTestNormalRange(data:TestNormalRangeRequest): Promise<TestNormalRangeResponse> {
+  async addTestNormalRange(
+    data: TestNormalRangeRequest,
+  ): Promise<TestNormalRangeResponse> {
     try {
-      const body:any = {...data}
-      body.min_value = body.min_value == '' ? 0 : body.min_value
-      body.max_value = body.max_value == '' ? 0 : body.max_value
-      const savedTestRange = await this.testNormalRangeRep.save(body)
+      const body: any = { ...data };
+      body.min_value = body.min_value == '' ? 0 : body.min_value;
+      body.max_value = body.max_value == '' ? 0 : body.max_value;
+      const savedTestRange = await this.testNormalRangeRep.save(body);
       const savedData = await this.testNormalRangeRep.findOne({
         select: [
           '_id',
@@ -775,7 +797,7 @@ export class TestsService {
           'test_id',
           'updated_at',
         ],
-        relations:['test_id'],
+        relations: ['test_id'],
         where: { _id: savedTestRange._id },
       });
 
@@ -785,7 +807,7 @@ export class TestsService {
         created_at: savedData.created_at.getTime(),
         updated_at: savedData.updated_at.getTime(),
         updated_by: '',
-        test_id:savedData.test_id._id
+        test_id: savedData.test_id._id,
       });
     } catch (err) {
       return err;
@@ -794,7 +816,7 @@ export class TestsService {
 
   async deleteNormalRange(id: string): Promise<void> {
     try {
-      await this.testNormalRangeRep.delete(id)
+      await this.testNormalRangeRep.delete(id);
     } catch (err) {
       return err;
     }

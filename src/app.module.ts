@@ -26,6 +26,7 @@ import { DepartmentsModule } from './entities/department/departments/departments
 import { AuthModule } from './entities/auth/auth.module';
 import { TestsModule } from './entities/test/tests/tests.module';
 import { TestParametersModule } from './entities/test/test-parameters/test-parameters.module';
+import { AppointmentsModule } from './entities/appointment/appointments/appointments.module';
 
 const envFilePath: string = getEnvPath(`/common/envs`);
 dotenv.config();
@@ -72,6 +73,7 @@ dotenv.config();
     AuthModule,
     TestsModule,
     TestParametersModule,
+    AppointmentsModule,
   ],
   controllers: [],
   providers: [],
