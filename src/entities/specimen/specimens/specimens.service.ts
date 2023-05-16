@@ -19,7 +19,7 @@ export class SpecimensService {
     let where: any = {}; // Declare an empty where object
 
     if (text) {
-      where.full_name = Like(`%${text}%`);
+      where = [{ name: Like(`%${text}%`) }, { description: Like(`%${text}%`) }];
     }
     const specimens = await this.specimenRep.find({
       select: ['_id', 'name', 'description'],

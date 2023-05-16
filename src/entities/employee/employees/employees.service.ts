@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { Brackets, Like, Repository } from 'typeorm';
 import { EmployeeRequestDto } from '../dto/request.dto';
 import { EmployeeResponseDto } from '../dto/response.dto';
 import { Employee } from '../employee.entity';
@@ -42,7 +42,16 @@ export class EmployeesService {
       .take(take);
 
     if (text) {
-      query = query.where('employee.name LIKE :name', { name: `%${text}%` });
+      query = query.where(
+        new Brackets((qb) => {
+          qb.where('employee.name LIKE :name', { name: `%${text}%` })
+            .orWhere('employee.mobile_number LIKE :mobile_number', {
+              mobile_number: `%${text}%`,
+            })
+            .orWhere('employee.city LIKE :city', { city: `%${text}%` });
+          // Add more OR conditions for other fields as needed
+        }),
+      );
     }
 
     const data = await query.getRawMany();

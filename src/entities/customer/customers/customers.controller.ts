@@ -28,9 +28,8 @@ export class CustomersController {
     try {
       const perpage = query['per-page'] ? query['per-page'] : 25;
       const page = query['page'] ? query['page'] : 1;
-      const text = query.filter?.username?.like;
+      const text = query.filter?.name;
       const skip = (page - 1) * perpage;
-
       let data = await this.customerService.getCustomers(skip, perpage, text);
       response.status(200).send(data);
       return data;

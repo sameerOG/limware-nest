@@ -27,7 +27,12 @@ export class UsersService {
     let where: any = {}; // Declare an empty where object
 
     if (text) {
-      where.full_name = Like(`%${text}%`);
+      where = [
+        { full_name: Like(`%${text}%`) },
+        { username: Like(`%${text}%`) },
+        { email: Like(`%${text}%`) },
+        { portal: Like(`%${text}%`) },
+      ];
     }
     const users = await this.usersRep.find({
       select: ['_id', 'full_name', 'email', 'portal', 'status', 'username'],

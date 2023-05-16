@@ -31,7 +31,7 @@ export class FacilitiesController {
       const page = query['page'] ? query['page'] : 1;
       const text = query.filter?.name;
       const skip = (page - 1) * perpage;
-
+      console.log('query', query);
       let data = await this.facilityService.getAll(skip, perpage, text);
       response.status(200).send(data);
       return data;

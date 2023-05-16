@@ -28,7 +28,7 @@ export class RolesController {
     try {
       const perpage = query['per-page'];
       const page = query['page'];
-      const text = query.filter?.username?.like;
+      const text = query.filter?.name?.like;
       const skip = (page - 1) * perpage;
 
       let data = await this.roleService.getRoles(skip, perpage, text);

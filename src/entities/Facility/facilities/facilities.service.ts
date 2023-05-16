@@ -23,7 +23,14 @@ export class FacilitiesService {
     take: number,
     text?: string,
   ): Promise<FacilityDto[]> {
-    const where: any = text && { name: Like(`%${text}%`) };
+    let where: any = {};
+    if (text) {
+      where = [
+        { name: Like(`%${text}%`) },
+        { mobile_number: Like(`%${text}%`) },
+        { city: Like(`%${text}%`) },
+      ];
+    }
     const data: any[] = await this.facilityRep.find({
       select: [
         '_id',

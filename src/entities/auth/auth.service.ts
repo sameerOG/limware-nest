@@ -40,6 +40,7 @@ export class AuthService {
   ) {}
 
   async login(body: AuthRequest): Promise<AuthDto | Error[]> {
+    const username = body.username.replace(/-/g, '');
     const user = await this.userRep
       .createQueryBuilder('u')
       .select('u.*, JSON_AGG(f.*) as facilities')
@@ -47,14 +48,16 @@ export class AuthService {
       .where(
         'u.email = :email OR u.username = :username OR u.mobile_number = :mobile_number',
         {
-          email: body.username,
-          username: body.username,
-          mobile_number: body.username,
+          email: username,
+          username: username,
+          mobile_number: username,
         },
       )
       .andWhere('u.status = :status', { status: 1 })
       .groupBy('u._id')
       .getRawOne();
+
+    console.log('user', user);
 
     const facilities = [];
     user.facilities?.map((facility) => {
@@ -281,12 +284,13 @@ export class AuthService {
         body,
       );
 
-      await this.generateVerificationPin(savedUser._id);
+      const otpCode = await this.generateVerificationPin(savedUser._id);
 
       return {
         errors: false,
         user_id: savedUser._id,
         full_name: savedUser.full_name,
+        otpCode: otpCode.otp,
       };
     }
   }

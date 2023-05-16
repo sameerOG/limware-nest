@@ -23,7 +23,11 @@ export class TestCategoriesService {
     let where: any = {}; // Declare an empty where object
 
     if (text) {
-      where.name = Like(`%${text}%`);
+      where = [
+        { name: Like(`%${text}%`) },
+        { description: Like(`%${text}%`) },
+        { title_for_print: Like(`%${text}%`) },
+      ];
     }
     const data = await this.testCategoryRep.find({
       select: ['_id', 'name', 'title_for_print', 'description'],

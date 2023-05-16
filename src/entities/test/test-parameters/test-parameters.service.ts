@@ -92,18 +92,12 @@ export class TestParametersService {
   ): Promise<CreateParameterTestResponse> {
     const data: any = { ...body };
     const testParameter = await this.testParameterRep.save(data);
-    const savedData = await this.testParameterRep
-      .createQueryBuilder('test_parameter')
-      .select('test_parameter.*')
-      .where('test_parameter._id = :_id', { _id: testParameter._id })
-      .getRawOne();
-
-    const { ...rest } = savedData;
+    const { ...rest } = testParameter;
     return new CreateParameterTestResponse({
       ...rest,
       updated_by: '',
-      created_at: savedData.created_at.getTime(),
-      updated_at: savedData.updated_at.getTime(),
+      created_at: testParameter.created_at.getTime(),
+      updated_at: testParameter.updated_at.getTime(),
     });
   }
 
@@ -113,11 +107,12 @@ export class TestParametersService {
     user,
   ): Promise<AllGroups[]> {
     const testGroups = this.testGroupRep
-      .createQueryBuilder('testGroup')
-      .where('testGroup.archived IS NULL OR testGroup.archived = false')
-      .andWhere('testGroup.parent = :parent', { parent })
-      .andWhere('testGroup.parent_id = :parent_id', { parent_id })
-      .orderBy('testGroup.sequence', 'ASC');
+      .createQueryBuilder('test_group')
+      .select('test_group.*')
+      .where('test_group.archived IS NULL OR test_group.archived = false')
+      .andWhere('test_group.parent = :parent', { parent })
+      .andWhere('test_group.parent_id = :parent_id', { parent_id })
+      .orderBy('test_group.sequence', 'ASC');
 
     if (user.portal === 'limware') {
       const labModel = await this.labRep
@@ -129,10 +124,10 @@ export class TestParametersService {
         .getRawOne();
 
       testGroups
-        .andWhere('testGroup.facility_id = :facility_id', {
+        .andWhere('test_group.facility_id = :facility_id', {
           facility_id: user.facility_id,
         })
-        .andWhere('testGroup.laboratory_id = :laboratory_id', {
+        .andWhere('test_group.laboratory_id = :laboratory_id', {
           laboratory_id: labModel._id,
         });
     }

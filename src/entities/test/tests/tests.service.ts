@@ -56,7 +56,12 @@ export class TestsService {
     let where: any = {}; // Declare an empty where object
 
     if (text) {
-      where.full_name = Like(`%${text}%`);
+      where = [
+        { name: Like(`%${text}%`) },
+        { title_for_print: Like(`%${text}%`) },
+        { single_or_group: Like(`%${text}%`) },
+        { tags: Like(`%${text}%`) },
+      ];
     }
     const data = await this.testRep.find({
       select: [
@@ -519,6 +524,12 @@ export class TestsService {
       if (normal_ranges?.length > 0) {
         //normal ranges logic here
       }
+
+      await this.checkForCustomTests(
+        user,
+        savedTest._id,
+        data.test_category_id,
+      );
 
       if (user.portal === 'limware') {
         const lab = await this.labRep

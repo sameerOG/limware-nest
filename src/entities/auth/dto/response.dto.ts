@@ -28,10 +28,12 @@ export class AuthRegisterDto {
   readonly errors: boolean;
   readonly user_id: string;
   readonly full_name: string;
+  readonly otpCode: string;
 
   constructor(auth: AuthRegisterDto) {
     (this.errors = auth.errors),
       (this.full_name = auth.full_name),
+      (this.otpCode = auth.otpCode),
       (this.user_id = auth.user_id);
   }
 }

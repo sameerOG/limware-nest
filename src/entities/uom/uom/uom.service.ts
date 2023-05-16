@@ -16,7 +16,7 @@ export class UomService {
     let where: any = {}; // Declare an empty where object
 
     if (text) {
-      where.name = Like(`%${text}%`);
+      where = [{ name: Like(`%${text}%`) }, { description: Like(`%${text}%`) }];
     }
     const data = await this.uomRep.find({
       select: ['_id', 'name', 'description'],

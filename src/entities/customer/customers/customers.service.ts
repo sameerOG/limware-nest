@@ -17,9 +17,14 @@ export class CustomersService {
     text?: string,
   ): Promise<CustomerDto[]> {
     let where: any = {}; // Declare an empty where object
-
     if (text) {
-      where.full_name = Like(`%${text}%`);
+      // where.full_name = Like(`%${text}%`);
+      where = [
+        { name: Like(`%${text}%`) },
+        { mobile_number: Like(`%${text}%`) },
+        { email: Like(`%${text}%`) },
+        { city: Like(`%${text}%`) },
+      ];
     }
     const customers = await this.customerRep.find({
       select: ['_id', 'name', 'city', 'email', 'mobile_number', 'status'],

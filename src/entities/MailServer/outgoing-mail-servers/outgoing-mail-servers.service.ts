@@ -20,7 +20,13 @@ export class OutgoingMailServersService {
     let where: any = {}; // Declare an empty where object
 
     if (text) {
-      where.title = Like(`%${text}%`);
+      where = [
+        { title: Like(`%${text}%`) },
+        { username: Like(`%${text}%`) },
+        { host: Like(`%${text}%`) },
+        { port: Like(`%${text}%`) },
+        { encryption: Like(`%${text}%`) },
+      ];
     }
     const data = await this.osm.find({
       select: [

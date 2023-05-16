@@ -17,7 +17,14 @@ export class LaboratoriesService {
     take: number,
     text?: string,
   ): Promise<LabResponseDto[]> {
-    const where: any = text && { name: Like(`%${text}%`) };
+    let where: any = {};
+    if (text) {
+      where = [
+        { name: Like(`%${text}%`) },
+        { mobile_number: Like(`%${text}%`) },
+        { type: Like(`%${text}%`) },
+      ];
+    }
     const data: any[] = await this.labRep.find({
       select: ['_id', 'mobile_number', 'name', 'status', 'type', 'unique_id'],
       relations: ['customer_id', 'facility_id'],

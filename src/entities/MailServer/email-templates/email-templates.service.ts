@@ -15,7 +15,10 @@ export class EmailTemplatesService {
   ) {}
 
   async getAll(skip: number, take: number, text?: string): Promise<any[]> {
-    const where: any = text && { name: Like(`%${text}%`) };
+    let where: any = {};
+    if (text) {
+      where = [{ title: Like(`%${text}%`) }, { subject: Like(`%${text}%`) }];
+    }
     const data = await this.emailTemplateRep.find({
       select: ['_id', 'title', 'action', 'subject', 'outgoing_mail_server_id'],
       relations: ['outgoing_mail_server_id'],
