@@ -81,7 +81,7 @@ export class Facility {
   @JoinColumn({ name: 'customer_id' })
   customer_id!: Customers;
 
-  @OneToOne(() => Users, (user) => user.facility_id)
+  @OneToMany(() => Users, (user) => user.facility_id)
   user_id!: Users;
 
   @Column({ default: null })

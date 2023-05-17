@@ -15,6 +15,7 @@ import { Response } from 'express';
 import { DepartmentDto } from '../dto/response.dto';
 import { DepartmentRequest, EditDepartmentRequest } from '../dto/request.dto';
 import { AuthGuard } from 'src/guard/auth.guard';
+import { Department } from '../department.entity';
 @Controller('departments')
 @UseGuards(AuthGuard)
 export class DepartmentsController {
@@ -31,6 +32,23 @@ export class DepartmentsController {
       const parent_id = query['parent_id'];
 
       let data = await this.departmentService.getAll(facility_id, parent_id);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send([]);
+    }
+  }
+
+  @Get('/get-by-facility')
+  async getByFacility(
+    @Res() response: Response,
+    @Query() query,
+  ): Promise<Department[]> {
+    try {
+      const facility_id = query['facility_id'];
+
+      let data = await this.departmentService.getByFacility(facility_id);
       response.status(200).send(data);
       return data;
     } catch (err) {

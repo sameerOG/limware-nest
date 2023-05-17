@@ -90,6 +90,8 @@ export class AuthService {
           status,
           username,
           facility_id,
+          customer_id,
+          employee_id,
           _id,
         } = user;
         const obj: any = {
@@ -101,6 +103,8 @@ export class AuthService {
           user_name: username,
           permissions: null,
           facility_id,
+          employee_id,
+          customer_id,
           user_id: {
             $oid: user._id,
           },

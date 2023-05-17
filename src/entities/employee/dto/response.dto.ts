@@ -1,3 +1,6 @@
+import { Customers } from 'src/entities/customer/customer.entity';
+import { Users } from 'src/entities/user/user.entity';
+
 export class EmployeeResponseDto {
   readonly _id: string;
   readonly address: string;
@@ -14,6 +17,8 @@ export class EmployeeResponseDto {
   readonly updated_by: string;
   readonly cnic: string;
   readonly facility?: Object;
+  readonly customer?: Customers;
+  readonly user?: Users;
 
   constructor(emp: EmployeeResponseDto) {
     (this._id = emp._id),
@@ -30,6 +35,8 @@ export class EmployeeResponseDto {
       (this.updated_at = emp.updated_at),
       (this.updated_by = emp.updated_by),
       (this.facility = emp.facility),
+      (this.user = emp.user),
+      (this.customer = emp.customer),
       (this.email = emp.email));
   }
 }

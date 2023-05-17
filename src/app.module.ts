@@ -1,4 +1,6 @@
 import { Module } from '@nestjs/common';
+const path = require('path');
+
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import * as dotenv from 'dotenv';
@@ -27,10 +29,12 @@ import { AuthModule } from './entities/auth/auth.module';
 import { TestsModule } from './entities/test/tests/tests.module';
 import { TestParametersModule } from './entities/test/test-parameters/test-parameters.module';
 import { AppointmentsModule } from './entities/appointment/appointments/appointments.module';
+import { join } from 'path';
+import { FeaturesModule } from './entities/features/features/features.module';
+import { PricingPlansModule } from './entities/pricing/pricing-plans/pricing-plans.module';
 
 const envFilePath: string = getEnvPath(`/common/envs`);
 dotenv.config();
-
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -42,6 +46,7 @@ dotenv.config();
     ServeStaticModule.forRoot({
       rootPath: 'src/common/uploads',
     }),
+    ConfigModule.forRoot({ isGlobal: true }),
     MailerModule.forRoot({
       transport: {
         host: process.env.EMAIL_HOST,
@@ -74,6 +79,8 @@ dotenv.config();
     TestsModule,
     TestParametersModule,
     AppointmentsModule,
+    FeaturesModule,
+    PricingPlansModule,
   ],
   controllers: [],
   providers: [],

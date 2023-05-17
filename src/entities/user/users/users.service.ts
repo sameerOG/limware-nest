@@ -1,12 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Like, Repository } from 'typeorm';
-import { UserRequestDto } from '../dto/request.dto';
-import { SingleUserDto, UserDto } from '../dto/response.dto';
+import { FacilityUserRequestDto, UserRequestDto } from '../dto/request.dto';
+import {
+  SingleFacilityUserDto,
+  SingleUserDto,
+  UserDto,
+} from '../dto/response.dto';
 import { Users } from '../user.entity';
 import * as bcrypt from 'bcryptjs';
 import { EmployeeFacility } from 'src/entities/employee/employee_facility.entity';
 import { Role } from 'src/entities/role/role.entity';
+import { Employee } from 'src/entities/employee/employee.entity';
 
 const SALT_ROUNDS = 10;
 
@@ -17,6 +22,7 @@ export class UsersService {
     @InjectRepository(EmployeeFacility)
     private empFacilityRep: Repository<EmployeeFacility>,
     @InjectRepository(Role) private rolesRep: Repository<Role>,
+    @InjectRepository(Employee) private empRep: Repository<Employee>,
   ) {}
 
   async getUsers(
@@ -166,6 +172,45 @@ export class UsersService {
         created_at: user.created_at.getTime(), // set created_at field as timestamp
       });
     } catch (err) {
+      return err;
+    }
+  }
+
+  async addFacilityUser(data: any, loggedInUser): Promise<SingleUserDto> {
+    try {
+      const savedUser = await this.usersRep.findOne({
+        where: { _id: loggedInUser._id },
+        relations: ['customer_id', 'facility_id', 'employee_id'],
+      });
+      const hashed = await bcrypt.hashSync(data.password, SALT_ROUNDS);
+      data.password = hashed;
+      data.password_hash = hashed;
+      if (savedUser?.portal === 'limware') {
+        data.customer_id = savedUser?.customer_id;
+        data.facility_id = savedUser.facility_id;
+      }
+      const user = await this.usersRep.save(data);
+      if (user) {
+        const employeeModel = await this.empRep.findOne({
+          where: { _id: user.employee_id },
+        });
+        const { full_name, email, mobile_number, status, address, city } = user;
+        employeeModel.user_id = user;
+        employeeModel.name = full_name;
+        employeeModel.email = email;
+        employeeModel.mobile_number = mobile_number;
+        employeeModel.status = status;
+        employeeModel.address = address;
+        employeeModel.city = city;
+        await this.empRep.update(employeeModel._id, employeeModel);
+      }
+      const { ...rest } = user;
+      return new SingleFacilityUserDto({
+        ...rest,
+        created_at: user.created_at.getTime(),
+      });
+    } catch (err) {
+      console.log('err', err);
       return err;
     }
   }

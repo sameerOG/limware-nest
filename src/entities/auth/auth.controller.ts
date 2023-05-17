@@ -80,29 +80,11 @@ export class AuthController {
     }
   }
 
-  async imageFilter(file) {
-    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/i)) {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  async addFileName(file) {
-    const name = file.originalname.split('.')[0];
-    const fileExtName = extname(file.originalname);
-    let dateCreated: any = moment().format('YYYY-MM-DD HH:mm:ss');
-    var id = uniqueId + '-' + name + '-' + dateCreated + fileExtName;
-    var splitedid = id.replace(/:/gi, '');
-    var finalName = splitedid.replace(/\s/g, '');
-    return finalName;
-  }
-
   @Post('/profile/update-profile')
   @UseInterceptors(
     FileInterceptor('profile_image_file', {
       storage: diskStorage({
-        destination: './Uploads/images',
+        destination: 'src/common/uploads',
         filename: addFileName,
       }),
       fileFilter: imageFileFilter,
@@ -120,7 +102,6 @@ export class AuthController {
       const fileData = file.filename;
       let parsedData = JSON.parse(body.data);
       Object.assign(parsedData, { profile_image_name: fileData });
-      console.log('file before', parsedData);
       let data = await this.authService.updateProfile(parsedData, loggedInUser);
       if (data) {
         response.status(200).send(data);
@@ -143,7 +124,6 @@ export class AuthController {
       const token = authHeader.split(' ')[1];
       const loggedInUser = jwtDecode(token);
       const profile = await this.authService.getProfileImage(loggedInUser);
-      console.log('profile', profile);
       response.status(200).send(profile);
       return true;
     } catch (err) {

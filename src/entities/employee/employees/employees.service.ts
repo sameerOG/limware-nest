@@ -1,15 +1,33 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Department } from 'src/entities/department/department.entity';
+import { Facility } from 'src/entities/Facility/facility.entity';
+import { Role } from 'src/entities/role/role.entity';
 import { Brackets, Like, Repository } from 'typeorm';
-import { EmployeeRequestDto } from '../dto/request.dto';
+import {
+  AssignFacilityRequestDto,
+  EmployeeRequestDto,
+} from '../dto/request.dto';
 import { EmployeeResponseDto } from '../dto/response.dto';
 import { Employee } from '../employee.entity';
+import { EmployeeFacility } from '../employee_facility.entity';
+import { EmployeeFacilityDepartment } from '../employee_facility_department.entity';
 
 @Injectable()
 export class EmployeesService {
   constructor(
     @InjectRepository(Employee)
     private empRep: Repository<Employee>,
+    @InjectRepository(Facility)
+    private facilityRep: Repository<Facility>,
+    @InjectRepository(EmployeeFacility)
+    private empFacilityRep: Repository<EmployeeFacility>,
+    @InjectRepository(EmployeeFacilityDepartment)
+    private empFacilityDepartmentRep: Repository<EmployeeFacilityDepartment>,
+    @InjectRepository(Role)
+    private rolesRep: Repository<Role>,
+    @InjectRepository(Department)
+    private departmentRep: Repository<Department>,
   ) {}
 
   async getAllByFacility(facility_id: string): Promise<EmployeeResponseDto[]> {
@@ -84,19 +102,201 @@ export class EmployeesService {
         'name',
         'status',
       ],
-      relations: ['customer_id', 'facility_id'],
+      relations: ['customer_id', 'facility_id', 'user_id'],
       where: { _id: id },
     });
     const { ...rest } = data;
     return new EmployeeResponseDto({
       ...rest,
       customer_id: data.customer_id._id,
+      customer: data.customer_id,
+      user: data.user_id,
       facility_id: data.facility_id._id,
       facility: data.facility_id,
       created_at: data.created_at?.getTime(),
       updated_at: data.updated_at?.getTime(),
       updated_by: '',
     });
+  }
+
+  async getByEmployee(id: string): Promise<any> {
+    let result = [];
+    const data = await this.empFacilityRep
+      .createQueryBuilder('employee_facility')
+      .select('employee_facility.*')
+      .where('employee_facility.employee_id = :employee_id', {
+        employee_id: id,
+      })
+      .getRawMany();
+
+    for (let i = 0; i < data.length; i++) {
+      const facility = await this.facilityRep
+        .createQueryBuilder('facility')
+        .select('facility.*')
+        .where('facility._id = :_id', { _id: data[i].facility_id })
+        .getRawOne();
+
+      let obj = {
+        employee_id: data[i].employee_id,
+        facility_id: data[i].facility_id,
+        facility,
+      };
+
+      console.log('data[i]', data[i]);
+      const roles = data[i].role_ids;
+      const rolesData = [];
+      for (let j = 0; j < roles.length; j++) {
+        let role = await this.rolesRep.findOne({ where: { _id: roles[j] } });
+        rolesData.push(role);
+      }
+      Object.assign(obj, { roles: rolesData });
+
+      const departments = await this.empFacilityDepartmentRep
+        .createQueryBuilder('employee_facility_department')
+        .select('employee_facility_department.*')
+        .where(
+          'employee_facility_department.employee_facility_id = :employee_facility_id',
+          { employee_facility_id: data[i]._id },
+        )
+        .getRawMany();
+
+      let savedDepartments = [];
+      for (let k = 0; k < departments.length; k++) {
+        const department = await this.departmentRep.findOne({
+          where: { _id: departments[i].department_id },
+          relations: ['parent_id'],
+        });
+        let departmentData = {
+          created_at: departments[k].created_at.getTime(),
+          description: department.description || '',
+          facility_id: { $oid: departments[k].facility_id },
+          name: department.name,
+          parent: department.parent,
+          parent_id: { $oid: department.parent_id._id },
+          updated_at: departments[k].updated_at.getTime(),
+          _id: { $oid: departments[k].department_id },
+        };
+        savedDepartments.push(departmentData);
+      }
+      Object.assign(obj, { departments: savedDepartments });
+      result.push(obj);
+    }
+
+    return result;
+  }
+
+  async assignFacility(body: AssignFacilityRequestDto): Promise<any> {
+    let empFacility = new EmployeeFacility();
+    if (body.id || body._id) {
+      empFacility = await this.empFacilityRep.findOne({
+        where: [{ _id: body._id }, { _id: body.id }],
+      });
+    }
+    const { departments, employee_id, facility_id, role_ids } = body;
+    const employee = await this.empRep.findOne({ where: { _id: employee_id } });
+    empFacility.employee_id = employee;
+    empFacility.facility_id = facility_id;
+    empFacility.role_ids = role_ids;
+
+    const data = await this.empFacilityRep.save(empFacility);
+    if (data) {
+      let empFAcilityDepartments = await this.empFacilityDepartmentRep.find({
+        where: { employee_facility_id: data._id },
+      });
+      if (empFAcilityDepartments.length > 0) {
+        for (let i = 0; i < empFAcilityDepartments.length; i++) {
+          await this.empFacilityDepartmentRep.delete(
+            empFAcilityDepartments[i]._id,
+          );
+        }
+      }
+
+      departments.forEach(async (department) => {
+        const empFacilityDep = new EmployeeFacilityDepartment();
+        empFacilityDep.employee_id = employee_id;
+        empFacilityDep.facility_id = facility_id;
+        empFacilityDep.employee_facility_id = data._id;
+        empFacilityDep.department_id = department;
+        await this.empFacilityDepartmentRep.save(empFacilityDep);
+      });
+    }
+    return data;
+  }
+
+  async getUnassignedFacilities(id: string, user): Promise<any> {
+    let employeeModel;
+    if (user.portal === 'limware') {
+      employeeModel = await this.empRep
+        .createQueryBuilder('employee')
+        .select('employee.*')
+        .where('employee._id = :_id', { _id: id })
+        .andWhere('employee.customer_id = :customer_id', {
+          customer_id: user.customer_id,
+        })
+        .andWhere('employee.facility_id = :facility_id', {
+          facility_id: user.facility_id,
+        })
+        .getRawOne();
+    } else {
+      employeeModel = await this.empRep
+        .createQueryBuilder('employee')
+        .select('employee.*')
+        .where('employee._id = :_id', { _id: id })
+        .getRawOne();
+    }
+
+    if (employeeModel) {
+      let facility = await this.facilityRep
+        .createQueryBuilder('facility')
+        .select('facility.*')
+        .where('facility._id = :_id', { _id: employeeModel.facility_id })
+        .getRawOne();
+
+      let parentFacility = await this.facilityRep
+        .createQueryBuilder('facility')
+        .select('facility.*')
+        .where('facility.parent_facility_id = :parent_facility_id', {
+          parent_facility_id: facility.parent_facility_id,
+        })
+        .getRawOne();
+      let parent_facility_id = '';
+      if (parentFacility) {
+        parent_facility_id = parentFacility._id;
+      } else {
+        parent_facility_id = facility._id;
+      }
+
+      let allFacilities = await this.facilityRep
+        .createQueryBuilder('facility')
+        .select('facility.*')
+        .where('facility._id = :_id', { _id: parent_facility_id })
+        .orWhere('facility.parent_facility_id = :parent_facility_id', {
+          parent_facility_id,
+        })
+        .getRawMany();
+
+      let assignedFacilities = await this.empFacilityRep
+        .createQueryBuilder('employee_facility')
+        .select('employee_facility.*')
+        .where('employee_facility.employee_id = :employee_id', {
+          employee_id: id,
+        })
+        .getRawMany();
+
+      let returnResult = [];
+      allFacilities.forEach((f) => {
+        let alreadyMapped = false;
+        assignedFacilities.forEach((af) => {
+          if (f._id === af.facility_id) {
+            alreadyMapped = true;
+          }
+        });
+        if (!alreadyMapped) {
+          returnResult.push(f);
+        }
+      });
+      return returnResult;
+    }
   }
 
   async add(body: EmployeeRequestDto): Promise<EmployeeResponseDto> {

@@ -57,11 +57,11 @@ export class Users {
   @Column({ type: 'json', default: null })
   contact_numbers!: string;
 
-  @OneToOne(() => Customers, (customer) => customer.user_id)
+  @ManyToOne(() => Customers, (customer) => customer.user_id)
   @JoinColumn({ name: 'customer_id' })
   customer_id!: Customers;
 
-  @OneToOne(() => Facility, (facility) => facility.user_id)
+  @ManyToOne(() => Facility, (facility) => facility.user_id)
   @JoinColumn({ name: 'facility_id' })
   facility_id!: Facility;
 

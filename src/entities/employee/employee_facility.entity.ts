@@ -27,7 +27,7 @@ export class EmployeeFacility {
   @JoinColumn({ name: 'facility_id' })
   facility_id!: Facility;
 
-  @Column()
+  @Column({ type: 'json' })
   role_ids!: string;
 
   @Column()

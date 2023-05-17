@@ -11,11 +11,15 @@ import {
   Res,
   UseGuards,
 } from '@nestjs/common';
-import { query, Response } from 'express';
+import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
 import { AuthGuard } from 'src/guard/auth.guard';
-import { UserRequestDto } from '../dto/request.dto';
-import { SingleUserDto, UserDto } from '../dto/response.dto';
+import { FacilityUserRequestDto, UserRequestDto } from '../dto/request.dto';
+import {
+  SingleFacilityUserDto,
+  SingleUserDto,
+  UserDto,
+} from '../dto/response.dto';
 import { UsersService } from './users.service';
 @Controller('users')
 @UseGuards(AuthGuard)
@@ -32,7 +36,6 @@ export class UsersController {
       const page = query['page'] ? query['page'] : 1;
       const text = query.filter?.username?.like;
       const skip = (page - 1) * perpage;
-      console.log('query', query);
 
       let data = await this.userService.getUsers(skip, perpage, text);
       response.status(200).send(data);
@@ -119,6 +122,28 @@ export class UsersController {
       }
       let data = await this.userService.addUser(body);
       console.log('data', data);
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        response.status(400).send([]);
+      }
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({});
+    }
+  }
+
+  @Post('/create-facility-user')
+  async addFacilityUser(
+    @Res() response: Response,
+    @Body() body: FacilityUserRequestDto,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<SingleUserDto> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.userService.addFacilityUser(body, loggedInUser);
       if (data) {
         response.status(200).send(data);
         return data;

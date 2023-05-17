@@ -1,4 +1,5 @@
 import { Users } from '../user.entity';
+import { Expose } from 'class-transformer';
 
 export class UserDto {
   readonly _id: string;
@@ -50,6 +51,46 @@ export class SingleUserDto {
       (this.password_hash = user.password_hash),
       (this.city = user.city),
       (this.contact_numbers = user.contact_numbers),
+      (this.created_at = user.created_at));
+  }
+}
+
+export class SingleFacilityUserDto {
+  readonly _id: string;
+  readonly full_name: string;
+  readonly email: string;
+  readonly portal: string;
+  readonly status: number;
+  readonly username: string;
+  readonly address: string;
+  readonly auth_key: string;
+  readonly isSuperUser: number;
+  readonly mobile_number: string;
+  readonly password_hash: string;
+  readonly city: string;
+  readonly contact_numbers: string;
+  readonly created_at: number;
+  readonly employee_id: string;
+  readonly customer_id: string;
+  readonly facility_id: string;
+
+  constructor(user: SingleFacilityUserDto) {
+    (this._id = user._id),
+      ((this.full_name = user.full_name),
+      (this.email = user.email),
+      (this.portal = user.portal),
+      (this.status = user.status),
+      (this.username = user.username),
+      (this.address = user.address),
+      (this.auth_key = user.auth_key),
+      (this.isSuperUser = user.isSuperUser),
+      (this.mobile_number = user.mobile_number),
+      (this.password_hash = user.password_hash),
+      (this.city = user.city),
+      (this.contact_numbers = user.contact_numbers),
+      (this.employee_id = user.employee_id),
+      (this.customer_id = user.customer_id),
+      (this.facility_id = user.facility_id),
       (this.created_at = user.created_at));
   }
 }

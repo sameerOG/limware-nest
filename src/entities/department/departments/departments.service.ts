@@ -49,6 +49,14 @@ export class DepartmentsService {
     );
   }
 
+  async getByFacility(facility_id: string): Promise<Department[]> {
+    return await this.departmentRep
+      .createQueryBuilder('department')
+      .select('department.*')
+      .where('department.facility_id = :facility_id', { facility_id })
+      .getRawMany();
+  }
+
   async getSingle(_id: string): Promise<DepartmentDto> {
     const data: any = await this.departmentRep
       .createQueryBuilder('department')

@@ -33,7 +33,7 @@ export class Customers {
   @Column({ type: 'json', default: null })
   contact_numbers!: string;
 
-  @OneToOne(() => Users, (user) => user.customer_id)
+  @OneToMany(() => Users, (user) => user.customer_id)
   user_id!: Users;
 
   @OneToMany(() => Laboratory, (laboratory) => laboratory.customer_id)

@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, IsNumber, IsEmail } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsEmail,
+  IsArray,
+  IsOptional,
+} from 'class-validator';
 
 export class EmployeeRequestDto {
   @IsString()
@@ -38,4 +45,26 @@ export class EmployeeRequestDto {
   @IsNumber()
   @IsNotEmpty()
   status: number;
+}
+
+export class AssignFacilityRequestDto {
+  @IsOptional()
+  departments: string[];
+
+  @IsString()
+  @IsNotEmpty()
+  employee_id: string;
+
+  @IsString()
+  @IsNotEmpty()
+  facility_id: any;
+
+  @IsNotEmpty()
+  role_ids: any;
+
+  @IsOptional()
+  id: string;
+
+  @IsOptional()
+  _id: string;
 }

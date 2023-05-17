@@ -9,12 +9,18 @@ import {
   Query,
   Res,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { Response } from 'express';
 import { EmployeeResponseDto } from '../dto/response.dto';
-import { EmployeeRequestDto } from '../dto/request.dto';
+import {
+  AssignFacilityRequestDto,
+  EmployeeRequestDto,
+} from '../dto/request.dto';
 import { AuthGuard } from 'src/guard/auth.guard';
+import jwtDecode from 'jwt-decode';
+import { EmployeeFacilityDepartment } from '../employee_facility_department.entity';
 @Controller('')
 @UseGuards(AuthGuard)
 export class EmployeesController {
@@ -72,14 +78,69 @@ export class EmployeesController {
     }
   }
 
+  @Post('/employees-facilities')
+  async assignFacility(
+    @Res() response: Response,
+    @Body() body: AssignFacilityRequestDto,
+  ): Promise<EmployeeFacilityDepartment> {
+    try {
+      console.log('yyy');
+      let data = await this.empService.assignFacility(body);
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        response.status(422).send({});
+      }
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({});
+    }
+  }
+
+  // @Get('/employees-facilities/get-by-employee')
+  // async getSingleByEmployee(
+  //   @Res() response: Response,
+  //   @Query() query,
+  // ): Promise<any> {
+  //   try {
+  //     const id = query['id'];
+  //     let data = await this.empService.getSingle(id);
+  //     response.status(200).send(data);
+  //     return data;
+  //   } catch (err) {
+  //     console.log('err in catch', err);
+  //     response.status(422).send([]);
+  //   }
+  // }
+
   @Get('/employees-facilities/get-by-employee')
-  async getSingleByEmployee(
+  async getByEmployee(@Res() response: Response, @Query() query): Promise<any> {
+    try {
+      const id = query['employee_id'];
+      let data = await this.empService.getByEmployee(id);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send([]);
+    }
+  }
+
+  @Get('/employees-facilities/get-unassigned-facilities')
+  async getUnassignedFacilities(
     @Res() response: Response,
     @Query() query,
-  ): Promise<EmployeeResponseDto> {
+    @Headers('Authorization') authHeader: string,
+  ): Promise<any> {
     try {
-      const id = query['id'];
-      let data = await this.empService.getSingle(id);
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const employee_id = query['employee_id'];
+      let data = await this.empService.getUnassignedFacilities(
+        employee_id,
+        loggedInUser,
+      );
       response.status(200).send(data);
       return data;
     } catch (err) {

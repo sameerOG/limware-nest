@@ -12,16 +12,16 @@ export class EmployeeFacilityDepartment {
   _id!: string;
 
   @Column()
-  employee_id!: number;
+  employee_id!: string;
 
   @Column()
-  facility_id!: number;
+  facility_id!: string;
 
   @Column()
-  employee_facility_id!: number;
+  employee_facility_id!: string;
 
   @Column()
-  department_id!: number;
+  department_id!: string;
 
   @Column()
   @CreateDateColumn()
