@@ -13,3 +13,12 @@ export class RoleRequestDto {
   @IsNotEmpty()
   status: number;
 }
+
+export class AssignPermissionRequest {
+  @IsString()
+  @IsNotEmpty()
+  role_id: string;
+
+  @IsNotEmpty()
+  permissions: any;
+}

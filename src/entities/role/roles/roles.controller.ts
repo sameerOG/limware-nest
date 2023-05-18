@@ -14,7 +14,7 @@ import {
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
 import { AuthGuard } from 'src/guard/auth.guard';
-import { RoleRequestDto } from '../dto/request.dto';
+import { AssignPermissionRequest, RoleRequestDto } from '../dto/request.dto';
 import { RoleDto, SingleRoleDto } from '../dto/response.dto';
 import { Role } from '../role.entity';
 import { RolesService } from './roles.service';
@@ -58,7 +58,26 @@ export class RolesController {
       console.log('role', role_id, portal);
       let data = await this.roleService.getPermissions(role_id, portal);
       if (data) {
-        response.status(204).send(data);
+        response.status(200).send(data);
+      } else {
+        response.status(422).send([]);
+      }
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({});
+    }
+  }
+
+  @Post('/assign-permissions')
+  async assignPermissions(
+    @Res() response: Response,
+    @Body() body: AssignPermissionRequest,
+  ): Promise<Role> {
+    try {
+      let data = await this.roleService.assignPermissions(body);
+      if (data) {
+        response.status(200).send(data);
+        return data;
       } else {
         response.status(422).send([]);
       }

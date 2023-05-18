@@ -5,12 +5,13 @@ import {
   limwareFeatures,
 } from 'src/common/helper/enums';
 import { Like, Repository } from 'typeorm';
-import { RoleRequestDto } from '../dto/request.dto';
+import { AssignPermissionRequest, RoleRequestDto } from '../dto/request.dto';
 import { RoleDto, SingleRoleDto } from '../dto/response.dto';
 import { Role } from '../role.entity';
 
 @Injectable()
 export class RolesService {
+  private newPermissions = [];
   constructor(@InjectRepository(Role) private rolesRep: Repository<Role>) {}
 
   async getRoles(
@@ -32,8 +33,58 @@ export class RolesService {
     return roles;
   }
 
+  async assignPermissions(body: AssignPermissionRequest): Promise<Role> {
+    this.newPermissions = [];
+    const model: any = await this.rolesRep.findOne({
+      where: { _id: body.role_id },
+    });
+    let dataSet;
+    if (model?.portal === 'administration') {
+      dataSet = administrationFeatures;
+    } else if (model?.portal === 'limware') {
+      dataSet = limwareFeatures;
+    } else {
+      dataSet = [];
+    }
+    body.permissions.forEach(async (item) => {
+      if (!(await this.alreadyExist(item.id, item.parent_id))) {
+        item.status = true;
+        this.newPermissions.push(item);
+      }
+      await this.__assignPermissions(dataSet, item.id, item.module_id);
+    });
+    model.permissions = this.newPermissions;
+    await this.rolesRep.update(model._id, model);
+    return model;
+  }
+
+  async __assignPermissions(dataset, parent_id: string, module_id: string) {
+    dataset.forEach(async (item) => {
+      if (item.parent_id === parent_id) {
+        if (!(await this.alreadyExist(item.id, item.parent_id))) {
+          this.newPermissions.push({
+            id: item.id,
+            parent_id: item.parent_id,
+            module_id,
+            status: true,
+          });
+        }
+        this.__assignPermissions(dataset, item.id, module_id);
+      }
+    });
+  }
+
+  async alreadyExist(id: string, parent_id: string) {
+    this.newPermissions.forEach((item) => {
+      if (item.id === id && item.parent_id === parent_id) {
+        return true;
+      }
+    });
+    return false;
+  }
+
   async getPermissions(role_id: string, portal: string): Promise<any> {
-    const role: any = await this.rolesRep.find({ where: { _id: role_id } });
+    const role: any = await this.rolesRep.findOne({ where: { _id: role_id } });
     if (role) {
       const moduleFeatures = await this.getPermissionsData(
         portal,
@@ -69,8 +120,10 @@ export class RolesService {
   async __getPermissions(data, assignedPermissions) {
     let moduleFeatures = [];
     const modules = await this.__getModules(data);
-    modules.forEach((moduleData) => {
-      data.forEach(async (item) => {
+    for (let i = 0; i < modules.length; i++) {
+      let moduleData = modules[i];
+      for (let j = 0; j < data.length; j++) {
+        let item = data[j];
         if (item.id == moduleData.id) {
           item.status = await this.__isAssigned(assignedPermissions, item.id);
           item.children = await this.__findChildren(
@@ -81,13 +134,13 @@ export class RolesService {
           );
           moduleFeatures.push(item);
         }
-      });
-    });
+      }
+    }
     return moduleFeatures;
   }
 
   async __isAssigned(assignedPermissions, id) {
-    assignedPermissions.forEach((item) => {
+    return assignedPermissions.some((item) => {
       if (item.id == id) {
         return true;
       }
