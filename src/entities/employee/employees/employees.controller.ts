@@ -149,6 +149,55 @@ export class EmployeesController {
     }
   }
 
+  @Get('/employees-facilities/:id')
+  async getEmployeeFacilities(
+    @Res() response: Response,
+    @Param('id') id: string,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<any> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.empService.getEmployeeFacilities(id, loggedInUser);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send([]);
+    }
+  }
+
+  @Put('/employees-facilities/:id')
+  async updateEmployeeFacilities(
+    @Res() response: Response,
+    @Body() body: AssignFacilityRequestDto,
+    @Param('id') id: string,
+  ): Promise<any> {
+    try {
+      let data = await this.empService.assignFacility(body, id);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send([]);
+    }
+  }
+
+  @Delete('/employees-facilities/:id')
+  async deleteEmployeeFacilities(
+    @Res() response: Response,
+    @Param('id') id: string,
+  ): Promise<void> {
+    try {
+      let data = await this.empService.deleteEmployeeFacilities(id);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send([]);
+    }
+  }
+
   @Post('/employees')
   async add(
     @Res() response: Response,

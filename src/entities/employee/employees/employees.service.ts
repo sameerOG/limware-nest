@@ -140,9 +140,9 @@ export class EmployeesService {
         employee_id: data[i].employee_id,
         facility_id: data[i].facility_id,
         facility,
+        _id: id,
       };
 
-      console.log('data[i]', data[i]);
       const roles = data[i].role_ids;
       const rolesData = [];
       for (let j = 0; j < roles.length; j++) {
@@ -185,12 +185,19 @@ export class EmployeesService {
     return result;
   }
 
-  async assignFacility(body: AssignFacilityRequestDto): Promise<any> {
+  async assignFacility(
+    body: AssignFacilityRequestDto,
+    id?: string,
+  ): Promise<any> {
     let empFacility = new EmployeeFacility();
-    if (body.id || body._id) {
-      empFacility = await this.empFacilityRep.findOne({
-        where: [{ _id: body._id }, { _id: body.id }],
-      });
+    if (id) {
+      empFacility = await this.empFacilityRep
+        .createQueryBuilder('employee_facility')
+        .select('employee_facility.*')
+        .where('employee_facility.employee_id = :employee_id', {
+          employee_id: id,
+        })
+        .getRawOne();
     }
     const { departments, employee_id, facility_id, role_ids } = body;
     const employee = await this.empRep.findOne({ where: { _id: employee_id } });
@@ -198,17 +205,34 @@ export class EmployeesService {
     empFacility.facility_id = facility_id;
     empFacility.role_ids = role_ids;
 
-    const data = await this.empFacilityRep.save(empFacility);
+    let data;
+    if (id) {
+      await this.empFacilityRep
+        .createQueryBuilder()
+        .update(EmployeeFacility)
+        .set(empFacility)
+        .where('employee_id = :employee_id', { employee_id: id })
+        .execute();
+      data = await this.empFacilityRep
+        .createQueryBuilder('employee_facility')
+        .select('employee_facility.*')
+        .where('employee_facility.employee_id = :employee_id', {
+          employee_id: id,
+        })
+        .getRawOne();
+    } else {
+      data = await this.empFacilityRep.save(empFacility);
+    }
     if (data) {
-      let empFAcilityDepartments = await this.empFacilityDepartmentRep.find({
-        where: { employee_facility_id: data._id },
-      });
-      if (empFAcilityDepartments.length > 0) {
-        for (let i = 0; i < empFAcilityDepartments.length; i++) {
-          await this.empFacilityDepartmentRep.delete(
-            empFAcilityDepartments[i]._id,
-          );
-        }
+      if (id) {
+        await this.empFacilityDepartmentRep
+          .createQueryBuilder('employee_facility_department')
+          .delete()
+          .from(EmployeeFacilityDepartment)
+          .where('employee_facility_id = :employee_facility_id', {
+            employee_facility_id: empFacility._id,
+          })
+          .execute();
       }
 
       departments.forEach(async (department) => {
@@ -297,6 +321,67 @@ export class EmployeesService {
       });
       return returnResult;
     }
+  }
+
+  async getEmployeeFacilities(id: string, user): Promise<any> {
+    const empFacility = await this.empFacilityRep
+      .createQueryBuilder('employee_facility')
+      .select('employee_facility.*')
+      .where('employee_facility.employee_id = :employee_id', {
+        employee_id: id,
+      })
+      .getRawOne();
+
+    const facility = await this.facilityRep
+      .createQueryBuilder('facility')
+      .select('facility.*')
+      .where('facility._id = :_id', { _id: empFacility.facility_id })
+      .getRawOne();
+
+    const empFacilityDepartments = await this.empFacilityDepartmentRep
+      .createQueryBuilder('employee_facility_department')
+      .select('employee_facility_department.*')
+      .where(
+        'employee_facility_department.employee_facility_id = :employee_facility_id',
+        { employee_facility_id: empFacility._id },
+      )
+      .getRawMany();
+
+    let result = {
+      employee_id: empFacility.employee_id,
+      facility_id: empFacility.facility_id,
+      role_ids: empFacility.role_ids,
+      updated_at: empFacility.updated_at.getTime(),
+      created_at: empFacility.created_at.getTime(),
+      created_by: user._id,
+      updated_by: user._id,
+      facility,
+      departmentMappings: empFacilityDepartments,
+      _id: id,
+    };
+
+    return result;
+  }
+
+  async deleteEmployeeFacilities(id: string): Promise<void> {
+    const empFacility = await this.empFacilityRep
+      .createQueryBuilder('employee_facility')
+      .select('employee_facility.*')
+      .where('employee_facility.employee_id = :employee_id', {
+        employee_id: id,
+      })
+      .getRawOne();
+
+    await this.empFacilityDepartmentRep
+      .createQueryBuilder('employee_facility_department')
+      .delete()
+      .from(EmployeeFacilityDepartment)
+      .where('employee_facility_id = :employee_facility_id', {
+        employee_facility_id: empFacility._id,
+      })
+      .execute();
+
+    await this.empFacilityRep.delete(empFacility._id);
   }
 
   async add(body: EmployeeRequestDto): Promise<EmployeeResponseDto> {
