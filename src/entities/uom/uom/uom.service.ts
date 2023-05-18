@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Like, Repository } from 'typeorm';
 import { UomRequestDto } from '../dto/request.dto';
 import { SingleUomDto, UomDto } from '../dto/response.dto';
@@ -12,7 +13,12 @@ export class UomService {
     private uomRep: Repository<UOM>,
   ) {}
 
-  async getAll(skip: number, take: number, text?: string): Promise<UomDto[]> {
+  async getAll(
+    skip: number,
+    take: number,
+    text?: string,
+    sort?: string,
+  ): Promise<UomDto[]> {
     let where: any = {}; // Declare an empty where object
 
     if (text) {
@@ -23,6 +29,7 @@ export class UomService {
       where,
       skip,
       take,
+      order: transformSortField(sort),
     });
     return data;
   }

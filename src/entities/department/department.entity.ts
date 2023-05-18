@@ -8,6 +8,7 @@ import {
   OneToOne,
   OneToMany,
   DeleteDateColumn,
+  ManyToOne,
 } from 'typeorm';
 import { Facility } from '../Facility/facility.entity';
 import { Laboratory } from '../laboratory/laboratory.entity';
@@ -27,7 +28,7 @@ export class Department {
   @Column({ default: null })
   description!: string;
 
-  @OneToOne(() => Facility, (facility) => facility.department_id)
+  @ManyToOne(() => Facility, (facility) => facility.department_id)
   @JoinColumn({ name: 'facility_id' })
   facility_id!: Facility;
 
@@ -50,7 +51,7 @@ export class Department {
   @JoinColumn({ name: 'hod_id' })
   hod_id!: Users;
 
-  @OneToOne(() => Laboratory, (lab) => lab.department_id)
+  @ManyToOne(() => Laboratory, (lab) => lab.department_id)
   @JoinColumn({ name: 'parent_id' })
   parent_id!: Laboratory;
 

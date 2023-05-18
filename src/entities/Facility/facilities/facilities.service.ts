@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Addons } from 'src/entities/addons/addons.entity';
 import { Customers } from 'src/entities/customer/customer.entity';
 import { getRepository, Like, Repository } from 'typeorm';
 import { FacilityRequestDto } from '../dto/request.dto';
-import { FacilityDto } from '../dto/response.dto';
+import { FacilityDto, ParentFacilityDto } from '../dto/response.dto';
 import { Facility } from '../facility.entity';
 
 @Injectable()
@@ -22,6 +23,7 @@ export class FacilitiesService {
     skip: number,
     take: number,
     text?: string,
+    sort?: string,
   ): Promise<FacilityDto[]> {
     let where: any = {};
     if (text) {
@@ -50,10 +52,22 @@ export class FacilitiesService {
       where,
       skip,
       take,
+      order: transformSortField(sort),
     });
     data.forEach((item) => {
       Object.assign(item, { customer_id: item.customer_id?._id });
     });
+    return data;
+  }
+
+  async getParentFacilities(customer_id: string): Promise<ParentFacilityDto[]> {
+    const data: Facility[] = await this.facilityRep
+      .createQueryBuilder('facility')
+      .select('facility._id,facility.unique_id,facility.name,facility.city')
+      .where('facility.customer_id = :customer_id', { customer_id })
+      .andWhere('facility.type = :type', { type: 'main' })
+      .getRawMany();
+
     return data;
   }
 
@@ -90,7 +104,7 @@ export class FacilitiesService {
         'unique_id',
         'updated_at',
       ],
-      relations: ['customer_id', 'laboratory_id'],
+      relations: ['customer_id', 'laboratory_id', 'parent_facility_id'],
       where,
     });
     queryFields?.map((query) => {
@@ -107,6 +121,7 @@ export class FacilitiesService {
       created_at: data.created_at?.getTime(),
       updated_at: data.updated_at?.getTime(),
       updated_by: '',
+      parent_facility_id: data.parent_facility_id?._id,
     });
   }
 
@@ -164,7 +179,7 @@ export class FacilitiesService {
           'unique_id',
           'updated_at',
         ],
-        relations: ['customer_id'],
+        relations: ['customer_id', 'parent_facility_id'],
         where: { _id: id },
       });
       const { ...rest } = data;
@@ -174,6 +189,7 @@ export class FacilitiesService {
         created_at: data.created_at?.getTime(),
         updated_at: data.updated_at?.getTime(),
         updated_by: '',
+        parent_facility_id: data.parent_facility_id?._id,
       });
     } catch (err) {
       return err;

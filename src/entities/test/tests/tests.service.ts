@@ -1,5 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 import { LabTestRateList } from 'src/entities/lab_test_rate/lab_test_rate_list.entity';
 import { LabTestRateListItem } from 'src/entities/lab_test_rate/lab_test_rate_list_item.entity';
@@ -52,6 +53,7 @@ export class TestsService {
     skip: number,
     take: number,
     text?: string,
+    sort?: string,
   ): Promise<TestResponseDto[]> {
     let where: any = {}; // Declare an empty where object
 
@@ -75,6 +77,7 @@ export class TestsService {
       where,
       skip,
       take,
+      order: transformSortField(sort),
     });
     return data;
   }

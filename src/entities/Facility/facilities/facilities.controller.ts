@@ -13,7 +13,7 @@ import {
 import { Response } from 'express';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { FacilityRequestDto } from '../dto/request.dto';
-import { FacilityDto } from '../dto/response.dto';
+import { FacilityDto, ParentFacilityDto } from '../dto/response.dto';
 import { FacilitiesService } from './facilities.service';
 
 @Controller('facilities')
@@ -29,10 +29,27 @@ export class FacilitiesController {
     try {
       const perpage = query['per-page'] ? query['per-page'] : 25;
       const page = query['page'] ? query['page'] : 1;
+      const sort = query['sort'];
       const text = query.filter?.name;
       const skip = (page - 1) * perpage;
       console.log('query', query);
-      let data = await this.facilityService.getAll(skip, perpage, text);
+      let data = await this.facilityService.getAll(skip, perpage, text, sort);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send([]);
+    }
+  }
+
+  @Get('/get-parent-facilities')
+  async getParentFacilities(
+    @Res() response: Response,
+    @Query() query,
+  ): Promise<ParentFacilityDto[]> {
+    try {
+      const customer_id = query['customer_id'];
+      let data = await this.facilityService.getParentFacilities(customer_id);
       response.status(200).send(data);
       return data;
     } catch (err) {

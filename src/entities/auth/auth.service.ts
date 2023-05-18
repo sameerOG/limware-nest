@@ -5,6 +5,7 @@ import { Users } from '../user/user.entity';
 import {
   AuthRequest,
   ChangePasswordRequest,
+  CreateUserRequestDto,
   LoginIntoFacility,
   RegisterRequest,
   ValidateOtpRequest,
@@ -20,6 +21,7 @@ import { Employee } from '../employee/employee.entity';
 import ShortUniqueId from 'short-unique-id';
 import axios from 'axios';
 import { Error } from 'src/common/global-dto.dto';
+import { SingleUserDto } from '../user/dto/response.dto';
 
 const uid = new ShortUniqueId({ length: 6, dictionary: 'number' });
 @Injectable()
@@ -299,7 +301,33 @@ export class AuthService {
     }
   }
 
-  async createCustomer(data: RegisterRequest): Promise<Customers> {
+  async createNewUser(body: CreateUserRequestDto): Promise<SingleUserDto> {
+    Object.assign(body, { name: body.full_name });
+    if (body.portal != 'limware') {
+      Object.assign(body, { isSuperUser: 1 });
+    }
+    const customer = await this.createCustomer(body);
+    const facility = await this.createFacility(customer, body);
+    const lab = await this.createLaboratory(customer, facility, body);
+    const employee = await this.createEmployee(customer, facility, body);
+    const savedUser = await this.createUser(
+      customer,
+      facility,
+      employee,
+      body,
+      body.status,
+      body.portal,
+    );
+    const { ...rest } = savedUser;
+    return new SingleUserDto({
+      ...rest,
+      created_at: savedUser.created_at.getTime(), // set created_at field as timestamp
+    });
+  }
+
+  async createCustomer(
+    data: RegisterRequest | CreateUserRequestDto,
+  ): Promise<Customers> {
     const { name, mobile_number, address, city } = data;
     const obj = {
       name,
@@ -323,7 +351,7 @@ export class AuthService {
 
   async createFacility(
     customer: Customers,
-    data: RegisterRequest,
+    data: RegisterRequest | CreateUserRequestDto,
   ): Promise<Facility> {
     const { name, mobile_number, address, city } = data;
     const obj = {
@@ -351,7 +379,7 @@ export class AuthService {
   async createLaboratory(
     customer: Customers,
     facility: Facility,
-    data: RegisterRequest,
+    data: RegisterRequest | CreateUserRequestDto,
   ): Promise<Laboratory> {
     const { name, mobile_number } = data;
     const obj = {
@@ -378,7 +406,7 @@ export class AuthService {
   async createEmployee(
     customer: Customers,
     facility: Facility,
-    data: RegisterRequest,
+    data: RegisterRequest | CreateUserRequestDto,
   ): Promise<Employee> {
     const { name, mobile_number, address, city } = data;
     const obj = {
@@ -408,7 +436,9 @@ export class AuthService {
     customer: Customers,
     facility: Facility,
     employee: Employee,
-    data: RegisterRequest,
+    data: RegisterRequest | CreateUserRequestDto,
+    status?: number,
+    portal?: string,
   ): Promise<Users> {
     delete data.terms;
     const { password, ...rest } = data;
@@ -418,10 +448,10 @@ export class AuthService {
       customer_id: customer,
       facility_id: facility,
       employee_id: employee,
-      status: 0,
+      status: status ? status : 0,
       password: hashed,
       password_hash: hashed,
-      portal: 'limware',
+      portal: portal ? portal : 'limware',
       full_name: data.name,
     };
     const user = await this.userRep.save(obj);

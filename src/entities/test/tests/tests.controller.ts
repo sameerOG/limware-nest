@@ -38,10 +38,11 @@ export class TestsController {
     try {
       const perpage = query['per-page'] ? query['per-page'] : 25;
       const page = query['page'] ? query['page'] : 1;
+      const sort = query['sort'];
       const text = query.filter?.username?.like;
       const skip = (page - 1) * perpage;
 
-      let data = await this.testService.getAll(skip, perpage, text);
+      let data = await this.testService.getAll(skip, perpage, text, sort);
       response.status(200).send(data);
       return data;
     } catch (err) {

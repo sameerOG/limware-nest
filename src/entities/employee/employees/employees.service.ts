@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Department } from 'src/entities/department/department.entity';
 import { Facility } from 'src/entities/Facility/facility.entity';
 import { Role } from 'src/entities/role/role.entity';
@@ -52,12 +53,14 @@ export class EmployeesService {
     skip: number,
     take: number,
     text?: string,
+    sort?: string,
   ): Promise<EmployeeResponseDto[]> {
     let query = this.empRep
       .createQueryBuilder('employee')
       .select('employee.*')
       .skip(skip)
-      .take(take);
+      .take(take)
+      .orderBy(transformSortField(sort));
 
     if (text) {
       query = query.where(

@@ -88,17 +88,18 @@ export class RolesController {
   }
 
   @Get('/')
-  async getUsers(
+  async getRoles(
     @Res() response: Response,
     @Query() query,
   ): Promise<RoleDto[]> {
     try {
       const perpage = query['per-page'];
       const page = query['page'];
+      const sort = query['sort'];
       const text = query.filter?.name?.like;
       const skip = (page - 1) * perpage;
 
-      let data = await this.roleService.getRoles(skip, perpage, text);
+      let data = await this.roleService.getRoles(skip, perpage, text, sort);
       if (data?.length > 0) {
         response.status(200).send(data);
         return data;

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Like, Repository } from 'typeorm';
 import { Feature } from '../feature.entity';
 import { FeatureRequestDto } from './dto/request.dto';
@@ -18,6 +19,7 @@ export class FeaturesService {
     skip: number,
     take: number,
     text?: string,
+    sort?: string,
   ): Promise<AppFeatureResponseDto[]> {
     let where: any = {}; // Declare an empty where object
     if (text) {
@@ -28,6 +30,7 @@ export class FeaturesService {
       where,
       skip,
       take,
+      order: transformSortField(sort),
     });
     return features;
   }

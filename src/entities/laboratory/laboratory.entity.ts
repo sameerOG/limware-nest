@@ -79,7 +79,7 @@ export class Laboratory {
   @JoinColumn({ name: 'customer_id' })
   customer_id!: Customers;
 
-  @OneToOne(() => Department, (department) => department.parent_id)
+  @OneToMany(() => Department, (department) => department.parent_id)
   department_id!: Department;
 
   @OneToOne(() => InvoicePrintSettings, (iv) => iv.laboratory_id)

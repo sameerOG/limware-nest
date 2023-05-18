@@ -13,6 +13,8 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
+import { AuthService } from 'src/entities/auth/auth.service';
+import { CreateUserRequestDto } from 'src/entities/auth/dto/request.dto';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { FacilityUserRequestDto, UserRequestDto } from '../dto/request.dto';
 import {
@@ -24,7 +26,10 @@ import { UsersService } from './users.service';
 @Controller('users')
 @UseGuards(AuthGuard)
 export class UsersController {
-  constructor(private userService: UsersService) {}
+  constructor(
+    private authService: AuthService,
+    private userService: UsersService,
+  ) {}
 
   @Get('/')
   async getUsers(
@@ -34,10 +39,11 @@ export class UsersController {
     try {
       const perpage = query['per-page'] ? query['per-page'] : 25;
       const page = query['page'] ? query['page'] : 1;
+      const sort = query['sort'];
       const text = query.filter?.username?.like;
       const skip = (page - 1) * perpage;
 
-      let data = await this.userService.getUsers(skip, perpage, text);
+      let data = await this.userService.getUsers(skip, perpage, text, sort);
       response.status(200).send(data);
       return data;
     } catch (err) {
@@ -114,14 +120,18 @@ export class UsersController {
   @Post('/create')
   async add(
     @Res() response: Response,
-    @Body() body: UserRequestDto,
+    @Body() body: any,
   ): Promise<SingleUserDto> {
     try {
       if (!body.portal) {
         body.portal = 'limware';
       }
-      let data = await this.userService.addUser(body);
-      console.log('data', data);
+      let data;
+      if (body.portal === 'limware') {
+        data = await this.authService.createNewUser(body);
+      } else {
+        data = await this.userService.addUser(body);
+      }
       if (data) {
         response.status(200).send(data);
         return data;

@@ -15,6 +15,7 @@ export class FacilityDto {
   readonly updated_by: string;
   readonly customer?: Object;
   readonly laboratories?: Object[];
+  readonly parent_facility_id?: string;
 
   constructor(user: FacilityDto) {
     (this._id = user._id),
@@ -33,6 +34,22 @@ export class FacilityDto {
       (this.unique_id = user.unique_id),
       (this.updated_at = user.updated_at),
       (this.updated_by = user.updated_by),
+      (this.parent_facility_id = user.parent_facility_id),
       (this.status = user.status));
+  }
+}
+
+export class ParentFacilityDto {
+  readonly _id: string;
+  readonly city: string;
+  readonly name: string;
+  readonly unique_id: string;
+
+  constructor(user: ParentFacilityDto) {
+    (this._id = user._id),
+      ((this.name = user.name),
+      (this.city = user.city),
+      (this.name = user.name),
+      (this.unique_id = user.unique_id));
   }
 }

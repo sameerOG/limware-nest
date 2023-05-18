@@ -12,6 +12,7 @@ import * as bcrypt from 'bcryptjs';
 import { EmployeeFacility } from 'src/entities/employee/employee_facility.entity';
 import { Role } from 'src/entities/role/role.entity';
 import { Employee } from 'src/entities/employee/employee.entity';
+import { transformSortField } from 'src/common/utils/transform-sorting';
 
 const SALT_ROUNDS = 10;
 
@@ -29,6 +30,7 @@ export class UsersService {
     skip: number,
     take: number,
     text?: string,
+    sort?: string,
   ): Promise<UserDto[]> {
     let where: any = {}; // Declare an empty where object
 
@@ -45,6 +47,7 @@ export class UsersService {
       where,
       skip,
       take,
+      order: transformSortField(sort),
     });
     return users;
   }

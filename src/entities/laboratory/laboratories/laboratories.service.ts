@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Like, Repository } from 'typeorm';
 import { LaboratoryRequestDto } from '../dto/request.dto';
 import { LabRequestDto, LabResponseDto } from '../dto/response.dto';
@@ -16,6 +17,7 @@ export class LaboratoriesService {
     skip: number,
     take: number,
     text?: string,
+    sort?: string,
   ): Promise<LabResponseDto[]> {
     let where: any = {};
     if (text) {
@@ -31,6 +33,7 @@ export class LaboratoriesService {
       where,
       skip,
       take,
+      order: transformSortField(sort),
     });
     console.log('dataaa', data);
     data.forEach((item) => {

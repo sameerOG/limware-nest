@@ -4,6 +4,7 @@ import {
   administrationFeatures,
   limwareFeatures,
 } from 'src/common/helper/enums';
+import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Like, Repository } from 'typeorm';
 import { AssignPermissionRequest, RoleRequestDto } from '../dto/request.dto';
 import { RoleDto, SingleRoleDto } from '../dto/response.dto';
@@ -18,6 +19,7 @@ export class RolesService {
     skip: number,
     take: number,
     text?: string,
+    sort?: string,
   ): Promise<RoleDto[]> {
     let where: any = {};
 
@@ -29,6 +31,7 @@ export class RolesService {
       skip,
       take,
       where,
+      order: transformSortField(sort),
     });
     return roles;
   }

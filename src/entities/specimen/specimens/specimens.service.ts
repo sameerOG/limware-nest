@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Like, Repository } from 'typeorm';
 import { SpecimenRequestDto } from '../dto/request.dto';
 import { SingleSpecimenDto, SpecimenDto } from '../dto/response.dto';
@@ -15,6 +16,7 @@ export class SpecimensService {
     skip: number,
     take: number,
     text?: string,
+    sort?: string,
   ): Promise<SpecimenDto[]> {
     let where: any = {}; // Declare an empty where object
 
@@ -26,6 +28,7 @@ export class SpecimensService {
       where,
       skip,
       take,
+      order: transformSortField(sort),
     });
     return specimens;
   }

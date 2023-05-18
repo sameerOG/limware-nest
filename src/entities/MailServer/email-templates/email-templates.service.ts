@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Repository, Like } from 'typeorm';
 import { EmailTemplateRequestDto } from '../dto/email-templates/request.dto';
 import { EmailTemplatesDto } from '../dto/email-templates/response.dto';
@@ -14,7 +15,12 @@ export class EmailTemplatesService {
     private emailTemplateRep: Repository<EmailTemplate>,
   ) {}
 
-  async getAll(skip: number, take: number, text?: string): Promise<any[]> {
+  async getAll(
+    skip: number,
+    take: number,
+    text?: string,
+    sort?: string,
+  ): Promise<any[]> {
     let where: any = {};
     if (text) {
       where = [{ title: Like(`%${text}%`) }, { subject: Like(`%${text}%`) }];
@@ -25,6 +31,7 @@ export class EmailTemplatesService {
       where,
       skip,
       take,
+      order: transformSortField(sort),
     });
     data.forEach((item) => {
       item['serverName'] = {

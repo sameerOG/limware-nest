@@ -59,7 +59,7 @@ export class Facility {
   @OneToMany(() => Laboratory, (laboratory) => laboratory.facility_id)
   laboratory_id!: Laboratory;
 
-  @OneToOne(() => Department, (department) => department.facility_id)
+  @OneToMany(() => Department, (department) => department.facility_id)
   department_id!: Department;
 
   @OneToOne(() => UserAccessToken, (user_token) => user_token.facility_id)

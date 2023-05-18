@@ -64,6 +64,51 @@ export class RegisterRequest {
   terms: boolean;
 }
 
+export class CreateUserRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  username: string;
+
+  @IsString()
+  @IsNotEmpty()
+  full_name: string;
+
+  @IsString()
+  @IsOptional()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  mobile_number: string;
+
+  @IsString()
+  @IsNotEmpty()
+  city: string;
+
+  @IsString()
+  @IsNotEmpty()
+  address: string;
+
+  @IsString()
+  @IsNotEmpty()
+  portal: string;
+
+  @IsNotEmpty()
+  status: number;
+
+  @IsBoolean()
+  @IsNotEmpty()
+  terms: boolean;
+}
+
 export class LoginIntoFacility {
   @IsString()
   @IsNotEmpty()

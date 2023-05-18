@@ -57,7 +57,9 @@ export class Users {
   @Column({ type: 'json', default: null })
   contact_numbers!: string;
 
-  @ManyToOne(() => Customers, (customer) => customer.user_id)
+  @ManyToOne(() => Customers, (customer) => customer.user_id, {
+    cascade: ['soft-remove'],
+  })
   @JoinColumn({ name: 'customer_id' })
   customer_id!: Customers;
 

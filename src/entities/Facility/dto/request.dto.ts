@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsNumber, IsObject } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsOptional,
+} from 'class-validator';
 
 export class FacilityRequestDto {
   @IsString()
@@ -8,6 +14,10 @@ export class FacilityRequestDto {
   @IsString()
   @IsNotEmpty()
   address: string;
+
+  @IsString()
+  @IsOptional()
+  parent_facility_id: any;
 
   @IsString()
   @IsNotEmpty()
