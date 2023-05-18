@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Addons } from 'src/entities/addons/addons.entity';
 import { Customers } from 'src/entities/customer/customer.entity';
-import { getRepository, Like, Repository } from 'typeorm';
+import { FindManyOptions, getRepository, Like, Repository } from 'typeorm';
 import { FacilityRequestDto } from '../dto/request.dto';
 import { FacilityDto } from '../dto/response.dto';
 import { Facility } from '../facility.entity';
+import { transformSortField } from 'src/common/utils/transform-sort-field';
 
 @Injectable()
 export class FacilitiesService {
@@ -22,16 +23,12 @@ export class FacilitiesService {
     skip: number,
     take: number,
     text?: string,
+    sort?: string,
   ): Promise<FacilityDto[]> {
-    let where: any = {};
-    if (text) {
-      where = [
-        { name: Like(`%${text}%`) },
-        { mobile_number: Like(`%${text}%`) },
-        { city: Like(`%${text}%`) },
-      ];
-    }
-    const data: any[] = await this.facilityRep.find({
+    const findOptions: FindManyOptions<Facility> = {
+      skip,
+      take,
+      relations: ['customer_id'],
       select: [
         '_id',
         'address',
@@ -46,11 +43,20 @@ export class FacilitiesService {
         'unique_id',
         'updated_at',
       ],
-      relations: ['customer_id'],
-      where,
-      skip,
-      take,
-    });
+    };
+    if (text) {
+      findOptions.where = [
+        { name: Like(`%${text}%`) },
+        { mobile_number: Like(`%${text}%`) },
+        { city: Like(`%${text}%`) },
+      ];
+    }
+
+    if (sort) {
+      findOptions.order = transformSortField(sort);
+    }
+
+    const data: any[] = await this.facilityRep.find(findOptions);
     data.forEach((item) => {
       Object.assign(item, { customer_id: item.customer_id?._id });
     });

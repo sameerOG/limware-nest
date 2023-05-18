@@ -27,12 +27,12 @@ export class FacilitiesController {
     @Query() query,
   ): Promise<FacilityDto[]> {
     try {
-      const perpage = query['per-page'] ? query['per-page'] : 25;
+      const perPage = query['per-page'] ? query['per-page'] : 25;
       const page = query['page'] ? query['page'] : 1;
       const text = query.filter?.name;
-      const skip = (page - 1) * perpage;
-      console.log('query', query);
-      let data = await this.facilityService.getAll(skip, perpage, text);
+      const skip = (page - 1) * perPage;
+      const sort = query.sort;
+      const data = await this.facilityService.getAll(skip, perPage, text, sort);
       response.status(200).send(data);
       return data;
     } catch (err) {

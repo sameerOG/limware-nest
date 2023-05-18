@@ -1,9 +1,10 @@
+import { Repository, Like, FindManyOptions } from 'typeorm';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like } from 'typeorm';
 import { Customers } from '../customer.entity';
 import { CustomerRequestDto } from '../dto/request.dto';
 import { CustomerDto, SingleCustomerDto } from '../dto/response.dto';
+import { transformSortField } from 'src/common/utils/transform-sort-field';
 
 @Injectable()
 export class CustomersService {
@@ -11,28 +12,31 @@ export class CustomersService {
     @InjectRepository(Customers) private customerRep: Repository<Customers>,
   ) {}
 
-  async getCustomers(
+  getCustomers(
     skip: number,
     take: number,
     text?: string,
+    sort?: string,
   ): Promise<CustomerDto[]> {
-    let where: any = {}; // Declare an empty where object
+    const findOptions: FindManyOptions<Customers> = {
+      skip,
+      take,
+      select: ['_id', 'name', 'city', 'email', 'mobile_number', 'status'],
+    };
+
+    if (sort) {
+      findOptions.order = transformSortField(sort);
+    }
+
     if (text) {
-      // where.full_name = Like(`%${text}%`);
-      where = [
+      findOptions.where = [
         { name: Like(`%${text}%`) },
         { mobile_number: Like(`%${text}%`) },
         { email: Like(`%${text}%`) },
         { city: Like(`%${text}%`) },
       ];
     }
-    const customers = await this.customerRep.find({
-      select: ['_id', 'name', 'city', 'email', 'mobile_number', 'status'],
-      where,
-      skip,
-      take,
-    });
-    return customers;
+    return this.customerRep.find(findOptions);
   }
 
   async getCustomer(id: string): Promise<SingleCustomerDto> {

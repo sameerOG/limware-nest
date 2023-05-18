@@ -26,11 +26,17 @@ export class CustomersController {
     @Query() query,
   ): Promise<CustomerDto[]> {
     try {
-      const perpage = query['per-page'] ? query['per-page'] : 25;
+      const perPage = query['per-page'] ? query['per-page'] : 25;
       const page = query['page'] ? query['page'] : 1;
       const text = query.filter?.name;
-      const skip = (page - 1) * perpage;
-      let data = await this.customerService.getCustomers(skip, perpage, text);
+      const skip = (page - 1) * perPage;
+      const sort = query.sort;
+      const data = await this.customerService.getCustomers(
+        skip,
+        perPage,
+        text,
+        sort,
+      );
       response.status(200).send(data);
       return data;
     } catch (err) {
