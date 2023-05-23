@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Delete,
+  HttpException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
@@ -48,7 +49,9 @@ export class TestParametersController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Parameters not found' });
     }
   }
 
@@ -72,7 +75,9 @@ export class TestParametersController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Groups not found' });
     }
   }
 
@@ -94,7 +99,9 @@ export class TestParametersController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Parameters not found' });
     }
   }
 
@@ -115,7 +122,9 @@ export class TestParametersController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Parameter not found' });
     }
   }
 
@@ -132,11 +141,20 @@ export class TestParametersController {
         body,
         loggedInUser,
       );
-      response.status(200).send(data);
-      return data;
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        throw new HttpException(
+          { err: true, messages: 'Test Parameter not added' },
+          422,
+        );
+      }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Parameter not added' });
     }
   }
 
@@ -155,11 +173,20 @@ export class TestParametersController {
         body,
         loggedInUser,
       );
-      response.status(200).send(data);
-      return data;
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        throw new HttpException(
+          { err: true, messages: 'Test Parameter not updated' },
+          422,
+        );
+      }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Parameter not updated' });
     }
   }
 
@@ -180,7 +207,9 @@ export class TestParametersController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Parameter not deleted' });
     }
   }
 }

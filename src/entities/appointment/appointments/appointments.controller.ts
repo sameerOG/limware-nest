@@ -1,4 +1,12 @@
-import { Controller, Get, Res, Headers, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Res,
+  Headers,
+  Post,
+  Body,
+  HttpException,
+} from '@nestjs/common';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
 import { AddAppointment, SearchPatientRequest } from '../dto/request.dto';
@@ -22,15 +30,11 @@ export class AppointmentsController {
       const token = authHeader.split(' ')[1];
       const loggedInUser = jwtDecode(token);
       let data = await this.appointmentService.getAllTests(loggedInUser);
-      if (data) {
-        response.status(200).send(data);
-        return data;
-      } else {
-        response.status(422).send({});
-      }
+      response.status(200).send(data);
+      return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Tests not found' });
     }
   }
 
@@ -43,15 +47,13 @@ export class AppointmentsController {
       const token = authHeader.split(' ')[1];
       const loggedInUser = jwtDecode(token);
       let data = await this.appointmentService.getAllReferences(loggedInUser);
-      if (data) {
-        response.status(200).send(data);
-        return data;
-      } else {
-        response.status(422).send({});
-      }
+      response.status(200).send(data);
+      return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'References not found' });
     }
   }
 
@@ -72,11 +74,14 @@ export class AppointmentsController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Patient not found' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send(err);
+      response.status(422).send({ error: err, message: 'Patient not found' });
     }
   }
 }

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   Param,
   Post,
   Put,
@@ -38,7 +39,9 @@ export class LaboratoriesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send([]);
+      response
+        .status(400)
+        .send({ error: err, message: 'Laboratories not found' });
     }
   }
 
@@ -55,7 +58,7 @@ export class LaboratoriesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send([]);
+      response.status(400).send({ error: err, message: 'Labs not found' });
     }
   }
 
@@ -78,7 +81,7 @@ export class LaboratoriesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(403).send([]);
+      response.status(403).send({ error: err, message: 'Lab not found' });
     }
   }
 
@@ -93,11 +96,11 @@ export class LaboratoriesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send({});
+        throw new HttpException({ err: true, messages: 'Lab not added' }, 422);
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Lab not added' });
     }
   }
 
@@ -113,11 +116,14 @@ export class LaboratoriesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send({});
+        throw new HttpException(
+          { err: true, messages: 'Lab not updated' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Lab not updated' });
     }
   }
 
@@ -132,11 +138,14 @@ export class LaboratoriesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send({});
+        throw new HttpException(
+          { err: true, messages: 'Lab not deleted' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Lab not deleted' });
     }
   }
 }

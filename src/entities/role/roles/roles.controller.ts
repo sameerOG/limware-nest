@@ -10,6 +10,7 @@ import {
   Res,
   Headers,
   UseGuards,
+  HttpException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
@@ -35,15 +36,11 @@ export class RolesController {
       const loggedInUser = jwtDecode(token);
       const portal = query['portal'];
       let data = await this.roleService.getByPortal(portal, loggedInUser);
-      if (data) {
-        response.status(200).send(data);
-        return data;
-      } else {
-        response.status(422).send([]);
-      }
+      response.status(200).send(data);
+      return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Roles not found' });
     }
   }
 
@@ -59,11 +56,16 @@ export class RolesController {
       if (data) {
         response.status(200).send(data);
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Permissions not found' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Permissions not found' });
     }
   }
 
@@ -78,11 +80,16 @@ export class RolesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Permissions not assigned' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Permissions not assigned' });
     }
   }
 
@@ -99,15 +106,11 @@ export class RolesController {
       const skip = (page - 1) * perpage;
 
       let data = await this.roleService.getRoles(skip, perpage, text, sort);
-      if (data?.length > 0) {
-        response.status(200).send(data);
-        return data;
-      } else {
-        response.status(422).send([]);
-      }
+      response.status(200).send(data);
+      return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response.status(422).send({ error: err, message: 'Roles not found' });
     }
   }
 
@@ -122,11 +125,11 @@ export class RolesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException({ err: true, messages: 'Role not found' }, 422);
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'ROle not found' });
     }
   }
 
@@ -142,11 +145,14 @@ export class RolesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Role not updated' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Role not updated' });
     }
   }
 
@@ -161,11 +167,11 @@ export class RolesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException({ err: true, messages: 'Role not added' }, 422);
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Role not added' });
     }
   }
 
@@ -177,13 +183,16 @@ export class RolesController {
     try {
       let data = await this.roleService.deleteRole(id);
       if (data.affected > 0) {
-        response.status(204).send('User deleted successfully');
+        response.status(204).send('Role deleted successfully');
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Role not deleted' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Role not deleted' });
     }
   }
 }

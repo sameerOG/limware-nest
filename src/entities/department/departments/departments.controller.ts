@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   Param,
   Post,
   Put,
@@ -36,7 +37,9 @@ export class DepartmentsController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Facility Departments not found' });
     }
   }
 
@@ -53,7 +56,7 @@ export class DepartmentsController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response.status(422).send({ error: err, message: 'Facility not found' });
     }
   }
 
@@ -68,7 +71,9 @@ export class DepartmentsController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Department not found' });
     }
   }
 
@@ -83,11 +88,16 @@ export class DepartmentsController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Department not added' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Department not added' });
     }
   }
 
@@ -99,15 +109,13 @@ export class DepartmentsController {
   ): Promise<DepartmentDto> {
     try {
       let data = await this.departmentService.update(id, body);
-      if (data) {
-        response.status(200).send(data);
-        return data;
-      } else {
-        response.status(422).send([]);
-      }
+      response.status(200).send(data);
+      return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Department not updated' });
     }
   }
 
@@ -118,15 +126,13 @@ export class DepartmentsController {
   ): Promise<Object> {
     try {
       let data = await this.departmentService.delete(id);
-      if (data.affected > 0) {
-        response.status(200).send(data);
-        return data;
-      } else {
-        response.status(422).send({});
-      }
+      response.status(200).send(data);
+      return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Department not deleted' });
     }
   }
 }

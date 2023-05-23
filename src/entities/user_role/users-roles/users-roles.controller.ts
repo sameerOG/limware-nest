@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   Param,
   Post,
   Query,
@@ -39,7 +40,7 @@ export class UsersRolesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response.status(422).send({ error: err, message: 'Users not found' });
     }
   }
 
@@ -54,11 +55,14 @@ export class UsersRolesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'User Role not added' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response.status(422).send({ error: err, message: 'User Role not added' });
     }
   }
 
@@ -69,7 +73,9 @@ export class UsersRolesController {
       response.status(204).send('User role deleted successfully');
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'User Role not deleted' });
     }
   }
 }

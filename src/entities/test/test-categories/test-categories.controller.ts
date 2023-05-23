@@ -10,6 +10,7 @@ import {
   Res,
   UseGuards,
   Headers,
+  HttpException,
 } from '@nestjs/common';
 import {
   ReportTemplate,
@@ -48,7 +49,9 @@ export class TestCategoriesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Categories not found' });
     }
   }
 
@@ -63,7 +66,9 @@ export class TestCategoriesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Categories not found' });
     }
   }
 
@@ -80,7 +85,9 @@ export class TestCategoriesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Category not found' });
     }
   }
 
@@ -98,11 +105,16 @@ export class TestCategoriesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Test Category not added' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Category not added' });
     }
   }
 
@@ -118,11 +130,16 @@ export class TestCategoriesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Test Category not updated' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Category not updated' });
     }
   }
 
@@ -137,11 +154,16 @@ export class TestCategoriesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Test Category not deleted' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Category not deleted' });
     }
   }
 
@@ -190,7 +212,9 @@ export class TestCategoriesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Report Templates not found' });
     }
   }
 }

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   Param,
   Post,
   Put,
@@ -43,7 +44,7 @@ export class SpecimensController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response.status(422).send({ error: err, message: 'Specimens not found' });
     }
   }
 
@@ -55,7 +56,7 @@ export class SpecimensController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response.status(422).send({ error: err, message: 'Specimens not found' });
     }
   }
 
@@ -71,11 +72,16 @@ export class SpecimensController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Specimen not updated' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Specimen not updated' });
     }
   }
 
@@ -90,11 +96,14 @@ export class SpecimensController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Specimen not added' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Specimen not added' });
     }
   }
 
@@ -108,11 +117,16 @@ export class SpecimensController {
       if (data.affected > 0) {
         response.status(204).send('Specimen deleted successfully');
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Specimen not deleted' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Specimen not deleted' });
     }
   }
 }

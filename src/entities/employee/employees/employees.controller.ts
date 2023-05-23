@@ -10,6 +10,8 @@ import {
   Res,
   UseGuards,
   Headers,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { EmployeesService } from './employees.service';
 import { Response } from 'express';
@@ -43,7 +45,9 @@ export class EmployeesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: "Employee's not found" });
     }
   }
 
@@ -60,7 +64,9 @@ export class EmployeesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: "Employee's not found" });
     }
   }
 
@@ -75,7 +81,7 @@ export class EmployeesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response.status(422).send({ error: err, message: 'Employee not found' });
     }
   }
 
@@ -86,15 +92,13 @@ export class EmployeesController {
   ): Promise<EmployeeFacilityDepartment> {
     try {
       let data = await this.empService.assignFacility(body);
-      if (data) {
-        response.status(200).send(data);
-        return data;
-      } else {
-        response.status(422).send({});
-      }
+      response.status(200).send(data);
+      return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Fcility not assigned' });
     }
   }
 
@@ -123,7 +127,9 @@ export class EmployeesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Facilities not found' });
     }
   }
 
@@ -145,7 +151,9 @@ export class EmployeesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Facilities not found' });
     }
   }
 
@@ -163,7 +171,9 @@ export class EmployeesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Facilities not found' });
     }
   }
 
@@ -179,7 +189,9 @@ export class EmployeesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Facility not updated' });
     }
   }
 
@@ -194,7 +206,9 @@ export class EmployeesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Facility not deleted' });
     }
   }
 
@@ -209,11 +223,14 @@ export class EmployeesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Employee not added' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Employee not added' });
     }
   }
 
@@ -229,11 +246,16 @@ export class EmployeesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Employee not updated' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Employee not updated' });
     }
   }
 
@@ -248,11 +270,16 @@ export class EmployeesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Employee not deleted' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Employee not deleted' });
     }
   }
 }

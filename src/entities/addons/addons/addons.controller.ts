@@ -33,7 +33,9 @@ export class AddonsController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Facilities not found' });
     }
   }
 
@@ -50,7 +52,7 @@ export class AddonsController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response.status(422).send({ error: err, message: 'Addons not Updated' });
     }
   }
 }

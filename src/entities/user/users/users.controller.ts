@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Headers,
+  HttpException,
   Param,
   Post,
   Put,
@@ -48,7 +49,7 @@ export class UsersController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(400).send([]);
+      response.status(400).send({ error: err, message: 'Users not found' });
     }
   }
 
@@ -67,7 +68,7 @@ export class UsersController {
       response.status(200).send(data);
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'User not found' });
     }
   }
 
@@ -89,11 +90,11 @@ export class UsersController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException({ err: true, messages: 'User not found' }, 422);
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response.status(422).send({ error: err, message: 'User not found' });
     }
   }
 
@@ -109,11 +110,14 @@ export class UsersController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send([]);
+        throw new HttpException(
+          { err: true, messages: 'User not updated' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'User not updated' });
     }
   }
 
@@ -136,11 +140,11 @@ export class UsersController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send([]);
+        throw new HttpException({ err: true, messages: 'User not added' }, 422);
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'User not added' });
     }
   }
 
@@ -158,11 +162,16 @@ export class UsersController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Facility User not added' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Facility User not added' });
     }
   }
 
@@ -180,11 +189,11 @@ export class UsersController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send([]);
+        throw new HttpException({ err: true, messages: 'User not added' }, 422);
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'User not added' });
     }
   }
 
@@ -198,11 +207,14 @@ export class UsersController {
       if (data.affected > 0) {
         response.status(204).send('User deleted successfully');
       } else {
-        response.status(400).send([]);
+        throw new HttpException(
+          { err: true, messages: 'User not deleted' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'User not deleted' });
     }
   }
 }

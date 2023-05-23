@@ -7,6 +7,7 @@ import {
   Get,
   UseInterceptors,
   UploadedFile,
+  HttpException,
 } from '@nestjs/common';
 import * as moment from 'moment';
 import * as uuid from 'uuid';
@@ -49,11 +50,13 @@ export class AuthController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        response
+          .status(422)
+          .send({ error: true, message: 'Invalid Credentials' });
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send(err);
+      response.status(422).send({ error: err, message: 'Invalid Credentials' });
     }
   }
 
@@ -72,11 +75,14 @@ export class AuthController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Profile not found' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Profile not found' });
     }
   }
 
@@ -107,11 +113,14 @@ export class AuthController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Profile not updated' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Profile not updated' });
     }
   }
 
@@ -128,7 +137,9 @@ export class AuthController {
       return true;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Profile Image not found' });
     }
   }
 
@@ -145,7 +156,9 @@ export class AuthController {
       response.status(200).send(data);
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send(err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Password not changed' });
     }
   }
 
@@ -161,11 +174,16 @@ export class AuthController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Logout Unsuccessfull' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Logout Unsuccessfull' });
     }
   }
 
@@ -180,11 +198,11 @@ export class AuthController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(400).send(data);
+        throw new HttpException({ err: true, messages: 'User not found' }, 422);
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'User not found' });
     }
   }
 
@@ -200,11 +218,11 @@ export class AuthController {
         response.status(statusCode).send(data);
         return data;
       } else {
-        response.status(422).send(data);
+        throw new HttpException({ err: true, messages: 'User not added' }, 422);
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send(err);
+      response.status(422).send({ error: err, message: 'User not added' });
     }
   }
 
@@ -219,11 +237,16 @@ export class AuthController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Invalid Verification Code' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Invalid Verification Pin' });
     }
   }
 }
