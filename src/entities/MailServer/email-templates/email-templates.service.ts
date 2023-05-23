@@ -101,7 +101,6 @@ export class EmailTemplatesService {
         where: { _id: id },
       });
       const { ...rest } = data;
-      console.log('data', data);
       return new EmailTemplatesDto({
         ...rest,
         outgoing_mail_server_id: data.outgoing_mail_server_id._id,

@@ -59,8 +59,6 @@ export class AuthService {
       .groupBy('u._id')
       .getRawOne();
 
-    console.log('user', user);
-
     const facilities = [];
     user.facilities?.map((facility) => {
       if (facility) {
@@ -119,7 +117,6 @@ export class AuthService {
           .select('user_access_token.*')
           .where('user_access_token.user_id = :user_id', { user_id: user._id })
           .getRawOne();
-        console.log('token', tokenExists);
         if (tokenExists) {
           tokenExists.access_token = token;
           await this.userTokenRep.update(tokenExists._id, tokenExists);
@@ -135,7 +132,6 @@ export class AuthService {
         }
         return obj;
       } else {
-        console.log('user', authenticated);
         throw [
           { field: 'password', message: 'Incorrect username or password' },
         ];
@@ -244,7 +240,6 @@ export class AuthService {
       .select('user_access_token.*')
       .where('user_access_token.user_id = :user_id', { user_id: user._id })
       .getRawOne();
-    console.log('user', userToken);
     if (userToken) {
       userToken.access_token = body.token;
       userToken.facility_id = body.facility_id;

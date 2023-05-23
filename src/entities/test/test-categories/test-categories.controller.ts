@@ -9,6 +9,8 @@ import {
   Query,
   Res,
   UseGuards,
+  Headers,
+  HttpException,
 } from '@nestjs/common';
 import {
   ReportTemplate,
@@ -19,6 +21,7 @@ import { TestCategoriesService } from './test-categories.service';
 import { query, Response } from 'express';
 import { TestCategoryRequestDto } from '../dto/test-category/request.dto';
 import { AuthGuard } from 'src/guard/auth.guard';
+import jwtDecode from 'jwt-decode';
 @Controller('')
 @UseGuards(AuthGuard)
 export class TestCategoriesController {
@@ -46,7 +49,9 @@ export class TestCategoriesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Categories not found' });
     }
   }
 
@@ -61,7 +66,9 @@ export class TestCategoriesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Categories not found' });
     }
   }
 
@@ -78,26 +85,36 @@ export class TestCategoriesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Category not found' });
     }
   }
 
   @Post('/test-categories')
   async add(
     @Res() response: Response,
+    @Headers('Authorization') authHeader: string,
     @Body() body: TestCategoryRequestDto,
   ): Promise<SingleTestCategory> {
     try {
-      let data = await this.testCategoryService.add(body);
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.testCategoryService.add(body, loggedInUser);
       if (data) {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Test Category not added' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Category not added' });
     }
   }
 
@@ -113,11 +130,16 @@ export class TestCategoriesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Test Category not updated' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Category not updated' });
     }
   }
 
@@ -132,11 +154,16 @@ export class TestCategoriesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Test Category not deleted' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Category not deleted' });
     }
   }
 
@@ -173,19 +200,21 @@ export class TestCategoriesController {
           code: 5,
           description:
             'Cross match report template to show donor information as well.',
-          name: 'Template 6',
+          name: 'Cross Match',
         },
         {
           code: 5,
           description: 'Widal report template.',
-          name: 'Template 6',
+          name: 'Widal',
         },
       ];
       response.status(200).send(data);
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Report Templates not found' });
     }
   }
 }

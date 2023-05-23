@@ -37,7 +37,9 @@ export class FeaturesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Feature Updates not found' });
     }
   }
 
@@ -52,7 +54,9 @@ export class FeaturesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Feature update not found' });
     }
   }
 
@@ -67,7 +71,9 @@ export class FeaturesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Feature Updates not added' });
     }
   }
 
@@ -83,7 +89,9 @@ export class FeaturesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Feature Updated not updated' });
     }
   }
 
@@ -98,7 +106,9 @@ export class FeaturesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Feature Updates not deleted' });
     }
   }
 }

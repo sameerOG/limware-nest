@@ -29,7 +29,7 @@ export class TestGroup {
   name!: string;
 
   @Column({ default: null })
-  facility_id!: number;
+  facility_id!: string;
 
   @Column()
   parent!: string;

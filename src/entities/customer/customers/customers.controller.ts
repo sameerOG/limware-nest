@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   Param,
   Post,
   Put,
@@ -41,7 +42,7 @@ export class CustomersController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response.status(422).send({ error: err, message: 'Customers not found' });
     }
   }
 
@@ -56,7 +57,7 @@ export class CustomersController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Customer not found' });
     }
   }
 
@@ -68,15 +69,13 @@ export class CustomersController {
   ): Promise<SingleCustomerDto> {
     try {
       let data = await this.customerService.updateCustomer(id, body);
-      if (data) {
-        response.status(200).send(data);
-        return data;
-      } else {
-        response.status(422).send([]);
-      }
+      response.status(200).send(data);
+      return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Customer not updated' });
     }
   }
 
@@ -87,16 +86,18 @@ export class CustomersController {
   ): Promise<SingleCustomerDto> {
     try {
       let data = await this.customerService.addCustomer(body);
-      console.log('data', data);
       if (data) {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Customer not added' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Customer not added' });
     }
   }
 
@@ -106,15 +107,13 @@ export class CustomersController {
     @Param('id') id: string,
   ): Promise<void> {
     try {
-      let data = await this.customerService.deleteCustomer(id);
-      if (data.affected > 0) {
-        response.status(204).send('Customer deleted successfully');
-      } else {
-        response.status(422).send([]);
-      }
+      await this.customerService.deleteCustomer(id);
+      response.status(204).send('Customer deleted successfully');
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Customer not deleted' });
     }
   }
 }

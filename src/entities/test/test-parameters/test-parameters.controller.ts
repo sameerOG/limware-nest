@@ -7,10 +7,16 @@ import {
   Body,
   Param,
   Post,
+  Put,
+  Delete,
+  HttpException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
-import { TestParameterRequest } from '../dto/test-category/request.dto';
+import {
+  TestParameterRequest,
+  UpdateTestParameterRequestDto,
+} from '../dto/test-category/request.dto';
 import {
   AllGroups,
   CreateParameterTestResponse,
@@ -18,6 +24,7 @@ import {
   TestParameterResponse,
   UnassignedParameters,
 } from '../dto/test-category/response.dto';
+import { TestParameter } from '../test_parameter.entity';
 import { TestParametersService } from './test-parameters.service';
 
 @Controller('')
@@ -42,7 +49,9 @@ export class TestParametersController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Parameters not found' });
     }
   }
 
@@ -66,7 +75,9 @@ export class TestParametersController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Groups not found' });
     }
   }
 
@@ -88,7 +99,9 @@ export class TestParametersController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Parameters not found' });
     }
   }
 
@@ -109,22 +122,94 @@ export class TestParametersController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Parameter not found' });
     }
   }
 
   @Post('/tests/create-parametric-test')
   async createParameterTest(
     @Res() response: Response,
+    @Headers('Authorization') authHeader: string,
     @Body() body: TestParameterRequest,
   ): Promise<CreateParameterTestResponse> {
     try {
-      let data = await this.testParameterService.createParameterTest(body);
-      response.status(200).send(data);
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.testParameterService.createParameterTest(
+        body,
+        loggedInUser,
+      );
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        throw new HttpException(
+          { err: true, messages: 'Test Parameter not added' },
+          422,
+        );
+      }
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Parameter not added' });
+    }
+  }
+
+  @Put('/test-parameters/:id')
+  async updateTestParameter(
+    @Res() response: Response,
+    @Param('id') id,
+    @Body() body: UpdateTestParameterRequestDto,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<TestParameter> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.testParameterService.updateTestParameter(
+        id,
+        body,
+        loggedInUser,
+      );
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        throw new HttpException(
+          { err: true, messages: 'Test Parameter not updated' },
+          422,
+        );
+      }
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Parameter not updated' });
+    }
+  }
+
+  @Delete('/test-parameters/:id')
+  async deleteTestParameter(
+    @Res() response: Response,
+    @Param('id') id,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<TestParameter> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.testParameterService.deleteTestParameter(
+        id,
+        loggedInUser,
+      );
+      response.status(204).send(data);
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Parameter not deleted' });
     }
   }
 }

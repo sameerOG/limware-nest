@@ -29,7 +29,9 @@ export class PricingPlansController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Pricing Plans not found' });
     }
   }
 
@@ -44,7 +46,9 @@ export class PricingPlansController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Pricing Plan not found' });
     }
   }
 
@@ -59,7 +63,9 @@ export class PricingPlansController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Pricing Plan not added' });
     }
   }
 }

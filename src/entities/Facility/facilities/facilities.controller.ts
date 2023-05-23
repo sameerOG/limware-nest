@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   Param,
   Post,
   Put,
@@ -32,13 +33,14 @@ export class FacilitiesController {
       const sort = query['sort'];
       const text = query.filter?.name;
       const skip = (page - 1) * perpage;
-      console.log('query', query);
       let data = await this.facilityService.getAll(skip, perpage, text, sort);
       response.status(200).send(data);
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Facilities not found' });
     }
   }
 
@@ -54,7 +56,9 @@ export class FacilitiesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Parent Facilities not found' });
     }
   }
 
@@ -66,12 +70,13 @@ export class FacilitiesController {
     try {
       const customer_id: string = query['customer_id'];
       const data = await this.facilityService.getAllByCustomer(customer_id);
-      console.log('data', data);
       response.status(200).send(data);
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response
+        .status(422)
+        .send({ error: err, message: 'Facilities not found' });
     }
   }
 
@@ -87,7 +92,7 @@ export class FacilitiesController {
       response.status(200).send(data);
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Facility not found' });
     }
   }
 
@@ -102,11 +107,14 @@ export class FacilitiesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Facility not added' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Facility not added' });
     }
   }
 
@@ -122,11 +130,16 @@ export class FacilitiesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Facility not updated' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Facility not updated' });
     }
   }
 
@@ -141,11 +154,16 @@ export class FacilitiesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Facility not deleted' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Facility not deleted' });
     }
   }
 }

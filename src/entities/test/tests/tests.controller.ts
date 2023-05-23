@@ -10,6 +10,7 @@ import {
   Res,
   Headers,
   UseGuards,
+  HttpException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
@@ -47,7 +48,7 @@ export class TestsController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response.status(422).send({ error: err, message: 'Tests not found' });
     }
   }
 
@@ -62,7 +63,7 @@ export class TestsController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Test not found' });
     }
   }
 
@@ -74,16 +75,18 @@ export class TestsController {
   ): Promise<SingleTestResponseDto> {
     try {
       let data = await this.testService.update(id, body);
-      console.log('ddd', data);
       if (data) {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Test not updated' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Test not updated' });
     }
   }
 
@@ -97,16 +100,15 @@ export class TestsController {
       const token = authHeader.split(' ')[1];
       const loggedInUser = jwtDecode(token);
       let data = await this.testService.add(body, loggedInUser);
-      console.log('data', data);
       if (data) {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException({ err: true, messages: 'Test not added' }, 422);
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Test not added' });
     }
   }
 
@@ -123,7 +125,7 @@ export class TestsController {
       response.status(204).send('Test deleted successfully');
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Test not deleted' });
     }
   }
 
@@ -138,7 +140,9 @@ export class TestsController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Normal Ranges not found' });
     }
   }
 
@@ -154,7 +158,9 @@ export class TestsController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Normal Range not found' });
     }
   }
 
@@ -165,11 +171,20 @@ export class TestsController {
   ): Promise<TestNormalRangeResponse> {
     try {
       let data = await this.testService.addTestNormalRange(body);
-      response.status(200).send(data);
-      return data;
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        throw new HttpException(
+          { err: true, messages: 'Test Normal Range not added' },
+          422,
+        );
+      }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Normal Range not added' });
     }
   }
 
@@ -183,7 +198,9 @@ export class TestsController {
       response.status(204).send();
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Normal Range not deleted' });
     }
   }
 }

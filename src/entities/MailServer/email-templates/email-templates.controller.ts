@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpException,
   Param,
   Post,
   Put,
@@ -31,7 +32,6 @@ export class EmailTemplatesController {
       const sort = query['sort'];
       const text = query.filter?.title;
       const skip = (page - 1) * perpage;
-      console.log('query', query);
 
       let data = await this.emailTemplateService.getAll(
         skip,
@@ -43,7 +43,7 @@ export class EmailTemplatesController {
       return data;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send([]);
+      response.status(422).send({ error: err, message: 'Templates not found' });
     }
   }
 
@@ -54,7 +54,7 @@ export class EmailTemplatesController {
       response.status(200).send(data);
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Template not found' });
     }
   }
 
@@ -69,11 +69,14 @@ export class EmailTemplatesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Template not added' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response.status(422).send({ error: err, message: 'Template not added' });
     }
   }
 
@@ -89,11 +92,16 @@ export class EmailTemplatesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send([]);
+        throw new HttpException(
+          { err: true, messages: 'Template not updated' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Template not updated' });
     }
   }
 
@@ -108,11 +116,16 @@ export class EmailTemplatesController {
         response.status(200).send(data);
         return data;
       } else {
-        response.status(422).send({});
+        throw new HttpException(
+          { err: true, messages: 'Template not deleted' },
+          422,
+        );
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({});
+      response
+        .status(422)
+        .send({ error: err, message: 'Template not deleted' });
     }
   }
 }

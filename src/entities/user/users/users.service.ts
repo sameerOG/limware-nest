@@ -13,6 +13,7 @@ import { EmployeeFacility } from 'src/entities/employee/employee_facility.entity
 import { Role } from 'src/entities/role/role.entity';
 import { Employee } from 'src/entities/employee/employee.entity';
 import { transformSortField } from 'src/common/utils/transform-sorting';
+import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 
 const SALT_ROUNDS = 10;
 
@@ -24,6 +25,7 @@ export class UsersService {
     private empFacilityRep: Repository<EmployeeFacility>,
     @InjectRepository(Role) private rolesRep: Repository<Role>,
     @InjectRepository(Employee) private empRep: Repository<Employee>,
+    @InjectRepository(Laboratory) private labRep: Repository<Laboratory>,
   ) {}
 
   async getUsers(
@@ -111,15 +113,28 @@ export class UsersService {
   }
 
   async getLabUsers(id: string): Promise<SingleUserDto[]> {
-    console.log('before');
+    const lab = await this.labRep
+      .createQueryBuilder('laboratory')
+      .select('laboratory.*')
+      .where('laboratory._id = :_id', { _id: id })
+      .getRawOne();
+
     const users = await this.usersRep
       .createQueryBuilder('user')
-      .leftJoinAndSelect('user.user_mapping', 'user_mapping')
-      .where('user_mapping.laboratory_id = :laboratory_id', {
-        laboratory_id: id,
+      .select('"user".*,lab._id as laboratory_id')
+      .leftJoin('facility', 'f', 'f._id = user.facility_id')
+      .leftJoin('laboratory', 'lab', 'lab.facility_id = f._id')
+      .where('"user".facility_id = :facility_id', {
+        facility_id: lab.facility_id,
       })
       .getRawMany();
+
     users.map((user) => {
+      const id = {
+        $oid: user._id,
+      };
+      delete user._id;
+      Object.assign(user, { _id: id });
       const { ...rest } = user;
       return new SingleUserDto({
         ...rest,

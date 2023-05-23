@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { transformSortField } from 'src/common/utils/transform-sorting';
+import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 import { Repository, Like } from 'typeorm';
 import { TestCategoryRequestDto } from '../dto/test-category/request.dto';
 import {
@@ -14,6 +15,8 @@ export class TestCategoriesService {
   constructor(
     @InjectRepository(TestCategory)
     private testCategoryRep: Repository<TestCategory>,
+    @InjectRepository(Laboratory)
+    private labRep: Repository<Laboratory>,
   ) {}
 
   async getAll(
@@ -68,12 +71,27 @@ export class TestCategoriesService {
         'description',
       ],
       where,
+      relations: ['test'],
     });
+    Object.assign(data, { tests: data.test });
     return data;
   }
 
-  async add(body: TestCategoryRequestDto): Promise<SingleTestCategory> {
+  async add(body: TestCategoryRequestDto, user): Promise<SingleTestCategory> {
     try {
+      if (user.portal === 'limware') {
+        const lab = await this.labRep
+          .createQueryBuilder('laboratory')
+          .select('laboratory.*')
+          .where('laboratory.facility_id = :facility_id', {
+            facility_id: user.facility_id,
+          })
+          .getRawOne();
+        Object.assign(body, {
+          facility_id: user.facility_id,
+          laboratory_id: lab?._id,
+        });
+      }
       const data = await this.testCategoryRep.save(body);
       const { ...rest } = data;
       return new SingleTestCategory({

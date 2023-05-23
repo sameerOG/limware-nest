@@ -175,19 +175,18 @@ export class TestsService {
             code: 5,
             description:
               'Cross match report template to show donor information as well.',
-            name: 'Template 6',
+            name: 'Cross Match',
           },
           {
             code: 5,
             description: 'Widal report template.',
-            name: 'Template 6',
+            name: 'Widal',
           },
         ];
 
         const reportTemplateName = reportTemplates.find((temp) => {
           return temp.code === body.report_template;
         });
-        console.log('reportTemplateName', reportTemplateName);
         body.report_template_name = reportTemplateName.name;
       }
       if (!body.print_on_separate_page) {
@@ -285,12 +284,12 @@ export class TestsService {
             code: 5,
             description:
               'Cross match report template to show donor information as well.',
-            name: 'Template 6',
+            name: 'Cross Match',
           },
           {
             code: 5,
             description: 'Widal report template.',
-            name: 'Template 6',
+            name: 'Widal',
           },
         ];
 
@@ -416,7 +415,7 @@ export class TestsService {
       Object.assign(testData, { decimal_length });
     }
 
-    if (res_input_options?.length > 0) {
+    if (res_input_options) {
       Object.assign(testData, { res_input_options });
     }
 
@@ -651,7 +650,6 @@ export class TestsService {
         };
       }
       Object.assign(whereCondition, { _id: id });
-      console.log('before');
       const test = await this.testRep.findOne({
         where: whereCondition,
         relations: [

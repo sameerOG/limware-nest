@@ -35,7 +35,6 @@ export class LaboratoriesService {
       take,
       order: transformSortField(sort),
     });
-    console.log('dataaa', data);
     data.forEach((item) => {
       Object.assign(item, {
         customer_id: item.customer_id?._id,
