@@ -85,7 +85,6 @@ export class EmployeesController {
     @Body() body: AssignFacilityRequestDto,
   ): Promise<EmployeeFacilityDepartment> {
     try {
-      console.log('yyy');
       let data = await this.empService.assignFacility(body);
       if (data) {
         response.status(200).send(data);

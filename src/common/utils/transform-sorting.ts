@@ -1,6 +1,5 @@
 import { isEmpty } from 'lodash';
 export const transformSortField = (field: string) => {
-  console.log('field', field);
   const orderBy = {};
   if (isEmpty(field)) {
     orderBy['_id'] = 'ASC';

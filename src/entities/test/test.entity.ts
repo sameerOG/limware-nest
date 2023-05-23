@@ -108,7 +108,7 @@ export class Test {
   archived!: boolean;
 
   @Column({ default: null })
-  parent_test_id!: number;
+  parent_test_id!: string;
 
   @Column({ default: null })
   default_result!: string;

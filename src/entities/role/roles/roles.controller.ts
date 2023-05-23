@@ -55,7 +55,6 @@ export class RolesController {
     try {
       const role_id = query['role_id'];
       const portal = query['portal'];
-      console.log('role', role_id, portal);
       let data = await this.roleService.getPermissions(role_id, portal);
       if (data) {
         response.status(200).send(data);

@@ -7,11 +7,13 @@ export class TestCategoryDto {
   readonly name: string;
   readonly title_for_print: string;
   readonly description: string;
+  readonly tests?: any;
 
   constructor(testCategory: TestCategoryDto) {
     (this._id = testCategory._id),
       (this.name = testCategory.name),
       (this.title_for_print = testCategory.title_for_print),
+      (this.tests = testCategory.tests),
       (this.description = testCategory.description);
   }
 }

@@ -86,7 +86,6 @@ export class SpecimensController {
   ): Promise<SingleSpecimenDto> {
     try {
       let data = await this.specimenService.addSpecimen(body);
-      console.log('data', data);
       if (data) {
         response.status(200).send(data);
         return data;

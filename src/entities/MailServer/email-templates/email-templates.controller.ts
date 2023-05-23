@@ -31,7 +31,6 @@ export class EmailTemplatesController {
       const sort = query['sort'];
       const text = query.filter?.title;
       const skip = (page - 1) * perpage;
-      console.log('query', query);
 
       let data = await this.emailTemplateService.getAll(
         skip,

@@ -163,6 +163,24 @@ export class MultiplePayload {
   child_test_ids: string;
 }
 
+export class UpdateTestParameterRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  parent_test_id: string;
+
+  @IsString()
+  @IsOptional()
+  test_group_id: string;
+
+  @IsString()
+  @IsOptional()
+  test_group_name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  child_test_id: string;
+}
+
 export class TestParameterRequest {
   @IsString()
   @IsNotEmpty()
@@ -184,6 +202,9 @@ export class TestParameterRequest {
   @IsOptional()
   res_input_type: string;
 
+  @IsOptional()
+  res_input_options: any;
+
   @IsString()
   @IsOptional()
   decimal_length: string;
@@ -192,11 +213,6 @@ export class TestParameterRequest {
   @IsOptional()
   parent_test_id: string;
 
-  @IsArray()
-  @IsOptional()
-  res_input_options: any;
-
-  @IsArray()
   @IsOptional()
   normal_ranges: any;
 }

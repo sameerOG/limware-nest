@@ -87,7 +87,6 @@ export class CustomersController {
   ): Promise<SingleCustomerDto> {
     try {
       let data = await this.customerService.addCustomer(body);
-      console.log('data', data);
       if (data) {
         response.status(200).send(data);
         return data;

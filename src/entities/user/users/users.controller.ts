@@ -169,14 +169,13 @@ export class UsersController {
   @Post('/')
   async create(
     @Res() response: Response,
-    @Body() body: UserRequestDto,
+    @Body() body: any,
   ): Promise<SingleUserDto> {
     try {
       if (!body.portal) {
         body.portal = 'limware';
       }
-      let data = await this.userService.addUser(body);
-      console.log('data', data);
+      let data = await this.authService.createNewUser(body);
       if (data) {
         response.status(200).send(data);
         return data;

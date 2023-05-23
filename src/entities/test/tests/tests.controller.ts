@@ -74,7 +74,6 @@ export class TestsController {
   ): Promise<SingleTestResponseDto> {
     try {
       let data = await this.testService.update(id, body);
-      console.log('ddd', data);
       if (data) {
         response.status(200).send(data);
         return data;
@@ -97,7 +96,6 @@ export class TestsController {
       const token = authHeader.split(' ')[1];
       const loggedInUser = jwtDecode(token);
       let data = await this.testService.add(body, loggedInUser);
-      console.log('data', data);
       if (data) {
         response.status(200).send(data);
         return data;
