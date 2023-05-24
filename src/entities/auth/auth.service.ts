@@ -22,6 +22,11 @@ import ShortUniqueId from 'short-unique-id';
 import axios from 'axios';
 import { Error } from 'src/common/global-dto.dto';
 import { SingleUserDto } from '../user/dto/response.dto';
+import { EmployeeFacility } from '../employee/employee_facility.entity';
+import { EmployeeFacilityDepartment } from '../employee/employee_facility_department.entity';
+import { Role } from '../role/role.entity';
+import { Department } from '../department/department.entity';
+import { UserRole } from '../user_role/user_role.entity';
 
 const uid = new ShortUniqueId({ length: 6, dictionary: 'number' });
 @Injectable()
@@ -39,6 +44,16 @@ export class AuthService {
     private labRep: Repository<Laboratory>,
     @InjectRepository(Employee)
     private empRep: Repository<Employee>,
+    @InjectRepository(Role)
+    private roleRep: Repository<Role>,
+    @InjectRepository(Department)
+    private departmentRep: Repository<Department>,
+    @InjectRepository(EmployeeFacility)
+    private empFacilityRep: Repository<EmployeeFacility>,
+    @InjectRepository(EmployeeFacilityDepartment)
+    private empFacilityDepartment: Repository<EmployeeFacilityDepartment>,
+    @InjectRepository(UserRole)
+    private userRoleRep: Repository<UserRole>,
   ) {}
 
   async login(body: AuthRequest): Promise<AuthDto | Error[]> {
@@ -60,11 +75,10 @@ export class AuthService {
       .getRawOne();
 
     const facilities = [];
-    user.facilities?.map((facility) => {
+    user.facilities?.map(async (facility) => {
       if (facility) {
         const { name, type, _id, unique_id } = facility;
-
-        facilities.push({
+        let obj = {
           name,
           unique_id,
           type,
@@ -72,7 +86,19 @@ export class AuthService {
           _id: {
             $oid: _id,
           },
-        });
+        };
+        if (user.portal === 'administration') {
+          obj.permissions = await this._getAssignedPermissions_AdminPortal(
+            user,
+          );
+        } else if (user.portal === 'limware') {
+          if (user.facility_id) {
+            obj.permissions = await this._getEmployeeFacilities(
+              user.facility_id,
+            );
+          }
+        }
+        facilities.push(obj);
       }
     });
     if (user) {
@@ -139,6 +165,51 @@ export class AuthService {
     } else {
       return [{ field: 'password', message: 'Incorrect username or password' }];
     }
+  }
+
+  async _getEmployeeFacilities(facility_id: string) {
+    let employeeFacilities = [];
+    let assignedFacilities = await this.empFacilityRep
+      .createQueryBuilder('employee_facility')
+      .select('employee_facility.*')
+      .where('employee_facility.facility_id = :facility_id', { facility_id })
+      .getRawMany();
+
+    for (let i = 0; i < assignedFacilities.length; i++) {
+      let employeeFacility = assignedFacilities[i];
+      for (let j = 0; j < employeeFacility.role_ids?.length; j++) {
+        let role = await this.roleRep.findOne({
+          where: { _id: employeeFacility.role_ids[j] },
+        });
+
+        if (role.permissions) {
+          employeeFacilities = [...employeeFacilities, ...role.permissions];
+        }
+      }
+    }
+
+    return employeeFacilities;
+  }
+
+  async _getAssignedPermissions_AdminPortal(user) {
+    let permissions = [];
+    if (!user.isSuperUser) {
+      const userRole = await this.userRoleRep
+        .createQueryBuilder('user_role')
+        .select('user_role.*')
+        .where('user_role.user_id = :user_id', { user_id: user._id })
+        .getRawOne();
+
+      if (userRole) {
+        const role = await this.roleRep.findOne({
+          where: { _id: userRole.role_id },
+        });
+        if (role && role.permissions) {
+          permissions = [...permissions, ...role.permissions];
+        }
+      }
+    }
+    return permissions;
   }
 
   async logout(token: string): Promise<boolean> {
@@ -284,7 +355,7 @@ export class AuthService {
         employee,
         body,
       );
-
+      await this._assignEmployeeFacility(facility._id, employee._id);
       const otpCode = await this.generateVerificationPin(savedUser._id);
 
       return {
@@ -294,6 +365,68 @@ export class AuthService {
         otpCode: otpCode.otp,
       };
     }
+  }
+
+  async _assignEmployeeFacility(facility_id: string, employee_id: string) {
+    const role = await this.roleRep.findOne({ where: { name: 'Lab Admin' } });
+    const department = await this.departmentRep.findOne({
+      where: { name: 'lab' },
+    });
+    const employeeFacilityAttributes = {
+      facility_id,
+      employee_id,
+      role_ids: [role._id],
+    };
+    if (department) {
+      Object.assign(employeeFacilityAttributes, {
+        departments: [department._id],
+      });
+    }
+    return await this.saveWithDepartments(employeeFacilityAttributes, null);
+  }
+
+  async saveWithDepartments(data, id) {
+    let model;
+    if (id) {
+      model = await this.empFacilityRep
+        .createQueryBuilder('employee_facility')
+        .select('employee_facility.*')
+        .where('employee_facility._id = :_id', { _id: id })
+        .getRawOne();
+    } else {
+      model = new EmployeeFacility();
+    }
+    model.employee_id = data.employee_id;
+    model.facility_id = data.facility_id;
+    model.role_ids = data.role_ids;
+
+    if (id) {
+      await this.empFacilityRep.update(id, model);
+      await this.empFacilityDepartment
+        .createQueryBuilder('employee_facility_department')
+        .delete()
+        .from(EmployeeFacilityDepartment)
+        .where(
+          'employee_facility_department.employee_facility_id = :employee_facility_id',
+          { employee_facility_id: model._id },
+        )
+        .execute();
+    } else {
+      model = await this.empFacilityRep.save(model);
+    }
+
+    if (data.departments && data.departments.length > 0) {
+      data.departments.map(async (department) => {
+        let obj = {
+          employee_id: data.employee_id,
+          facility_id: data.facility_id,
+          employee_facility_id: model._id,
+          department_id: department,
+        };
+        await this.empFacilityDepartment.save(obj);
+      });
+    }
+    return model;
   }
 
   async createNewUser(body: CreateUserRequestDto): Promise<SingleUserDto> {
@@ -313,6 +446,7 @@ export class AuthService {
       body.status,
       body.portal,
     );
+    await this._assignEmployeeFacility(facility._id, employee._id);
     const { ...rest } = savedUser;
     return new SingleUserDto({
       ...rest,
