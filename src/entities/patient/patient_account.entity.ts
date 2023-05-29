@@ -16,12 +16,12 @@ export class PatientAccount {
   _id!: string;
 
   @Column()
-  parent_facility_id!: number;
+  parent_facility_id!: string;
 
   @Column()
-  registration_facility_id!: number;
+  registration_facility_id!: string;
 
-  @Column({ unique: true })
+  @Column({ unique: true, default: null })
   unique_id!: string;
 
   @OneToMany(() => Patient, (pat) => pat.patient_account_id)
@@ -33,7 +33,7 @@ export class PatientAccount {
   @Column({ default: null })
   phone_number!: string;
 
-  @Column()
+  @Column({ default: null })
   other_contacts!: string;
 
   @Column()
@@ -49,7 +49,7 @@ export class PatientAccount {
   email!: string;
 
   @Column({ default: null })
-  dob!: Date;
+  dob!: string;
 
   @Column({ default: null })
   guardian_info!: string;

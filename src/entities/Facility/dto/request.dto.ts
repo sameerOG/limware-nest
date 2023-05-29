@@ -27,7 +27,7 @@ export class FacilityRequestDto {
   customer_id: any;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   email: string;
 
   @IsString()
@@ -35,7 +35,7 @@ export class FacilityRequestDto {
   mobile_number: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   phone_number: string;
 
   @IsString()

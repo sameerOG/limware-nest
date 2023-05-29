@@ -15,10 +15,10 @@ export class PaymentTRansaction {
   _id!: number;
 
   @Column()
-  facility_id!: number;
+  facility_id!: string;
 
   @Column()
-  invoice_id!: number;
+  invoice_id!: string;
 
   @Column({ default: null })
   transaction_number!: number;

@@ -25,8 +25,8 @@ export class Reference {
   @Column({ default: null })
   mobile_number!: string;
 
-  @OneToMany(() => Appointment, (app) => app.reference_id)
-  appointment: Appointment[];
+  // @OneToMany(() => Appointment, (app) => app.reference_id)
+  // appointment: Appointment[];
 
   @Column()
   facility_id!: string;

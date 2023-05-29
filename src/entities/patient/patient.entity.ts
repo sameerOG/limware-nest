@@ -17,10 +17,10 @@ export class Patient {
   _id!: string;
 
   @Column()
-  facility_id!: number;
+  facility_id!: string;
 
   @Column({ default: null })
-  registration_date!: number;
+  registration_date!: string;
 
   @Column({ unique: true, default: null })
   unique_id!: string;
@@ -29,7 +29,7 @@ export class Patient {
   appointment: Appointment[];
 
   @Column({ default: null })
-  cc_facility_id!: number;
+  cc_facility_id!: string;
 
   @ManyToOne(() => PatientAccount, (pa) => pa.patient)
   @JoinColumn({ name: 'patient_account_id' })

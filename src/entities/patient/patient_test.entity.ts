@@ -18,16 +18,16 @@ export class PatientTest {
   _id!: string;
 
   @Column()
-  facility_id!: number;
+  facility_id!: string;
 
   @Column()
-  laboratory_id!: number;
+  laboratory_id!: string;
 
   @Column({ default: null })
-  patient_account_id!: number;
+  patient_account_id!: string;
 
   @Column()
-  patient_id!: number;
+  patient_id!: string;
 
   @ManyToOne(() => Test, (test) => test.patient_test)
   @JoinColumn({ name: 'test_id' })
@@ -37,10 +37,10 @@ export class PatientTest {
   ptpr: PatientTestParameterResult[];
 
   @Column()
-  appointment_id!: number;
+  appointment_id!: string;
 
   @Column()
-  test_category_id!: number;
+  test_category_id!: string;
 
   @Column()
   status!: number;
@@ -61,7 +61,7 @@ export class PatientTest {
   is_printed!: number;
 
   @Column({ default: null })
-  donor_id!: number;
+  donor_id!: string;
 
   @Column({ default: null })
   notes!: string;

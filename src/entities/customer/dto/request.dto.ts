@@ -14,7 +14,7 @@ export class CustomerRequestDto {
   mobile_number: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   email: string;
 
   @IsString()

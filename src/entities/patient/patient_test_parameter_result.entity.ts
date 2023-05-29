@@ -19,10 +19,10 @@ export class PatientTestParameterResult {
   _id!: string;
 
   @Column()
-  facility_id!: number;
+  facility_id!: string;
 
   @Column()
-  laboratory_id!: number;
+  laboratory_id!: string;
 
   @Column({ default: null })
   result!: string;

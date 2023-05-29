@@ -34,8 +34,8 @@ export class EmployeeRequestDto {
   @IsNotEmpty()
   gender: string;
 
-  @IsEmail()
-  @IsNotEmpty()
+  @IsString()
+  @IsOptional()
   email: string;
 
   @IsString()

@@ -17,16 +17,16 @@ export class Invoice {
   _id!: string;
 
   @Column()
-  facility_id!: number;
+  facility_id!: string;
 
   @Column({ default: null })
-  patient_account_id!: number;
+  patient_account_id!: string;
 
   @Column()
-  patient_id!: number;
+  patient_id!: string;
 
   @Column()
-  appointment_id!: number;
+  appointment_id!: string;
 
   @OneToMany(() => InvoiceLineItem, (ili) => ili.invoice_id)
   invoice_line_item: InvoiceLineItem[];
@@ -41,7 +41,7 @@ export class Invoice {
   title!: string;
 
   @Column()
-  invoice_date!: number;
+  invoice_date!: string;
 
   @Column({ default: null })
   description!: string;

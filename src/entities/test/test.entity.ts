@@ -51,7 +51,7 @@ export class Test {
   test_parameter_child: TestParameter[];
 
   @Column({ default: null })
-  facility_id!: number;
+  facility_id!: string;
 
   @Column({ default: null })
   code!: number;

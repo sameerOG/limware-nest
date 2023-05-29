@@ -12,22 +12,10 @@ export class SearchPatientRequest {
   mobile_number: string;
 }
 
-export class AddAppointment {
-  @IsString()
-  @IsNotEmpty()
-  mobile_number: string;
-
+export class AddAppointmentRequestDto {
   @IsString()
   @IsOptional()
-  reference_number: string;
-
-  @IsString()
-  @IsOptional()
-  email: string;
-
-  @IsString()
-  @IsNotEmpty()
-  name: string;
+  address: string;
 
   @IsNumber()
   @IsNotEmpty()
@@ -39,19 +27,39 @@ export class AddAppointment {
 
   @IsString()
   @IsNotEmpty()
+  dob: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  due_amount: number;
+
+  @IsString()
+  @IsNotEmpty()
   gender: string;
 
   @IsString()
-  @IsOptional()
-  dob: string;
+  @IsNotEmpty()
+  mobile_number: string;
 
   @IsString()
-  @IsOptional()
-  remarks: string;
+  @IsNotEmpty()
+  name: string;
 
-  @IsString()
+  @IsNumber()
+  @IsNotEmpty()
+  paid_amount: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  total_amount: number;
+
+  @IsNumber()
   @IsOptional()
-  address: string;
+  discount_amount: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  sample_location: number;
 
   @IsString()
   @IsOptional()
@@ -59,7 +67,11 @@ export class AddAppointment {
 
   @IsString()
   @IsOptional()
-  guardian_type: string;
+  email: string;
+
+  @IsString()
+  @IsOptional()
+  guardian_mobile_number: string;
 
   @IsString()
   @IsOptional()
@@ -67,30 +79,74 @@ export class AddAppointment {
 
   @IsString()
   @IsOptional()
-  guardian_mobile_number: string;
-
-  @IsOptional()
-  sample_location: number;
-
-  @IsString()
-  @IsOptional()
-  total_amount: string;
-
-  @IsOptional()
-  discount_amount: number;
-
-  @IsString()
-  @IsOptional()
-  due_amount: string;
-
-  @IsOptional()
-  paid_amount: number;
-
-  @IsArray()
-  @IsOptional()
-  invoiceLineItems: any;
+  guardian_type: string;
 
   @IsString()
   @IsOptional()
   reference_id: string;
+
+  @IsString()
+  @IsOptional()
+  reference_number: string;
+
+  @IsOptional()
+  remarks: any;
+
+  @IsOptional()
+  invoiceLineItems: any;
+}
+
+export class AddTestDto {
+  @IsString()
+  @IsNotEmpty()
+  appointment_id: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  discount_amount: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  due_amount: number;
+
+  @IsNumber()
+  @IsOptional()
+  total_payable_amount: number;
+
+  @IsNotEmpty()
+  invoiceLineItems: any;
+
+  @IsString()
+  @IsNotEmpty()
+  invoice_id: string;
+
+  @IsNumber()
+  @IsNotEmpty()
+  paid_amount: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  total_amount: number;
+}
+
+export class DeleteTestDto {
+  @IsString()
+  @IsNotEmpty()
+  delete_reason: string;
+
+  @IsString()
+  @IsNotEmpty()
+  invoice_line_item_id: string;
+
+  @IsString()
+  @IsNotEmpty()
+  invoice_id: string;
+
+  @IsString()
+  @IsNotEmpty()
+  patient_test_id: string;
+
+  @IsString()
+  @IsOptional()
+  user_comment: string;
 }

@@ -12,7 +12,7 @@ export class UserRequestDto {
   full_name: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   email: string;
 
   @IsNumber()
@@ -58,7 +58,7 @@ export class FacilityUserRequestDto {
   full_name: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   email: string;
 
   @IsString()
