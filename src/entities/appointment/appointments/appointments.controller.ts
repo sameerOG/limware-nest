@@ -6,13 +6,21 @@ import {
   Post,
   Body,
   HttpException,
+  Query,
 } from '@nestjs/common';
-import { Response } from 'express';
+import { query, Response } from 'express';
 import jwtDecode from 'jwt-decode';
-import { AddAppointment, SearchPatientRequest } from '../dto/request.dto';
 import {
+  AddAppointmentRequestDto,
+  AddTestDto,
+  DeleteTestDto,
+  SearchPatientRequest,
+} from '../dto/request.dto';
+import {
+  AddAppointmentResponseDto,
   GetAllReferences,
   GetAllTests,
+  PatientTestForDeleteResponseDto,
   SearchPatient,
 } from '../dto/response.dto';
 import { AppointmentsService } from './appointments.service';
@@ -82,6 +90,91 @@ export class AppointmentsController {
     } catch (err) {
       console.log('err in catch', err);
       response.status(422).send({ error: err, message: 'Patient not found' });
+    }
+  }
+
+  @Post('/')
+  async addAppointment(
+    @Res() response: Response,
+    @Body() body: AddAppointmentRequestDto,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<AddAppointmentResponseDto> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.appointmentService.add(body, loggedInUser);
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        throw new HttpException(
+          { err: true, messages: 'Appointment not saved' },
+          422,
+        );
+      }
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({ error: err, message: 'Patient not found' });
+    }
+  }
+
+  @Post('/add-tests')
+  async addTest(
+    @Res() response: Response,
+    @Body() body: AddTestDto,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<boolean> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.appointmentService.addTest(body, loggedInUser);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({ error: err, message: 'Tests not added' });
+    }
+  }
+
+  @Get('/get-patient-test-for-delete')
+  async getPatientTestForDelete(
+    @Res() response: Response,
+    @Query() query,
+  ): Promise<PatientTestForDeleteResponseDto> {
+    try {
+      let patient_test_id = query['patient_test_id'];
+      let invoice_id = query['invoice_id'];
+      let data = await this.appointmentService.getPatientTestForDelete(
+        patient_test_id,
+        invoice_id,
+      );
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Patient Test not found' });
+    }
+  }
+
+  @Post('/delete-test')
+  async deleteTest(
+    @Res() response: Response,
+    @Body() body: DeleteTestDto,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<boolean> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.appointmentService.deletTest(body, loggedInUser);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Patient Test not deleted' });
     }
   }
 }

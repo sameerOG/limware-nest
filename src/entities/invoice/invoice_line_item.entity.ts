@@ -15,10 +15,10 @@ export class InvoiceLineItem {
   _id!: string;
 
   @Column()
-  facility_id!: number;
+  facility_id!: string;
 
   @Column({ default: null })
-  test_id!: number;
+  test_id!: string;
 
   @ManyToOne(() => Invoice, (invoice) => invoice.invoice_line_item)
   @JoinColumn({ name: 'invoice_id' })

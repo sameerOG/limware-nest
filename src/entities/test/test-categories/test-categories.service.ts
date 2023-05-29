@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { transformSortField } from 'src/common/utils/transform-sorting';
+import { Department } from 'src/entities/department/department.entity';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 import { Repository, Like } from 'typeorm';
 import { TestCategoryRequestDto } from '../dto/test-category/request.dto';
@@ -17,9 +18,12 @@ export class TestCategoriesService {
     private testCategoryRep: Repository<TestCategory>,
     @InjectRepository(Laboratory)
     private labRep: Repository<Laboratory>,
+    @InjectRepository(Department)
+    private departmentRep: Repository<Department>,
   ) {}
 
   async getAll(
+    user,
     skip: number,
     take: number,
     text?: string,
@@ -41,6 +45,21 @@ export class TestCategoriesService {
       take,
       order: transformSortField(sort),
     });
+    if (user.portal === 'limware') {
+      const department = await this.departmentRep
+        .createQueryBuilder('department')
+        .select('department.*')
+        .where('department.facility_id = :facility_id', {
+          facility_id: user.facility_id,
+        })
+        .getRawOne();
+
+      if (department) {
+        data.forEach((info) => {
+          Object.assign(info, { department_id: department._id, department });
+        });
+      }
+    }
     return data;
   }
 

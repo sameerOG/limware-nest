@@ -19,54 +19,57 @@ export class Appointment {
   _id!: string;
 
   @Column({ default: null })
-  cc_facility_id!: number;
+  cc_facility_id!: string;
 
   @Column()
-  facility_id!: number;
+  facility_id!: string;
 
   @Column({ default: null })
-  patient_account_id!: number;
+  patient_account_id!: string;
 
   @Column()
-  type!: string;
+  type!: number;
 
   @Column({ default: null })
-  laboratory_id!: number;
+  laboratory_id!: string;
 
   @Column({ default: null })
-  doctor_id!: string;
+  doctor_id: string;
 
   @Column({ default: null, unique: true })
   appointment_number!: string;
 
-  @Column({ unique: true })
-  lab_number!: string;
+  @Column({ unique: true, default: null })
+  lab_number: string;
 
   @Column({ default: null })
-  reference_number!: number;
+  reference_number: number;
 
   @Column()
-  appointment_date!: number;
+  appointment_date!: string;
 
   @Column({ default: null })
-  appointment_time!: string;
+  appointment_time: string;
 
   @Column({ default: null })
-  result_delivery_date!: string;
+  result_delivery_date: string;
 
   @Column({ default: null })
-  result_delivery_time!: string;
+  result_delivery_time: string;
 
   @Column({ default: false })
-  is_completed!: boolean;
+  is_completed: boolean;
 
   @ManyToOne(() => Patient, (patient) => patient.appointment)
   @JoinColumn({ name: 'patient_id' })
   patient_id!: Patient;
 
-  @ManyToOne(() => Reference, (reference) => reference.appointment)
-  @JoinColumn({ name: 'reference_id' })
-  reference_id!: Reference;
+  // @ManyToOne(() => Reference, (reference) => reference.appointment)
+  // @JoinColumn({ name: 'reference_id' })
+  // reference_id: Reference;
+
+  @Column({ default: null })
+  reference_id: string;
 
   @Column()
   @CreateDateColumn()

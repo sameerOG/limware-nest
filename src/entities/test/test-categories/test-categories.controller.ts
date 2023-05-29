@@ -31,8 +31,11 @@ export class TestCategoriesController {
   async getAll(
     @Res() response: Response,
     @Query() query,
+    @Headers('Authorization') authHeader: string,
   ): Promise<TestCategoryDto[]> {
     try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
       const perpage = query['per-page'] ? query['per-page'] : 25;
       const page = query['page'] ? query['page'] : 1;
       const sort = query['sort'];
@@ -40,6 +43,7 @@ export class TestCategoriesController {
       const skip = (page - 1) * perpage;
 
       let data = await this.testCategoryService.getAll(
+        loggedInUser,
         skip,
         perpage,
         text,
