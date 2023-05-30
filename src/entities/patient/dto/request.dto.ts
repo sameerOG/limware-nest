@@ -41,3 +41,9 @@ export class UpdatePatientRequestDto {
   @IsOptional()
   reference_number: string;
 }
+
+export class UpdatePatientTestStatusRequestDto {
+  @IsNumber()
+  @IsNotEmpty()
+  sample_status: number;
+}
