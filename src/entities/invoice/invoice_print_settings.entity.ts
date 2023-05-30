@@ -19,7 +19,7 @@ export class InvoicePrintSettings {
   logo_image_name!: string;
 
   @Column()
-  laboratory_id!: number;
+  laboratory_id!: string;
 
   @Column({ default: null })
   footer_text!: string;

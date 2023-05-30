@@ -39,14 +39,48 @@ export class InvoicesController {
         return data;
       } else {
         throw new HttpException(
-          { err: true, messages: 'Patient not found' },
+          { err: true, messages: 'Invoice not found' },
           422,
         );
       }
     } catch (err) {
       console.log('err ', err);
       throw new HttpException(
-        { err: true, messages: 'Patient not found' },
+        { err: true, messages: 'Invoice not found' },
+        422,
+      );
+    }
+  }
+
+  @Get('/print-invoice')
+  async printInvoice(
+    @Res() response: Response,
+    @Query() query,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<InvoiceLineItemsResponseDto> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const invoice_id = query['invoice_id'];
+      const data = await this.invoicesService.printInvoice(
+        invoice_id,
+        loggedInUser,
+      );
+      if (data) {
+        const pdf = await this.invoicesService.__print(data);
+        response.setHeader('Content-Type', 'application/pdf');
+        response.status(200).send(pdf);
+        return data;
+      } else {
+        throw new HttpException(
+          { err: true, messages: 'Invoice not found' },
+          422,
+        );
+      }
+    } catch (err) {
+      console.log('err ', err);
+      throw new HttpException(
+        { err: true, messages: 'Invoice not found' },
         422,
       );
     }
