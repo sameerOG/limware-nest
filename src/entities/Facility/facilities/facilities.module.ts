@@ -5,10 +5,11 @@ import { Customers } from 'src/entities/customer/customer.entity';
 import { Facility } from '../facility.entity';
 import { FacilitiesController } from './facilities.controller';
 import { FacilitiesService } from './facilities.service';
+import { DirectoryManagerService } from 'src/shared/DirectoryManagerService';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Facility, Customers, Addons])],
   controllers: [FacilitiesController],
-  providers: [FacilitiesService],
+  providers: [FacilitiesService, DirectoryManagerService]
 })
 export class FacilitiesModule {}

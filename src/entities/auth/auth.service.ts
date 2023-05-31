@@ -19,7 +19,6 @@ import { Facility } from '../Facility/facility.entity';
 import { Laboratory } from '../laboratory/laboratory.entity';
 import { Employee } from '../employee/employee.entity';
 import ShortUniqueId from 'short-unique-id';
-import axios from 'axios';
 import { Error } from 'src/common/global-dto.dto';
 import { SingleUserDto } from '../user/dto/response.dto';
 import { EmployeeFacility } from '../employee/employee_facility.entity';

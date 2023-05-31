@@ -1,16 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Like, Repository } from 'typeorm';
 import { LaboratoryRequestDto } from '../dto/request.dto';
 import { LabRequestDto, LabResponseDto } from '../dto/response.dto';
 import { Laboratory } from '../laboratory.entity';
+import { Facility } from 'src/entities/Facility/facility.entity';
+import { FacilitiesService } from 'src/entities/Facility/facilities/facilities.service';
+import { LaboratorySetting } from '../laboratory_setting.entity';
 
 @Injectable()
 export class LaboratoriesService {
   constructor(
     @InjectRepository(Laboratory)
     private labRep: Repository<Laboratory>,
+    @InjectRepository(LaboratorySetting)
+    private labSetRep: Repository<LaboratorySetting> 
   ) {}
 
   async getAll(
@@ -165,6 +170,25 @@ export class LaboratoriesService {
     } catch (err) {
       return err;
     }
+  }
+  async getLab(facility_id :any): Promise<any>{  
+    return await this.labRep.createQueryBuilder("laboratory")
+    .select("laboratory.*")
+    .where("laboratory.facility_id = :facility_id",{facility_id:facility_id})
+    // .leftJoin('facility','f','f._id=laboratory.facility_id')
+    .getRawOne();
+  }
+
+  // async getLabForSetting(facility_id: any): Promise<any>{
+  //   return await this.labRep.createQueryBuilder("laboratory")
+  //   .select("laboratory.*")
+  //   .where("laboratory.facility_id = :facility_id",{facility_id:facility_id})
+  //   // .leftJoin('facility','f','f._id=laboratory.facility_id')
+  //   .getRawOne();
+  // }
+
+  async getLabForSetting(facility_id): Promise<LaboratorySetting | any> {
+    return await this.labSetRep.findOne({where: {facility_id: facility_id}})
   }
 
   async delete(id: string): Promise<any> {
