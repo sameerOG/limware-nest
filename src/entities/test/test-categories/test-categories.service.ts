@@ -40,11 +40,20 @@ export class TestCategoriesService {
     }
     const data = await this.testCategoryRep.find({
       select: ['_id', 'name', 'title_for_print', 'description'],
+      relations: ['facility_id'],
       where,
       skip,
       take,
       order: transformSortField(sort),
     });
+    let filterData;
+    if (user.portal === 'limware') {
+      filterData = data.filter((info) => {
+        return info.facility_id?._id === user.facility_id;
+      });
+    } else {
+      filterData = data;
+    }
     if (user.portal === 'limware') {
       const department = await this.departmentRep
         .createQueryBuilder('department')
@@ -55,12 +64,16 @@ export class TestCategoriesService {
         .getRawOne();
 
       if (department) {
-        data.forEach((info) => {
+        filterData.forEach((info) => {
           Object.assign(info, { department_id: department._id, department });
         });
       }
     }
-    return data;
+    return filterData;
+  }
+
+  async getParentCategories(): Promise<TestCategoryDto[]> {
+    return await this.testCategoryRep.find({ where: { is_template: true } });
   }
 
   async getAllComplete(): Promise<TestCategoryDto[]> {
@@ -96,7 +109,7 @@ export class TestCategoriesService {
     return data;
   }
 
-  async add(body: TestCategoryRequestDto, user): Promise<SingleTestCategory> {
+  async add(body: any, user): Promise<SingleTestCategory> {
     try {
       if (user.portal === 'limware') {
         const lab = await this.labRep
@@ -109,6 +122,7 @@ export class TestCategoriesService {
         Object.assign(body, {
           facility_id: user.facility_id,
           laboratory_id: lab?._id,
+          department_id: body.department_id,
         });
       }
       const data = await this.testCategoryRep.save(body);
@@ -125,10 +139,7 @@ export class TestCategoriesService {
     }
   }
 
-  async update(
-    id: string,
-    body: TestCategoryRequestDto,
-  ): Promise<SingleTestCategory> {
+  async update(id: string, body: any): Promise<SingleTestCategory> {
     try {
       await this.testCategoryRep.update(id, body);
       const data = await this.testCategoryRep.findOne({

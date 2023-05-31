@@ -32,15 +32,24 @@ export class EmployeesController {
   async getAll(
     @Res() response: Response,
     @Query() query,
+    @Headers('Authorization') authHeader: string,
   ): Promise<EmployeeResponseDto[]> {
     try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
       const perpage = query['per-page'] ? query['per-page'] : 25;
       const page = query['page'] ? query['page'] : 1;
       const sort = query['sort'];
       const text = query.filter?.name;
       const skip = (page - 1) * perpage;
 
-      let data = await this.empService.getAll(skip, perpage, text, sort);
+      let data = await this.empService.getAll(
+        loggedInUser,
+        skip,
+        perpage,
+        text,
+        sort,
+      );
       response.status(200).send(data);
       return data;
     } catch (err) {
@@ -216,9 +225,12 @@ export class EmployeesController {
   async add(
     @Res() response: Response,
     @Body() body: EmployeeRequestDto,
+    @Headers('Authorization') authHeader: string,
   ): Promise<EmployeeResponseDto> {
     try {
-      let data = await this.empService.add(body);
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.empService.add(body, loggedInUser);
       if (data) {
         response.status(200).send(data);
         return data;

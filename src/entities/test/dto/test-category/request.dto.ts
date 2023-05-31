@@ -29,6 +29,18 @@ export class TestCategoryRequestDto {
   @IsOptional()
   type: string;
 
+  @IsString()
+  @IsOptional()
+  facility_id: string;
+
+  @IsString()
+  @IsOptional()
+  laboratory_id: string;
+
+  @IsString()
+  @IsOptional()
+  department_id: string;
+
   @IsNumber()
   @IsNotEmpty()
   report_template: number;
