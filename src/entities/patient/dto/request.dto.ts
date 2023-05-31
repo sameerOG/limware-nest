@@ -2,7 +2,7 @@ import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdatePatientRequestDto {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   address: string;
 
   @IsString()
@@ -40,4 +40,10 @@ export class UpdatePatientRequestDto {
   @IsString()
   @IsOptional()
   reference_number: string;
+}
+
+export class UpdatePatientTestStatusRequestDto {
+  @IsNumber()
+  @IsNotEmpty()
+  sample_status: number;
 }

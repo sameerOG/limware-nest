@@ -1,0 +1,364 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .font {
+        font-family: Muli, Helvetica Neue, Arial, sans-serif;
+      }
+      .my-40 {
+        margin: 0px 40px;
+      }
+      .header-info {
+        float: left;
+        width: 60%;
+        font-size: 12px;
+        border-left: 3px solid #dddddd;
+        margin-top: 8px;
+        padding-left: 20px;
+      }
+      .gray {
+        color: #4c4c4c;
+      }
+      .patient-name {
+        font-size: 18px;
+        padding-top: 5px;
+      }
+      .lab-name {
+        font-size: 30px;
+        padding-top: 10px;
+      }
+      .pt-8 {
+        padding-top: 8px;
+      }
+      .px-2 {
+        padding: 2px 0px;
+      }
+      .black {
+        color: black;
+      }
+      .f-14 {
+        font-size: 14px;
+      }
+      .left {
+        float: left;
+      }
+      .w-110 {
+        width: 110px;
+      }
+      .logo {
+        float: right;
+        text-align: right;
+        padding-right: 20px;
+      }
+      .logo-dimensions {
+        float: right;
+        width: 100px;
+        text-align: center;
+      }
+      .mx-20 {
+        margin: 20px 0px;
+      }
+      .invoice-block {
+      }
+      .invoice-block .invoice-i1 {
+        height: 60px;
+        font-size: 24px;
+        width: 30%;
+        float: left;
+        color: white;
+        text-align: center;
+        background: #989898;
+      }
+      .pt-13 {
+        padding-top: 13px;
+      }
+      .pt-10 {
+        padding-top: 10px;
+      }
+      .invoice-block .invoice-i2 {
+        height: 60px;
+        width: 17.5%;
+        float: left;
+        text-align: center;
+        background: #e6e6e6;
+      }
+      .invoice-block .invoice-i3 {
+        height: 60px;
+        width: 17.4%;
+        float: left;
+        color: black;
+        text-align: center;
+        background: #e6e6e6;
+      }
+      .invoice-block .invoice-i4 {
+        height: 60px;
+        width: 17.5%;
+        float: left;
+        text-align: center;
+        background: #6d6d6d;
+        color: white;
+      }
+      .invoice-block .invoice-i5 {
+        height: 60px;
+        width: 17.5%;
+        float: left;
+        color: black;
+        text-align: center;
+        background: #d8d8d8;
+      }
+      .border {
+        border-left: 3px solid white;
+        height: 60px;
+      }
+      .f-18 {
+        font-size: 18px;
+      }
+      .f-12 {
+        font-size: 12px;
+      }
+      .border-bottom {
+        border-bottom: 1px solid #ddd;
+      }
+      .px-15 {
+        padding: 15px 0;
+      }
+      .bold {
+        font-weight: bold;
+      }
+      .f-13 {
+        font-size: 13px;
+      }
+      .right {
+        float: right;
+      }
+      .text-right {
+        text-align: right;
+      }
+      .w-100 {
+        width: 100px;
+      }
+      .w-60-p {
+        width: 60%;
+      }
+      .w-40-p {
+        width: 40%;
+      }
+      .w-50 {
+        width: 50px;
+      }
+      .pr-25 {
+        padding-right: 25px;
+      }
+      .footer-margin {
+        margin: 0px 0px 0px 40px;
+      }
+      .signature-margin {
+        margin: 10px 30px 10px 0px;
+      }
+      .px-5 {
+        padding: 5px 0;
+      }
+      .w-70 {
+        width: 70px;
+      }
+      .f-10 {
+        font-size: 10px;
+      }
+      .text-center {
+        text-align: center;
+      }
+      .w-150 {
+        width: 150px;
+      }
+      .mt-30 {
+        margin-top: 30px;
+      }
+      .pb-5 {
+        padding-bottom: 5px;
+      }
+      .pt-5 {
+        padding-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="my-40">
+      <div class="lab-name"><%= data.labModel.name %></div>
+    </div>
+    <div class="font">
+      <div class="my-40">
+        <div class="header-info">
+          <div class="gray">Invoice To</div>
+
+          <div class="patient-name"><%= data.patient.name %></div>
+
+          <div class="gray pt-5">
+            <div class="px-2 black f-14">Contact</div>
+            <div class="px-2">+92-<%= data.patient.mobile_number %></div>
+            <% if (data.patient.email) { %>
+            <div class="px-2"><%= data.patient.email %></div>
+            <% } %> <% if (data.patient.address) { %>
+            <div class="px-2"><%= data.patient.address + ', ' %></div>
+            <% } if (data.patient.city) { %>
+            <div class="px-2"><%= data.patient.city %></div>
+            <% } %>
+
+            <div class="px-2">
+              <div class="w-110 left">Registration Date:</div>
+              <div class="left"><%= data.patient.registration_date %></div>
+              <div style="clear: both"></div>
+            </div>
+            <div class="px-2">
+              <div class="w-110 left">Invoice Date:</div>
+              <div class="left"><%= new Date().toLocaleDateString() %></div>
+              <div style="clear: both"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="logo">
+          <div class="logo-dimensions">
+            <% if (data.invoice_print_settings.logo) { %>
+            <img src="<%= data.invoice_print_settings.logo %>" />
+            <% } %>
+          </div>
+        </div>
+
+        <div style="clear: both"></div>
+      </div>
+
+      <div class="mx-20">
+        <div class="invoice-block">
+          <div class="invoice-i1" style="">
+            <div class="pt-13" style="padding-top: 13px">Invoice</div>
+          </div>
+
+          <div class="invoice-i2">
+            <div class="border">
+              <div class="pt-10">
+                <div class="f-12">Total</div>
+                <%= data.totalAmountAry['whole_number'] %><span style="font-size:11px;">.<%= data.totalAmountAry['decimal_number'] %></span>
+              </div>
+              </div>
+            </div>
+
+
+          <div class="invoice-i3">
+            <div class="border">
+              <div class="pt-10">
+                <div class="f-12">Discount</div>
+                <div class="f-18">
+                  <%= data.discountAmountAry['whole_number'] %><span style="font-size:11px;">.<%= data.discountAmountAry['decimal_number'] %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="invoice-i4">
+            <div class="border">
+              <div class="pt-10">
+                <div class="f-12">Due</div>
+                <div class="f-18">
+                  <%= data.dueAmountAry['whole_number'] %><span style="font-size:11px;">.<%= data.dueAmountAry['decimal_number'] %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="invoice-i5">
+            <div class="border">
+              <div class="pt-10">
+                <div class="f-12">Paid</div>
+                <div class="f-18">
+                  <%= data.paidAmountAry['whole_number'] %><span style="font-size:11px;">.<%= data.paidAmountAry['decimal_number'] %></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+
+          <div style="clear: both"></div>
+        </div>
+      </div>
+
+      <div class="my-40">
+        <div class="border-bottom px-15 bold f-13">
+          <div class="left w-50">#</div>
+          <div class="left w-60-p">Description</div>
+          <div class="right text-right w-100 pr-25">Price</div>
+          <div style="clear: both; height: 0px"></div>
+        </div>
+
+        <% let counter = 1; %>
+        <% data.invoice_line_items.forEach((item) => { %>
+          <div class="border-bottom px-15" style="font-size:15px">
+            <div class="left w-50"><%= counter %></div>
+            <div class="left w-60-p"><%= item['test_name'] %></div>
+            <div class="right text-right w-100 pr-25">
+              <%= item['testPriceAmountAry']['whole_number'] %><span style="font-size:10px;">.<%= item['testPriceAmountAry']['decimal_number'] %></span>
+            </div>
+            <div style="clear:both; height:0px"></div>
+          </div>
+          <% counter++; %>
+        <% }); %>
+
+        <div>
+          <div class="left w-60-p" style="width: 59%">
+            <div class="footer-margin">
+              <!-- Left Side -->
+              <!-- Footer Text -->
+              <div><%= data.invoice_print_settings.footer_text %></div>
+            </div>
+          </div>
+
+          <div class="right w-40-p">
+            <div
+              class="signature-margin"
+              style="padding-right: 10px; font-size: 15px"
+            >
+              <div>
+                <div class="px-15">
+                  <div class="left w-60-p text-right">Sub Total</div>
+                  <div class="right w-70 text-right pr-25">
+                    <%= data.totalAmountAry['whole_number'] %><span class="f-10">.<%= data.totalAmountAry['decimal_number'] %></span>
+                  </div>
+                  <div style="clear:both; height:0px"></div>
+                </div>
+
+                <div class="px-15">
+                  <div class="left w-60-p text-right">Discount</div>
+                  <div class="right w-70 text-right pr-25">
+                    <%= data.discountAmountAry['whole_number'] %><span class="f-10">.<%= data.discountAmountAry['decimal_number'] %></span>
+                  </div>
+                  <div style="clear: both; height: 0px"></div>
+                </div>
+
+                <div class="px-15 bold">
+                  <div class="left w-60-p text-right">Total</div>
+                  <div class="right w-70 text-right pr-25">
+                    <%= data.totalPayableAmountAry['whole_number'] %><span class="f-10">.<%= data.totalPayableAmountAry['decimal_number'] %></span>
+                  </div>
+                  <div style="clear: both; height: 0px"></div>
+                </div>
+              </div>
+
+              <div class="mt-30 w-150 right text-center">
+                <div class="border-bottom pb-5">
+                  <%= data.user.full_name; %>
+              </div>
+                <div class="f-12">
+                  <div class="pt-5 gray">Signature</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="clear: both; height: 0px"></div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

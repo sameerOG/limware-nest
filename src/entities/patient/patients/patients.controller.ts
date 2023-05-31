@@ -7,6 +7,7 @@ import {
   Param,
   HttpException,
   Body,
+  Put,
 } from '@nestjs/common';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
@@ -15,6 +16,7 @@ import {
   PatientInfoResponseDto,
   PatientListResponseDto,
 } from '../dto/response.dto';
+import { Patient } from '../patient.entity';
 import { PatientsService } from './patients.service';
 
 @Controller('patients')
@@ -76,13 +78,13 @@ export class PatientsController {
     }
   }
 
-  @Get('/:id')
+  @Put('/:id')
   async update(
     @Res() response: Response,
     @Param('id') id: string,
     @Body() body: UpdatePatientRequestDto,
     @Headers('Authorization') authHeader: string,
-  ): Promise<PatientInfoResponseDto> {
+  ): Promise<Patient> {
     try {
       const token = authHeader.split(' ')[1];
       const loggedInUser = jwtDecode(token);

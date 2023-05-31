@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { InjectRepository } from '@nestjs/typeorm';
-import { isNumber } from 'class-validator';
+import { isEmpty, isNumber } from 'lodash';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Appointment } from 'src/entities/appointment/appointment.entity';
 import { Facility } from 'src/entities/Facility/facility.entity';
@@ -227,7 +227,11 @@ export class PatientsService {
     return patient;
   }
 
-  async update(id: string, body: UpdatePatientRequestDto, user): Promise<any> {
+  async update(
+    id: string,
+    body: UpdatePatientRequestDto,
+    user,
+  ): Promise<Patient> {
     const patient = await this.patientRep
       .createQueryBuilder('patient')
       .select('patient.*')
@@ -285,10 +289,95 @@ export class PatientsService {
           }
         }
       }
-
-      const savedPatient = await this.patientRep.update(patient._id, body);
+      const { reference_number, ...rest } = body;
+      const obj = {
+        ...rest,
+      };
+      const savedPatient = await this.patientRep.update(patient._id, obj);
       if (savedPatient.affected > 0) {
+        if (!isEmpty(body['patient_account_id'])) {
+          let patientTestsModel = await this.patientTestRep
+            .createQueryBuilder('patient_test')
+            .select('patient_test._id')
+            .where('patient_test.patient_id = :patient_id', { patient_id: id })
+            .getRawMany();
+
+          let patientTestIds = [];
+          patientTestsModel.forEach((ptm) => {
+            patientTestIds.push(ptm._id);
+          });
+
+          await this.patientTestRep
+            .createQueryBuilder()
+            .update(PatientTest)
+            .set({ patient_account_id: body['patient_account_id'] })
+            .whereInIds(patientTestIds)
+            .execute();
+
+          const invoiceModel = await this.invoiceRep
+            .createQueryBuilder('invoice')
+            .select('invoice._id')
+            .where('invoice.patient_id = :patient_id', { patient_id: id })
+            .getRawMany();
+
+          let invoiceIds = [];
+          invoiceModel.forEach((im) => {
+            invoiceIds.push(im._id);
+          });
+
+          await this.invoiceRep
+            .createQueryBuilder()
+            .update(PatientTest)
+            .set({ patient_account_id: body['patient_account_id'] })
+            .whereInIds(invoiceIds)
+            .execute();
+
+          if (body.reference_number) {
+            let appointmentModel: Appointment = await this.appointmentRep
+              .createQueryBuilder('appointment')
+              .where('appointment.patient_id = :patient_id', { patient_id: id })
+              .getRawOne();
+
+            if (appointmentModel) {
+              let appointmentAttr = {
+                reference_number: body.reference_number,
+              };
+
+              const savedAppointment: any = await this.appointmentRep
+                .createQueryBuilder()
+                .update(Appointment)
+                .set({
+                  reference_number: !isEmpty(body.reference_number)
+                    ? Number(body.reference_number)
+                    : null,
+                })
+                .where({ _id: appointmentModel._id })
+                .execute();
+
+              if (savedAppointment.affected > 0) {
+                await this.updateAppointmentInfo(id, {
+                  reference_number: appointmentModel.reference_number,
+                });
+              }
+            }
+          }
+        }
       }
     }
+
+    return patient;
+  }
+
+  async updateAppointmentInfo(patient_id: string, fields) {
+    const patModel = await this.patientRep.findOne({
+      where: { _id: patient_id },
+    });
+    let appointmentInfoObj = patModel?.appointment_info;
+    Object.keys(fields).forEach((key) => {
+      let value = fields[key];
+      appointmentInfoObj['lab'][key] = value;
+    });
+    patModel.appointment_info = appointmentInfoObj;
+    return await this.patientRep.update(patModel._id, patModel);
   }
 }
