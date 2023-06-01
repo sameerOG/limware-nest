@@ -23,8 +23,7 @@ import jwtDecode from 'jwt-decode';
 import { DirectoryManagerService } from 'src/shared/DirectoryManagerService';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as fs from 'fs-extra';
-import { join } from 'path';
-import {Blob} from 'buffer'
+import { FileManagerDto } from 'src/shared/directoryDto';
 
 
 @Controller('facilities')
@@ -228,7 +227,13 @@ export class FacilitiesController {
       const name = String(facility._id);
       let pathFile;
       if (file) {
-        pathFile = await this.directoryManagerService.uploadFile(file, type, name);
+        const obj: FileManagerDto = {
+          file: file,
+          type: type,
+          name: name,
+          position: null
+        }
+        pathFile = await this.directoryManagerService.uploadFile(obj);
       }
       const facilityData = await this.facilityService.findAndUpdate(facility?.facility_id, data, pathFile);
       response.status(200).send({ message: 'Facility updated', data: facilityData })

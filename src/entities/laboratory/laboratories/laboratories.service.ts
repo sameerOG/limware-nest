@@ -8,6 +8,7 @@ import { Laboratory } from '../laboratory.entity';
 import { Facility } from 'src/entities/Facility/facility.entity';
 import { FacilitiesService } from 'src/entities/Facility/facilities/facilities.service';
 import { LaboratorySetting } from '../laboratory_setting.entity';
+import { LaboratoriesSettingsDto } from 'src/entities/laboratory/laboratories_settings/laboratories.settings.dto';
 
 @Injectable()
 export class LaboratoriesService {
@@ -189,6 +190,34 @@ export class LaboratoriesService {
 
   async getLabForSetting(facility_id): Promise<LaboratorySetting | any> {
     return await this.labSetRep.findOne({where: {facility_id: facility_id}})
+  }
+
+  async updateLabSettings(data: LaboratoriesSettingsDto, id): Promise<LaboratorySetting | undefined>{
+    const settings = await this.labSetRep.findOne({where: {facility_id: id}});
+    if(settings.print_empty_result){
+      settings.print_empty_result = data.print_empty_result;
+      return await this.labSetRep.save(settings); 
+    }
+    if(settings.require_results_for_mark_as_done){
+      settings.require_results_for_mark_as_done = data.print_empty_result;
+      return await this.labSetRep.save(settings); 
+    }
+  }
+  async getLabSettingForSaveTest(user):Promise<LaboratorySetting> {
+    const labModel = await this.labRep
+      .createQueryBuilder('laboratory')
+      .select('laboratory.*')
+      .where('laboratory.facility_id = :facility_id', {
+        facility_id: user.facility_id,
+      })
+      .getRawOne();
+      if(labModel) {
+        const laboratorySetting = await this.labSetRep.createQueryBuilder("laboratory_setting")
+        .select("laboratory_setting.*")
+        .where("laboratory_setting.laboratory_id = :laboratory_id",{laboratory_id:labModel._id})
+        .getRawOne()
+        return laboratorySetting
+      }
   }
 
   async delete(id: string): Promise<any> {

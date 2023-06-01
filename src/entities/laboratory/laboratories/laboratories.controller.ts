@@ -92,25 +92,6 @@ export class LaboratoriesController {
       console.log(e);
     }
   }
-  @Get('/laboratory-settings')
-  async laboratorySettings(
-    @Res() res,
-    @Headers('Authorization') authHeader: string,
-  ) {
-    try {
-      const token = authHeader.split(' ')[1];
-      const loggedInUser: any = jwtDecode(token);
-      const facility: any = await this.facilityService.getSingleFacilityById(loggedInUser?.facility_id);      
-      const laboratory: Laboratory = await this.labService.getLabForSetting(facility?._id);
-      res.status(200).send(laboratory)
-      return laboratory;
-    }
-    catch (e) {
-      res.status(404).send({ message: 'Facility Not Found' })
-      console.log(e);
-    }
-
-  }
 
   @Get('/:id') // getByCustomer api & get By id APi both handled in this
   async getSingle(

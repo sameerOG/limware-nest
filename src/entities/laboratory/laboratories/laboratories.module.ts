@@ -8,10 +8,11 @@ import { Facility } from 'src/entities/Facility/facility.entity';
 import { Customers } from 'src/entities/customer/customer.entity';
 import { Addons } from 'src/entities/addons/addons.entity';
 import { LaboratorySetting } from '../laboratory_setting.entity';
+import { LaboratorySettingsController } from 'src/entities/laboratory/laboratories_settings/laboratories.settings.controllers';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Laboratory, Facility, Customers, Addons, LaboratorySetting])],
-  controllers: [LaboratoriesController],
+  controllers: [LaboratoriesController, LaboratorySettingsController],
   providers: [LaboratoriesService, FacilitiesService],
 })
 export class LaboratoriesModule {}

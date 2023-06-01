@@ -34,7 +34,8 @@ import { FeaturesModule } from './entities/features/features/features.module';
 import { PricingPlansModule } from './entities/pricing/pricing-plans/pricing-plans.module';
 import { PatientsModule } from './entities/patient/patients/patients.module';
 import { InvoicesModule } from './entities/invoice/invoices/invoices.module';
-import { ReportPrintSettingsModule } from './entities/reporting/report_print_setting.module';
+import { ReportPrintSettingsModule } from './entities/report_print_setting/report_print_setting.module';
+import { InvoicePrintSettingsModule } from './entities/invoice/invoice_print_setting/invoice_print_setting.module';
 
 const envFilePath: string = getEnvPath(`/common/envs`);
 dotenv.config();
@@ -86,7 +87,8 @@ dotenv.config();
     PricingPlansModule,
     PatientsModule,
     InvoicesModule,
-    ReportPrintSettingsModule
+    ReportPrintSettingsModule,
+    InvoicePrintSettingsModule
   ],
   controllers: [],
   providers: [],
