@@ -24,10 +24,10 @@ export class PaymentTRansaction {
   transaction_number!: number;
 
   @Column()
-  type!: string;
+  type!: number;
 
   @Column()
-  payment_method!: string;
+  payment_method!: number;
 
   @Column({ default: null })
   user_comment!: string;

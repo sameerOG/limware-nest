@@ -8,6 +8,9 @@ import { Patient } from 'src/entities/patient/patient.entity';
 import { InvoicePrintSettings } from '../invoice_print_settings.entity';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 import { FileHandling } from 'src/common/file-handling';
+import { PaymentTRansaction } from 'src/entities/pricing/payment_transaction.entity';
+import { PatientsService } from 'src/entities/patient/patients/patients.service';
+import { PatientsModule } from 'src/entities/patient/patients/patients.module';
 
 @Module({
   imports: [
@@ -17,7 +20,9 @@ import { FileHandling } from 'src/common/file-handling';
       Patient,
       InvoicePrintSettings,
       Laboratory,
+      PaymentTRansaction,
     ]),
+    PatientsModule,
   ],
   controllers: [InvoicesController],
   providers: [InvoicesService, FileHandling],

@@ -17,8 +17,7 @@ export class TestCategoryRequestDto {
   @IsOptional()
   description: string;
 
-  @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
   is_template: boolean;
 
   @IsString()

@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { transformSortField } from 'src/common/utils/transform-sorting';
+import { EmployeeFacilityDepartment } from 'src/entities/employee/employee_facility_department.entity';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 import { LabTestRateList } from 'src/entities/lab_test_rate/lab_test_rate_list.entity';
 import { LabTestRateListItem } from 'src/entities/lab_test_rate/lab_test_rate_list_item.entity';
@@ -361,6 +362,7 @@ export class TestsService {
         activeNormalRanges: savedData.test_normal_range,
       });
     } catch (err) {
+      console.log('err', err);
       throw new HttpException('TEST_CREATE_FAIL', HttpStatus.BAD_REQUEST);
     }
   }
@@ -464,6 +466,7 @@ export class TestsService {
           laboratory_id: lab._id,
           price: price ? price : 0,
           test_id: savedTest._id,
+          name: '',
         };
         await this.savePrice(rateListData);
       }
@@ -639,11 +642,13 @@ export class TestsService {
     try {
       let whereCondition = {};
       if (user.portal === 'limware') {
-        const lab = await this.labRep.findOne({
-          where: {
+        const lab = await this.labRep
+          .createQueryBuilder('laboratory')
+          .select('laboratory.*')
+          .where('laboratory.facility_id = :facility_id', {
             facility_id: user.facility_id,
-          },
-        });
+          })
+          .getRawOne();
         whereCondition = {
           facility_id: user.facility_id,
           laboratory_id: lab._id,

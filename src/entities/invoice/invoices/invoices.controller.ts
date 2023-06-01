@@ -14,7 +14,13 @@ import {
 import { InvoicesService } from './invoices.service';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
-import { InvoiceLineItemsResponseDto } from './dto/response.dto';
+import {
+  AddPaymentResponseDto,
+  Invoice,
+  InvoiceLineItemsResponseDto,
+} from './dto/response.dto';
+import { AddDiscountRequestDto, AddPaymentRequestDto } from './dto/request.dto';
+import { PaymentTRansaction } from 'src/entities/pricing/payment_transaction.entity';
 
 @Controller('invoices')
 export class InvoicesController {
@@ -81,6 +87,68 @@ export class InvoicesController {
       console.log('err ', err);
       throw new HttpException(
         { err: true, messages: 'Invoice not found' },
+        422,
+      );
+    }
+  }
+
+  @Post('/add-payment')
+  async addPayment(
+    @Res() response: Response,
+    @Body() body: AddPaymentRequestDto,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<AddPaymentRequestDto> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const data: any = await this.invoicesService.addPayment(
+        body,
+        loggedInUser,
+      );
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        throw new HttpException(
+          { err: true, messages: 'Payment not added' },
+          422,
+        );
+      }
+    } catch (err) {
+      console.log('err ', err);
+      throw new HttpException(
+        { err: true, messages: 'Payment not added' },
+        422,
+      );
+    }
+  }
+
+  @Post('/update-discount')
+  async updateDiscount(
+    @Res() response: Response,
+    @Body() body: AddDiscountRequestDto,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<AddPaymentRequestDto> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const data: any = await this.invoicesService.updateDiscount(
+        body,
+        loggedInUser,
+      );
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        throw new HttpException(
+          { err: true, messages: 'Discount not updated' },
+          422,
+        );
+      }
+    } catch (err) {
+      console.log('err ', err);
+      throw new HttpException(
+        { err: true, messages: 'Discount not updated' },
         422,
       );
     }
