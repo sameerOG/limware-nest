@@ -4,9 +4,6 @@ import {
   PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
-  OneToMany,
-  JoinColumn,
-  ManyToOne,
 } from 'typeorm';
 
 @Entity({ name: 'report_print_settings' })
