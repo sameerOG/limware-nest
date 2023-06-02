@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import {
   administrationFeatures,
   limwareFeatures,
+  reportsModule,
 } from 'src/common/helper/enums';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Like, Repository } from 'typeorm';
@@ -139,6 +140,7 @@ export class RolesService {
         }
       }
     }
+    moduleFeatures.push(reportsModule);
     return moduleFeatures;
   }
 
