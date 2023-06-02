@@ -1,9 +1,12 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class ReportRequestDto {
-  @IsNotEmpty()
+  @IsOptional()
   start_date: any;
 
-  @IsNotEmpty()
+  @IsOptional()
   end_date: any;
+
+  @IsOptional()
+  date: any;
 }
