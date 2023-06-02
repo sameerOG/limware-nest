@@ -34,9 +34,10 @@ import { FeaturesModule } from './entities/features/features/features.module';
 import { PricingPlansModule } from './entities/pricing/pricing-plans/pricing-plans.module';
 import { PatientsModule } from './entities/patient/patients/patients.module';
 import { InvoicesModule } from './entities/invoice/invoices/invoices.module';
-import { ReferencesModule } from './entities/reference/references/references.module';
 import { PatientTestsModule } from './entities/patient/patient-tests/patient-tests.module';
 import { LabTestRateListsModule } from './entities/lab_test_rate/lab-test-rate-lists/lab-test-rate-lists.module';
+import { ReportsModule } from './entities/reporting/reports/reports.module';
+import { ReferencesModule } from './entities/reference/references/references.module';
 
 const envFilePath: string = getEnvPath(`/common/envs`);
 dotenv.config();
@@ -91,6 +92,7 @@ dotenv.config();
     ReferencesModule,
     PatientTestsModule,
     LabTestRateListsModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [],

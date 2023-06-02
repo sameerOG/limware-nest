@@ -9,7 +9,7 @@ export class PatientList {
   readonly lab_number: string;
   readonly mobile_number: string;
   readonly name: string;
-  readonly registration_date: string;
+  readonly registration_date: string | number;
   readonly unique_id: string;
   readonly _id: string;
 
