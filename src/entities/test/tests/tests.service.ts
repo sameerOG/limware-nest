@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { transformSortField } from 'src/common/utils/transform-sorting';
+import { EmployeeFacilityDepartment } from 'src/entities/employee/employee_facility_department.entity';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 import { LabTestRateList } from 'src/entities/lab_test_rate/lab_test_rate_list.entity';
 import { LabTestRateListItem } from 'src/entities/lab_test_rate/lab_test_rate_list_item.entity';
@@ -50,6 +51,7 @@ export class TestsService {
   ) {}
 
   async getAll(
+    user,
     skip: number,
     take: number,
     text?: string,
@@ -65,7 +67,7 @@ export class TestsService {
         { tags: Like(`%${text}%`) },
       ];
     }
-    const data = await this.testRep.find({
+    const data: any = await this.testRep.find({
       select: [
         '_id',
         'name',
@@ -73,13 +75,22 @@ export class TestsService {
         'title_for_print',
         'tags',
         'code',
+        'facility_id',
       ],
       where,
       skip,
       take,
       order: transformSortField(sort),
     });
-    return data;
+    let filteredTest;
+    if (user.portal === 'limware') {
+      filteredTest = data.filter((info) => {
+        return info.facility_id === user.facility_id;
+      });
+    } else {
+      filteredTest = data;
+    }
+    return filteredTest;
   }
 
   async getSingle(id: string): Promise<SingleTestResponseDto> {
@@ -249,10 +260,7 @@ export class TestsService {
     }
   }
 
-  async add(
-    data: TestRequestDto,
-    user: Object,
-  ): Promise<SingleTestResponseDto> {
+  async add(data: TestRequestDto, user): Promise<SingleTestResponseDto> {
     try {
       const body: any = { ...data };
       if (body.report_template) {
@@ -354,7 +362,8 @@ export class TestsService {
         activeNormalRanges: savedData.test_normal_range,
       });
     } catch (err) {
-      return err;
+      console.log('err', err);
+      throw new HttpException('TEST_CREATE_FAIL', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -422,19 +431,19 @@ export class TestsService {
     if (parametric_only) {
       Object.assign(testData, { parametric_only, parent_test_id });
     }
+    const lab = await this.labRep
+      .createQueryBuilder('laboratory')
+      .select('laboratory.*')
+      .where('laboratory.facility_id = :facility_id', {
+        facility_id: user.facility_id,
+      })
+      .getRawOne();
     if (user.portal === 'administration') {
       Object.assign(testData, { is_template: true });
     } else if (user.portal === 'limware') {
-      const lab = await this.labRep
-        .createQueryBuilder('laboratory')
-        .select('laboratory.*')
-        .where('laboratoty.facility_id = :facility_id', {
-          facility_id: user.facility_id,
-        })
-        .getRawOne();
       Object.assign(testData, {
         facility_id: user.facility_id,
-        laboratory_id: lab._id,
+        laboratory_id: lab?._id,
         department_id: department_id,
       });
     }
@@ -452,18 +461,12 @@ export class TestsService {
       }
 
       if (user.portal === 'limware') {
-        const lab = await this.labRep
-          .createQueryBuilder('laboratory')
-          .select('laboratory.*')
-          .where('laboratoty.facility_id = :facility_id', {
-            facility_id: user.facility_id,
-          })
-          .getRawOne();
         const rateListData = {
           facility_id: user.facility_id,
           laboratory_id: lab._id,
           price: price ? price : 0,
           test_id: savedTest._id,
+          name: '',
         };
         await this.savePrice(rateListData);
       }
@@ -639,11 +642,13 @@ export class TestsService {
     try {
       let whereCondition = {};
       if (user.portal === 'limware') {
-        const lab = await this.labRep.findOne({
-          where: {
+        const lab = await this.labRep
+          .createQueryBuilder('laboratory')
+          .select('laboratory.*')
+          .where('laboratory.facility_id = :facility_id', {
             facility_id: user.facility_id,
-          },
-        });
+          })
+          .getRawOne();
         whereCondition = {
           facility_id: user.facility_id,
           laboratory_id: lab._id,

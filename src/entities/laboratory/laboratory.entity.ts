@@ -62,13 +62,13 @@ export class Laboratory {
   @JoinColumn({ name: 'parent_lab_id' })
   parent_lab_id!: Laboratory;
 
-  @OneToOne(() => LabTestRateList, (ltrl) => ltrl.laboratory_id)
+  @OneToMany(() => LabTestRateList, (ltrl) => ltrl.laboratory_id)
   lab_test_rate!: LabTestRateList;
 
   @OneToMany(() => UserMapping, (um) => um.laboratory_id)
   user_mapping!: UserMapping;
 
-  @OneToOne(() => LabTestRateListItem, (ltrl) => ltrl.laboratory_id)
+  @OneToMany(() => LabTestRateListItem, (ltrl) => ltrl.laboratory_id)
   lab_test_rate_item!: LabTestRateListItem;
 
   @ManyToOne(() => Facility, (facility) => facility.laboratory_id)

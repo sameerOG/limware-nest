@@ -35,15 +35,24 @@ export class TestsController {
   async getAll(
     @Res() response: Response,
     @Query() query,
+    @Headers('Authorization') authHeader: string,
   ): Promise<TestResponseDto[]> {
     try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
       const perpage = query['per-page'] ? query['per-page'] : 25;
       const page = query['page'] ? query['page'] : 1;
       const sort = query['sort'];
       const text = query.filter?.username?.like;
       const skip = (page - 1) * perpage;
 
-      let data = await this.testService.getAll(skip, perpage, text, sort);
+      let data = await this.testService.getAll(
+        loggedInUser,
+        skip,
+        perpage,
+        text,
+        sort,
+      );
       response.status(200).send(data);
       return data;
     } catch (err) {

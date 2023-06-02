@@ -17,8 +17,7 @@ export class TestCategoryRequestDto {
   @IsOptional()
   description: string;
 
-  @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
   is_template: boolean;
 
   @IsString()
@@ -28,6 +27,18 @@ export class TestCategoryRequestDto {
   @IsString()
   @IsOptional()
   type: string;
+
+  @IsString()
+  @IsOptional()
+  facility_id: string;
+
+  @IsString()
+  @IsOptional()
+  laboratory_id: string;
+
+  @IsString()
+  @IsOptional()
+  department_id: string;
 
   @IsNumber()
   @IsNotEmpty()

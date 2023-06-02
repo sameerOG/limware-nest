@@ -1554,3 +1554,98 @@ export const administrationFeatures = [
     title: '',
   },
 ];
+
+export const reportsModule = {
+  id: 'reportsModule.*',
+  parent_id: null,
+  title: 'Reports',
+  operation: '*',
+  status: false,
+  children: [
+    {
+      id: 'reports.patient-count-report',
+      parent_id: 'reportsModule.*',
+      title: 'Patient Count Report',
+      operation: '*',
+      status: true,
+      children: [
+        {
+          id: 'reports.get-patient-count-report',
+          parent_id: 'reports.patient-count-report',
+          title: 'Get Patient Count Report',
+          operation: 'r',
+          status: true,
+          children: [],
+        },
+      ],
+    },
+    {
+      id: 'reports.sales-report',
+      parent_id: 'reportsModule.*',
+      title: 'Sales Report (Patient Wise)',
+      operation: '*',
+      status: true,
+      children: [
+        {
+          id: 'reports.get-sales-report',
+          parent_id: 'reports.sales-report',
+          title: 'Get Sales Report',
+          operation: 'r',
+          status: true,
+          children: [],
+        },
+      ],
+    },
+    {
+      id: 'reports.due-payment-report',
+      parent_id: 'reportsModule.*',
+      title: 'Due Payment Report',
+      operation: '*',
+      status: true,
+      children: [
+        {
+          id: 'reports.get-due-payment-report',
+          parent_id: 'reports.due-payment-report',
+          title: 'Get Due Payment Report',
+          operation: 'r',
+          status: true,
+          children: [],
+        },
+      ],
+    },
+    {
+      id: 'reports.patient-daily-count-report',
+      parent_id: 'reportsModule.*',
+      title: 'Patient Count - Daily',
+      operation: '*',
+      status: true,
+      children: [
+        {
+          id: 'reports.get-patient-daily-count-report',
+          parent_id: 'reports.patient-daily-count-report',
+          title: 'Get Patient Count Daily Report',
+          operation: 'r',
+          status: true,
+          children: [],
+        },
+      ],
+    },
+    {
+      id: 'reports.daily-sales-report',
+      parent_id: 'reportsModule.*',
+      title: 'Sales - Daily',
+      operation: '*',
+      status: true,
+      children: [
+        {
+          id: 'reports.get-daily-sales-report',
+          parent_id: 'reports.daily-sales-report',
+          title: 'Get Sales Daily Report',
+          operation: 'r',
+          status: true,
+          children: [],
+        },
+      ],
+    },
+  ],
+};

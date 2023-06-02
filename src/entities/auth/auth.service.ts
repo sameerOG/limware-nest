@@ -122,6 +122,12 @@ export class AuthService {
         user['password'],
       );
 
+      const employee = await this.empRep
+        .createQueryBuilder('employee')
+        .select('employee.*')
+        .where('employee.user_id = :user_id', { user_id: user._id })
+        .getRawOne();
+
       if (authenticated) {
         const {
           email,
@@ -132,7 +138,6 @@ export class AuthService {
           username,
           facility_id,
           customer_id,
-          employee_id,
           _id,
         } = user;
         const obj: any = {
@@ -144,14 +149,14 @@ export class AuthService {
           user_name: username,
           permissions: null,
           facility_id,
-          employee_id,
+          employee_id: employee?._id,
           customer_id,
           user_id: {
             $oid: user._id,
           },
           _id,
         };
-
+        console.log('login obj', obj);
         const token = jwt.sign(obj, 'secretOrKey');
         const tokenExists: UserAccessToken = await this.userTokenRep
           .createQueryBuilder('user_access_token')

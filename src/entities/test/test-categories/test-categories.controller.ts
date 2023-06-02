@@ -59,6 +59,23 @@ export class TestCategoriesController {
     }
   }
 
+  @Get('/test-categories/get-parent-categories')
+  async getParentCategories(
+    @Res() response: Response,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<TestCategoryDto[]> {
+    try {
+      let data = await this.testCategoryService.getParentCategories();
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch parent', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Parent Test Categories not found' });
+    }
+  }
+
   @Get('/test-categories/get-all')
   async getAllComplete(
     @Res() response: Response,

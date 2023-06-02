@@ -29,6 +29,7 @@ export class UsersService {
   ) { }
 
   async getUsers(
+    user,
     skip: number,
     take: number,
     text?: string,
@@ -46,30 +47,53 @@ export class UsersService {
     }
     const users = await this.usersRep.find({
       select: ['_id', 'full_name', 'email', 'portal', 'status', 'username'],
+      relations: ['facility_id'],
       where,
       skip,
       take,
       order: transformSortField(sort),
     });
-    return users;
+    let filterUsers;
+    if (user.portal === 'limware') {
+      filterUsers = users.filter((info) => {
+        console.log('info', info);
+        return info.facility_id?._id == user.facility_id;
+      });
+    } else {
+      filterUsers = users;
+    }
+
+    return filterUsers;
   }
 
   async reLoggedInUserPermissions(user): Promise<any> {
-    if (user.isSuperUser === 0 && user.portal === 'limware') {
+    console.log('user', user);
+    if (user.isSsuperUser === 0 && user.portal === 'limware') {
+      console.log('before');
+      const employee = await this.empRep
+        .createQueryBuilder('employee')
+        .select('employee.*')
+        .where('employee.user_id = :user_id', { user_id: user._id })
+        .getRawOne();
+
+      console.log('employee', employee);
+
       const employeeFacility = await this.empFacilityRep
         .createQueryBuilder('employee_facility')
         .select('employee_facility.*')
         .where('employee_facility.employee_id = :employee_id', {
-          employee_id: user.employee_id,
+          employee_id: employee._id,
         })
         .andWhere('employee_facility.facility_id = :facility_id', {
           facility_id: user.facility_id,
         })
         .getRawOne();
+      console.log('after');
 
       const permissions = [];
+      console.log('employeeFacility', employeeFacility);
       const role_ids = employeeFacility.role_ids
-        ? JSON.parse(employeeFacility.role_ids)
+        ? employeeFacility.role_ids
         : [];
       for (let i = 0; i < role_ids.length; i++) {
         const role = await this.rolesRep.findOne({

@@ -37,6 +37,9 @@ import { InvoicesModule } from './entities/invoice/invoices/invoices.module';
 import { ReportPrintSettingsModule } from './entities/report_print_setting/report_print_setting.module';
 import { InvoicePrintSettingsModule } from './entities/invoice/invoice_print_setting/invoice_print_setting.module';
 import { FacilitiesSmsSettingModule } from './entities/Facility/facility_sms_settings/facility_sms_setting.module';
+import { ReferencesModule } from './entities/reference/references/references.module';
+import { PatientTestsModule } from './entities/patient/patient-tests/patient-tests.module';
+import { LabTestRateListsModule } from './entities/lab_test_rate/lab-test-rate-lists/lab-test-rate-lists.module';
 
 const envFilePath: string = getEnvPath(`/common/envs`);
 dotenv.config();
@@ -91,6 +94,10 @@ dotenv.config();
     ReportPrintSettingsModule,
     InvoicePrintSettingsModule,
     FacilitiesSmsSettingModule
+
+    ReferencesModule,
+    PatientTestsModule,
+    LabTestRateListsModule,
   ],
   controllers: [],
   providers: [],

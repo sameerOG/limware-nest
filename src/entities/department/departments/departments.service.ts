@@ -1,10 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Facility } from 'src/entities/Facility/facility.entity';
+import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
-import { DeepPartial, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Department } from '../department.entity';
-import { DepartmentRequest, EditDepartmentRequest } from '../dto/request.dto';
+import {
+  DepartmentRequest,
+  EditDepartmentRequest,
+  findAllDepartmentsResponseDto,
+} from '../dto/request.dto';
 import { DepartmentDto } from '../dto/response.dto';
 
 @Injectable()
@@ -12,6 +16,8 @@ export class DepartmentsService {
   constructor(
     @InjectRepository(Department)
     private departmentRep: Repository<Department>,
+    @InjectRepository(Laboratory)
+    private labRep: Repository<Laboratory>,
   ) {}
 
   async getAll(
@@ -49,6 +55,48 @@ export class DepartmentsService {
     );
   }
 
+  async findAll(
+    user,
+    skip: number,
+    take: number,
+    sort?: string,
+  ): Promise<findAllDepartmentsResponseDto[]> {
+    const departments = await this.departmentRep
+      .createQueryBuilder('department')
+      .select('department.*')
+      .where('department.facility_id = :facility_id', {
+        facility_id: user.facility_id,
+      })
+      .skip(skip)
+      .take(take)
+      .orderBy(transformSortField(sort))
+      .getRawMany();
+
+    return departments;
+  }
+
+  async getLabDepartments(user): Promise<Department[]> {
+    const labModel = await this.labRep
+      .createQueryBuilder('laboratory')
+      .select('laboratory.*')
+      .where('laboratory.facility_id = :facility_id', {
+        facility_id: user.facility_id,
+      })
+      .getRawOne();
+    const departments = await this.departmentRep
+      .createQueryBuilder('department')
+      .select('department.*')
+      .where('department.parent = :parent', {
+        parent: 'laboratory',
+      })
+      .andWhere('department.parent_id = :parent_id', {
+        parent_id: labModel?._id,
+      })
+      .getRawMany();
+
+    return departments;
+  }
+
   async getByFacility(facility_id: string): Promise<Department[]> {
     return await this.departmentRep
       .createQueryBuilder('department')
@@ -66,8 +114,22 @@ export class DepartmentsService {
     return new DepartmentDto(data);
   }
 
-  async add(body: DepartmentRequest): Promise<DepartmentDto> {
+  async add(body: DepartmentRequest, user): Promise<DepartmentDto> {
     const department: any = { ...body };
+    if (!department.facility_id) {
+      const labModel = await this.labRep
+        .createQueryBuilder('laboratory')
+        .select('laboratory.*')
+        .where('laboratory.facility_id = :facility_id', {
+          facility_id: user.facility_id,
+        })
+        .getRawOne();
+      Object.assign(department, {
+        facility_id: user.facility_id,
+        parent: 'laboratory',
+        parent_id: labModel?._id,
+      });
+    }
     const data = await this.departmentRep.save(department);
     const { ...rest } = data;
     return new DepartmentDto({
