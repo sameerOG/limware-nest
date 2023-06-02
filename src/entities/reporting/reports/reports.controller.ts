@@ -1,6 +1,7 @@
 import { Body, Controller, Post, Headers, Res } from '@nestjs/common';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
+import { ReportRequestDto } from '../dto/request.dto';
 import { ReportsService } from './reports.service';
 
 @Controller('reports')
@@ -10,7 +11,7 @@ export class ReportsController {
   @Post('/get-patient-count-report')
   async getPatientCountReport(
     @Res() response: Response,
-    @Body() body,
+    @Body() body: ReportRequestDto,
     @Headers('Authorization') authHeader: string,
   ): Promise<any> {
     try {
@@ -31,7 +32,7 @@ export class ReportsController {
   @Post('/print-patient-count-report')
   async printPatientCountReport(
     @Res() response: Response,
-    @Body() body,
+    @Body() body: ReportRequestDto,
     @Headers('Authorization') authHeader: string,
   ): Promise<any> {
     try {
@@ -53,7 +54,7 @@ export class ReportsController {
   @Post('/get-patient-daily-count-report')
   async getPatientDailyCountReport(
     @Res() response: Response,
-    @Body() body,
+    @Body() body: ReportRequestDto,
     @Headers('Authorization') authHeader: string,
   ): Promise<any> {
     try {
@@ -74,7 +75,7 @@ export class ReportsController {
   @Post('/print-patient-daily-count-report')
   async printPatientDailyCountReport(
     @Res() response: Response,
-    @Body() body,
+    @Body() body: ReportRequestDto,
     @Headers('Authorization') authHeader: string,
   ): Promise<any> {
     try {
@@ -96,7 +97,7 @@ export class ReportsController {
   @Post('/get-sales-report')
   async getSalesReport(
     @Res() response: Response,
-    @Body() body,
+    @Body() body: ReportRequestDto,
     @Headers('Authorization') authHeader: string,
   ): Promise<any> {
     try {
@@ -114,7 +115,7 @@ export class ReportsController {
   @Post('/get-daily-sales-report')
   async getSalesDailyReport(
     @Res() response: Response,
-    @Body() body,
+    @Body() body: ReportRequestDto,
     @Headers('Authorization') authHeader: string,
   ): Promise<any> {
     try {
@@ -135,7 +136,7 @@ export class ReportsController {
   @Post('/print-daily-sales-report')
   async printSalesDailyReport(
     @Res() response: Response,
-    @Body() body,
+    @Body() body: ReportRequestDto,
     @Headers('Authorization') authHeader: string,
   ): Promise<any> {
     try {
@@ -157,7 +158,7 @@ export class ReportsController {
   @Post('/print-sales-report')
   async printSalesReport(
     @Res() response: Response,
-    @Body() body,
+    @Body() body: ReportRequestDto,
     @Headers('Authorization') authHeader: string,
   ): Promise<any> {
     try {
@@ -176,7 +177,7 @@ export class ReportsController {
   @Post('/get-due-payment-report')
   async getDuePaymentReport(
     @Res() response: Response,
-    @Body() body,
+    @Body() body: ReportRequestDto,
     @Headers('Authorization') authHeader: string,
   ): Promise<any> {
     try {
@@ -197,7 +198,7 @@ export class ReportsController {
   @Post('/print-due-payment-report')
   async printDuePaymentReport(
     @Res() response: Response,
-    @Body() body,
+    @Body() body: ReportRequestDto,
     @Headers('Authorization') authHeader: string,
   ): Promise<any> {
     try {
