@@ -30,8 +30,6 @@ export class InvoicePrintSettingsController {
             const loggedInUser: any = jwtDecode(token);
             const facility: any = await this.facilityService.getSingleFacilityById(loggedInUser.facility_id);
             const laboratory = await this.laboratoriesService.getLabForSetting(facility?._id);
-            console.log(laboratory);
-            
             const InvoicePrintSettings = await this.invoicePrintService.getReportPrintSettings(laboratory?.laboratory_id);
             response.status(200).send(InvoicePrintSettings);
             return InvoicePrintSettings;

@@ -17,6 +17,8 @@ import { AuthService } from './auth.service';
 import { ReportPrintSetting } from '../report_print_setting/report_print_setting.entity';
 import { LaboratorySetting } from '../laboratory/laboratory_setting.entity';
 import { InvoicePrintSettings } from '../invoice/invoice_print_settings.entity';
+import { FacilitySmsSetting } from '../Facility/facility_sms_settings/facility_sms_setting.entity';
+import { Addons } from '../addons/addons.entity';
 
 @Module({
   imports: [
@@ -34,7 +36,9 @@ import { InvoicePrintSettings } from '../invoice/invoice_print_settings.entity';
       UserRole,
       ReportPrintSetting,
       LaboratorySetting,
-      InvoicePrintSettings
+      InvoicePrintSettings,
+      FacilitySmsSetting,
+      Addons
     ]),
   ],
   controllers: [AuthController],

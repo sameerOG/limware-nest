@@ -29,7 +29,9 @@ import { UserRole } from '../user_role/user_role.entity';
 import { LaboratorySetting } from '../laboratory/laboratory_setting.entity';
 import { ReportPrintSetting } from '../report_print_setting/report_print_setting.entity';
 import { InvoicePrintSettings } from '../invoice/invoice_print_settings.entity';
-import { LabSettingsData, ReportPrintSettingsData } from 'src/common/settings/lab.settings.default';
+import { FacilitySmsSetting } from '../Facility/facility_sms_settings/facility_sms_setting.entity';
+import { Addons } from '../addons/addons.entity';
+import { AddonsSettingData, FacilitySMSsettingsData, LabSettingsData, ReportPrintSettingsData } from 'src/common/settings/lab.settings.default';
 
 const uid = new ShortUniqueId({ length: 6, dictionary: 'number' });
 @Injectable()
@@ -62,7 +64,11 @@ export class AuthService {
     @InjectRepository(ReportPrintSetting)
     private reportPrintSettinRep: Repository<ReportPrintSetting>,
     @InjectRepository(InvoicePrintSettings)
-    private invoicePrintSettingRep: Repository<InvoicePrintSettings>
+    private invoicePrintSettingRep: Repository<InvoicePrintSettings>,
+    @InjectRepository(FacilitySmsSetting)
+    private facilitySmsSettingRep: Repository<FacilitySmsSetting>,
+    @InjectRepository(Addons)
+    private addonsRep: Repository<Addons>
   ) { }
 
   async login(body: AuthRequest): Promise<AuthDto | Error[]> {
@@ -84,7 +90,7 @@ export class AuthService {
       .getRawOne();
 
     const facilities = [];
-    user.facilities?.map(async (facility) => {
+    user?.facilities?.map(async (facility) => {
       if (facility) {
         const { name, type, _id, unique_id } = facility;
         let obj = {
@@ -366,7 +372,7 @@ export class AuthService {
       );
       await this._assignEmployeeFacility(facility._id, employee._id);
       const otpCode = await this.generateVerificationPin(savedUser._id);
-     
+
       return {
         errors: false,
         user_id: savedUser._id,
@@ -385,21 +391,62 @@ export class AuthService {
     labSettingEntity.require_results_for_mark_as_done = data.require_results_for_mark_as_done;
     return await this.labSettingsRep.save(labSettingEntity)
   }
-  async reportPrintSetting(data, lab_id): Promise<ReportPrintSetting>{   
+  async reportPrintSetting(data, lab_id): Promise<ReportPrintSetting> {
     const reportSettingEntity = new ReportPrintSetting();
     reportSettingEntity.laboratory_id = lab_id;
     reportSettingEntity.default_download_footer_type;
     reportSettingEntity.created_at = new Date();
     reportSettingEntity.updated_at = new Date();
     reportSettingEntity.footer_text = data.footer_text;
-    reportSettingEntity.header_text =data.header_text;
+    reportSettingEntity.header_text = data.header_text;
     reportSettingEntity.default_download_footer_type = data.default_download_footer_type;
     reportSettingEntity.default_download_header_type = data.default_download_header_type;
     reportSettingEntity.margin_left = data.margin_left;
     reportSettingEntity.margin_bottom = data.margin_bottom;
     reportSettingEntity.margin_right = data.margin_right;
-    reportSettingEntity.margin_top= data.margin_top;
+    reportSettingEntity.margin_top = data.margin_top;
     return await this.reportPrintSettinRep.save(reportSettingEntity);
+  }
+  async invoicePrintSettings(lab_id): Promise<InvoicePrintSettings | undefined> {
+    const invoiceSettings = new InvoicePrintSettings();
+    invoiceSettings.laboratory_id = lab_id;
+    invoiceSettings.updated_at = new Date();
+    invoiceSettings.created_at = new Date();
+    return await this.invoicePrintSettingRep.save(invoiceSettings);
+  }
+  async facilitySmsSettings(data, facility_id, employee_id) {
+    const facilitySetting = new FacilitySmsSetting();
+    facilitySetting.facility_id = facility_id;
+    facilitySetting.created_at = new Date();
+    facilitySetting.updated_at = new Date();
+    facilitySetting.employee_id = employee_id;
+    facilitySetting.payment_done_sms = data.payment_done_sms;
+    facilitySetting.payment_done_sms = data.payment_done_sms;
+    facilitySetting.payment_done_whatsapp = data.payment_done_whatsapp;
+    facilitySetting.payment_done_whatsapp_status = data.payment_done_whatsapp_status;
+    facilitySetting.registration_sms = data.registration_sms;
+    facilitySetting.reports_done_and_payment_pending_whatsapp = data.reports_done_and_payment_pending_whatsapp;
+    facilitySetting.registration_sms_status = data.registration_sms_status;
+    facilitySetting.registration_whatsapp = data.registration_whatsapp;
+    facilitySetting.registration_whatsapp_status = data.registration_whatsapp_status;
+    facilitySetting.reports_done_and_payment_pending_sms = data.reports_done_and_payment_pending_sms;
+    facilitySetting.reports_done_and_payment_pending_sms_status = data.reports_done_and_payment_pending_sms_status;
+    facilitySetting.reports_done_sms = data.reports_done_sms;
+    facilitySetting.reports_done_whatsapp = data.reports_done_whatsapp;
+    facilitySetting.reports_done_sms_status = data.reports_done_sms_status;
+    facilitySetting.reports_done_whatsapp = data.reports_done_whatsapp;
+    facilitySetting.reports_done_whatsapp_status = data.reports_done_whatsapp_status;
+    return await this.facilitySmsSettingRep.save(facilitySetting);
+
+  }
+  async getMyAddons(data, facility_id) {
+    const addons = new Addons();
+    addons.facility_id = facility_id;
+    addons.created_at = new Date();
+    addons.updated_at = new Date();
+    addons.whatsapp = data.whatsapp;
+    addons.sms = data.sms;
+    return await this.addonsRep.save(addons);
   }
   async _assignEmployeeFacility(facility_id: string, employee_id: string) {
     const role = await this.roleRep.findOne({ where: { name: 'Lab Admin' } });
@@ -482,6 +529,9 @@ export class AuthService {
     );
     await this.labSettings(LabSettingsData, lab._id, facility._id)
     await this.reportPrintSetting(ReportPrintSettingsData, lab._id)
+    await this.invoicePrintSettings(lab._id);
+    await this.facilitySmsSettings(FacilitySMSsettingsData, facility._id, employee._id);
+    await this.getMyAddons(AddonsSettingData, facility._id);
     await this._assignEmployeeFacility(facility._id, employee._id);
     const { ...rest } = savedUser;
     return new SingleUserDto({

@@ -10,7 +10,7 @@ import { FacilitiesSMSController } from '../facility_sms_settings/facility_sms_s
 
 @Module({
   imports: [TypeOrmModule.forFeature([Facility, Customers, Addons])],
-  controllers: [FacilitiesController, FacilitiesSMSController],
+  controllers: [FacilitiesController],
   providers: [FacilitiesService, DirectoryManagerService]
 })
 export class FacilitiesModule {}
