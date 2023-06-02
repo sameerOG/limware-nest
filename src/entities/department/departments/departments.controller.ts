@@ -10,20 +10,26 @@ import {
   Query,
   Res,
   UseGuards,
+  Headers,
 } from '@nestjs/common';
 import { DepartmentsService } from './departments.service';
 import { Response } from 'express';
 import { DepartmentDto } from '../dto/response.dto';
-import { DepartmentRequest, EditDepartmentRequest } from '../dto/request.dto';
+import {
+  DepartmentRequest,
+  EditDepartmentRequest,
+  findAllDepartmentsResponseDto,
+} from '../dto/request.dto';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { Department } from '../department.entity';
+import jwtDecode from 'jwt-decode';
 @Controller('departments')
 @UseGuards(AuthGuard)
 export class DepartmentsController {
   constructor(private departmentService: DepartmentsService) {}
 
   @Get('/get-facility-departments')
-  async getAll(
+  async getFacilityDepartments(
     @Res() response: Response,
     @Query() query,
   ): Promise<DepartmentDto[]> {
@@ -40,6 +46,54 @@ export class DepartmentsController {
       response
         .status(422)
         .send({ error: err, message: 'Facility Departments not found' });
+    }
+  }
+
+  @Get('/get-lab-departments')
+  async getLabDepartments(
+    @Res() response: Response,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<Department[]> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.departmentService.getLabDepartments(loggedInUser);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Facility Departments not found' });
+    }
+  }
+
+  @Get('/')
+  async findAll(
+    @Res() response: Response,
+    @Query() query,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<findAllDepartmentsResponseDto[]> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const perpage = query['per-page'] ? query['per-page'] : 25;
+      const page = query['page'] ? query['page'] : 1;
+      const sort = query['sort'];
+      const skip = (page - 1) * perpage;
+      let data = await this.departmentService.findAll(
+        loggedInUser,
+        skip,
+        perpage,
+        sort,
+      );
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Departments not found' });
     }
   }
 
@@ -81,9 +135,12 @@ export class DepartmentsController {
   async add(
     @Res() response: Response,
     @Body() body: DepartmentRequest,
+    @Headers('Authorization') authHeader: string,
   ): Promise<DepartmentDto> {
     try {
-      let data = await this.departmentService.add(body);
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.departmentService.add(body, loggedInUser);
       if (data) {
         response.status(200).send(data);
         return data;

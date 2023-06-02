@@ -4,9 +4,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { isEmpty, isNumber } from 'lodash';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Appointment } from 'src/entities/appointment/appointment.entity';
+import { EmployeeFacility } from 'src/entities/employee/employee_facility.entity';
+import { EmployeeFacilityDepartment } from 'src/entities/employee/employee_facility_department.entity';
 import { Facility } from 'src/entities/Facility/facility.entity';
 import { Invoice } from 'src/entities/invoice/invoice.entity';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
+import { TestCategory } from 'src/entities/test/test_category.entity';
 import { In, Repository } from 'typeorm';
 import { UpdatePatientRequestDto } from '../dto/request.dto';
 import {
@@ -36,6 +39,12 @@ export class PatientsService {
     private testRep: Repository<Test>,
     @InjectRepository(PatientTest)
     private patientTestRep: Repository<PatientTest>,
+    @InjectRepository(TestCategory)
+    private testCategoryRep: Repository<TestCategory>,
+    @InjectRepository(EmployeeFacility)
+    private empFacilityRep: Repository<EmployeeFacility>,
+    @InjectRepository(EmployeeFacilityDepartment)
+    private empFacilityDepartmentRep: Repository<EmployeeFacilityDepartment>,
   ) {}
 
   async getAll(
@@ -110,6 +119,119 @@ export class PatientsService {
     return [result];
   }
 
+  async getAssignedPatients(
+    user,
+    skip: number,
+    take: number,
+    text?: string,
+    sort?: string,
+  ): Promise<any> {
+    let lab_number;
+    if (text) {
+      const facilityModel = await this.facilityRep
+        .createQueryBuilder('facility')
+        .select(['facility._id,facility.unique_id'])
+        .where('facility._id = :id', { id: user.facility_id })
+        .getOne();
+
+      lab_number = `${facilityModel.unique_id}-${text}`;
+    }
+
+    let aggregateResult = await this.patientRep
+      .createQueryBuilder('patient')
+      .select('patient.*')
+      // .leftJoin('patient_test', 'pt', 'pt.patient_id = patient._id')
+      // .leftJoin('test', 't', 't._id = pt.test_id')
+      // .leftJoin('department', 'dep', 'dep._id = t.department_id')
+      .where('patient.facility_id = :facility_id', {
+        facility_id: user.facility_id,
+      })
+      // .andWhere(
+      //   'patient.deleted_at IS NULL AND pt.deleted_at IS NULL AND t.deleted_at is NULL AND dep.deleted_at IS NULL',
+      // )
+      .andWhere('patient.deleted_at IS NULL')
+      .andWhere(text ? 'patient.name LIKE :name' : '1=1', {
+        name: `%${text}%`,
+      })
+      .skip(skip)
+      .take(take)
+      .orderBy(transformSortField(sort))
+      .getRawMany();
+
+    return aggregateResult;
+  }
+
+  async getPatientDetails(patient_id: string, user): Promise<any> {
+    const appointment = await this.appointmentRep
+      .createQueryBuilder('appointment')
+      .select('appointment.*')
+      .where('appointment.patient_id = :patient_id', { patient_id: patient_id })
+      .andWhere('appointment.facility_id = :facility_id', {
+        facility_id: user.facility_id,
+      })
+      .getRawOne();
+
+    const patient = await this.patientRep
+      .createQueryBuilder('patient')
+      .select('patient.*')
+      .where('patient._id = :_id', { _id: patient_id })
+      .getRawOne();
+
+    const patientTests = await this.patientTestRep
+      .createQueryBuilder('patient_test')
+      .select('patient_test.*')
+      .where('patient_test.patient_id = :patient_id', { patient_id })
+      .getRawMany();
+
+    const userAssignedDepartmentIds = await this.getUserDepartments(
+      user.facility_id,
+      user.employee_id,
+      user,
+    );
+
+    let patientTestsFiltered = [];
+
+    for (let i = 0; i < patientTests.length; i++) {
+      let ptItem = patientTests[i];
+      for (let j = 0; j < userAssignedDepartmentIds.length; j++) {
+        let department_id = userAssignedDepartmentIds[j];
+        const test: any = await this.testRep.findOne({
+          where: { _id: ptItem.test_id },
+          relations: ['test_category_id', 'department_id'],
+        });
+        const category = await this.testCategoryRep.findOne({
+          where: { _id: test.test_category_id._id },
+        });
+        if (test.department_id?._id === department_id) {
+          patientTestsFiltered.push({
+            _id: ptItem._id,
+            test_category_id: category._id,
+            status: ptItem.status,
+            sample_location: ptItem.sample_location,
+            category_name: category.name,
+            category_type: category.type,
+            test_id: test._id,
+            single_or_group: test.single_or_group,
+            test_name: test.name,
+            title_for_print: test.title_for_print,
+            code: test.code,
+            sequence: test.sequence,
+            res_input_type: test.res_input_type,
+            is_printed: ptItem.is_printed,
+            sample_status: ptItem.sample_status,
+          });
+        }
+      }
+    }
+    // if (patientTestsFiltered.length > 0) {
+    return {
+      appointment,
+      patient,
+      patient_tests: patientTestsFiltered,
+    };
+    // }
+  }
+
   async getSingle(id: string, user): Promise<any> {
     const patient = await this.patientRep
       .createQueryBuilder('patient')
@@ -118,6 +240,8 @@ export class PatientsService {
       )
       .where('patient._id = :_id', { _id: id })
       .getRawOne();
+
+    console.log('patient', patient);
 
     const appointment = await this.appointmentRep
       .createQueryBuilder('appointment')
@@ -373,11 +497,48 @@ export class PatientsService {
       where: { _id: patient_id },
     });
     let appointmentInfoObj = patModel?.appointment_info;
-    Object.keys(fields).forEach((key) => {
-      let value = fields[key];
-      appointmentInfoObj['lab'][key] = value;
-    });
+    if (appointmentInfoObj) {
+      Object.keys(fields).forEach((key) => {
+        let value = fields[key];
+        appointmentInfoObj['lab'][key] = value;
+      });
+    }
     patModel.appointment_info = appointmentInfoObj;
     return await this.patientRep.update(patModel._id, patModel);
+  }
+
+  async getUserDepartments(
+    facility_id: string,
+    employee_id: string,
+    user,
+  ): Promise<string[]> {
+    if (!facility_id || !employee_id) {
+      facility_id = facility_id ? facility_id : user.facility_id;
+      employee_id = employee_id ? employee_id : user.employee_id;
+    }
+
+    const employeeLoginFacility = await this.empFacilityRep
+      .createQueryBuilder('employee_facility')
+      .select('employee_facility.*')
+      .where('employee_facility.facility_id = :facility_id', { facility_id })
+      .andWhere('employee_facility.employee_id = :employee_id', { employee_id })
+      .getRawOne();
+
+    const employeeLoginFacilityDepartment = await this.empFacilityDepartmentRep
+      .createQueryBuilder('employee_facility_department')
+      .select('employee_facility_department.*')
+      .where(
+        'employee_facility_department.employee_facility_id = :employee_facility_id',
+        { employee_facility_id: employeeLoginFacility._id },
+      )
+      .getRawMany();
+
+    let userAssignedDepartmentIds = [];
+    employeeLoginFacilityDepartment.forEach(
+      (item: EmployeeFacilityDepartment) => {
+        userAssignedDepartmentIds.push(item.department_id);
+      },
+    );
+    return userAssignedDepartmentIds;
   }
 }

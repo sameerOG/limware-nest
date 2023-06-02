@@ -551,6 +551,7 @@ export class AppointmentsService {
         result: null,
         status: 1,
         normal_ranges_ids: test.normal_ranges_ids,
+        widal_result: '',
       };
 
       const savedData = await this.patientTestParameterResultRep.save(

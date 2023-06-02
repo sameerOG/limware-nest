@@ -16,10 +16,10 @@ export class EmployeeRequestDto {
   @IsNotEmpty()
   address: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   customer_id: any;
 
-  @IsNotEmpty()
+  @IsOptional()
   facility_id: any;
 
   @IsString()

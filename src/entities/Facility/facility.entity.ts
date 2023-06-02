@@ -44,10 +44,10 @@ export class Facility {
   @OneToMany(() => Employee, (employee) => employee.facility_id)
   employee_id!: Employee;
 
-  @OneToOne(() => LabTestRateList, (ltrl) => ltrl.facility_id)
+  @OneToMany(() => LabTestRateList, (ltrl) => ltrl.facility_id)
   lab_test_rate!: LabTestRateList;
 
-  @OneToOne(() => LabTestRateListItem, (ltrl) => ltrl.facility_id)
+  @OneToMany(() => LabTestRateListItem, (ltrl) => ltrl.facility_id)
   lab_test_rate_item!: LabTestRateListItem;
 
   @OneToOne(() => HospitalClinic, (clinic) => clinic.facility_id)

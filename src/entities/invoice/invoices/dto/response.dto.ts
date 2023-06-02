@@ -79,3 +79,45 @@ export class InvoiceLineItemsResponseDto {
       (this.invoiceLineItems = invLineItems.invoiceLineItems);
   }
 }
+
+export class AddPaymentResponseDto {
+  readonly appointment_id: string;
+  readonly created_at: number;
+  readonly description: string;
+  readonly discount_amount: number;
+  readonly due_amount: number;
+  readonly facility_id: string;
+  readonly invoice_date: number;
+  readonly invoice_number: number;
+  readonly paid_amount: number;
+  readonly patient_account_id: string;
+  readonly patient_id: string;
+  readonly status: number;
+  readonly title: string;
+  readonly total_amount: number;
+  readonly total_payable_amount: number;
+  readonly updated_at: number;
+  readonly updated_by: string;
+  readonly _id: string;
+
+  constructor(patient: AddPaymentResponseDto) {
+    (this.appointment_id = patient.appointment_id),
+      (this.created_at = patient.created_at),
+      (this.description = patient.description),
+      (this.discount_amount = patient.discount_amount),
+      (this.due_amount = patient.due_amount),
+      (this.facility_id = patient.facility_id),
+      (this.invoice_date = patient.invoice_date),
+      (this.invoice_number = patient.invoice_number),
+      (this.paid_amount = patient.paid_amount),
+      (this.patient_account_id = patient.patient_account_id),
+      (this.patient_id = patient.patient_id),
+      (this.status = patient.status),
+      (this.title = patient.title),
+      (this.total_amount = patient.total_amount),
+      (this.total_payable_amount = patient.total_payable_amount),
+      (this.updated_at = patient.updated_at),
+      (this.updated_by = patient.updated_by),
+      (this._id = patient._id);
+  }
+}

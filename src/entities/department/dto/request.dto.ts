@@ -10,15 +10,15 @@ export class DepartmentRequest {
   description: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   facility_id: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   parent: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   parent_id: string;
 }
 
@@ -30,4 +30,14 @@ export class EditDepartmentRequest {
   @IsString()
   @IsOptional()
   description: string;
+}
+
+export class findAllDepartmentsResponseDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  _id: string;
 }

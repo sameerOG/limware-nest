@@ -50,17 +50,32 @@ export class EmployeesService {
   }
 
   async getAll(
+    user,
     skip: number,
     take: number,
     text?: string,
     sort?: string,
   ): Promise<EmployeeResponseDto[]> {
-    let query = this.empRep
-      .createQueryBuilder('employee')
-      .select('employee.*')
-      .skip(skip)
-      .take(take)
-      .orderBy(transformSortField(sort));
+    let query;
+
+    if (user.portal === 'limware') {
+      query = this.empRep
+        .createQueryBuilder('employee')
+        .select('employee.*')
+        .where('employee.facility_id = :facility_id', {
+          facility_id: user.facility_id,
+        })
+        .skip(skip)
+        .take(take)
+        .orderBy(transformSortField(sort));
+    } else {
+      query = this.empRep
+        .createQueryBuilder('employee')
+        .select('employee.*')
+        .skip(skip)
+        .take(take)
+        .orderBy(transformSortField(sort));
+    }
 
     if (text) {
       query = query.where(
@@ -387,7 +402,13 @@ export class EmployeesService {
     await this.empFacilityRep.delete(empFacility._id);
   }
 
-  async add(body: EmployeeRequestDto): Promise<EmployeeResponseDto> {
+  async add(body: EmployeeRequestDto, user): Promise<EmployeeResponseDto> {
+    if (!body.facility_id) {
+      Object.assign(body, {
+        facility_id: user.facility_id,
+        customer_id: user.customer_id,
+      });
+    }
     const data = await this.empRep.save(body);
     const { ...rest } = data;
     return new EmployeeResponseDto({
