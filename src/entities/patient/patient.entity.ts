@@ -20,8 +20,8 @@ export class Patient {
   @Column()
   facility_id!: string;
 
-  @Column({ default: null, type: 'bigint' })
-  registration_date!: number;
+  @Column({ default: null })
+  registration_date!: string;
 
   @Column({ unique: true, default: null })
   unique_id!: string;

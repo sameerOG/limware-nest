@@ -39,4 +39,9 @@ export class AddonsService {
       updated_by: '',
     });
   }
+  async getMyAddOns(facility_id): Promise<Addons | undefined>{
+
+    return await this.addonRep.findOne({where: {facility_id: facility_id}})
+
+  }
 }

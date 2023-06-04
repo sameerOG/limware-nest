@@ -1649,25 +1649,3 @@ export const reportsModule = {
     },
   ],
 };
-
-export const options = {
-  format: 'A4',
-  border: {
-    left: '7px',
-    right: '0px',
-    top: '16px',
-    bottom: '16px',
-  },
-  margin: {
-    left: 10,
-    right: 10,
-    top: 0,
-    bottom: 0,
-  },
-  header: {
-    height: '10px',
-  },
-  footer: {
-    height: '8px',
-  },
-};

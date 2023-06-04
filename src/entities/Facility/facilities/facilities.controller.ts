@@ -8,19 +8,29 @@ import {
   Post,
   Put,
   Query,
+  Headers,
   Res,
-  UseGuards,
+  UseGuards, UploadedFile,
+  UseInterceptors
 } from '@nestjs/common';
+
 import { Response } from 'express';
 import { AuthGuard } from 'src/guard/auth.guard';
 import { FacilityRequestDto } from '../dto/request.dto';
 import { FacilityDto, ParentFacilityDto } from '../dto/response.dto';
 import { FacilitiesService } from './facilities.service';
+import jwtDecode from 'jwt-decode';
+import { DirectoryManagerService } from 'src/shared/DirectoryManagerService';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as fs from 'fs-extra';
+import { FileManagerDto } from 'src/shared/directoryDto';
+
 
 @Controller('facilities')
 @UseGuards(AuthGuard)
 export class FacilitiesController {
-  constructor(private facilityService: FacilitiesService) {}
+  public facility_image_height = 64;
+  constructor(private facilityService: FacilitiesService, private directoryManagerService: DirectoryManagerService) { }
 
   @Get('/')
   async getAll(
@@ -79,22 +89,26 @@ export class FacilitiesController {
         .send({ error: err, message: 'Facilities not found' });
     }
   }
-
-  @Get('/:id')
-  async getSingle(
+  @Get('/view-facility-for-limware')
+  async actionViewFacilityForLimware(
+    @Headers('Authorization') authHeader: string,
     @Res() response: Response,
-    @Param('id') id: string,
-    @Query() query,
   ): Promise<any> {
     try {
-      const queryFields = query?.expand?.split(',');
-      let data = await this.facilityService.getSingle(id, queryFields);
-      response.status(200).send(data);
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const facility = await this.facilityService.getFacility(loggedInUser);
+      response.status(200).send(facility);
+      return facility;
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({ error: err, message: 'Facility not found' });
+      response
+        .status(422)
+        .send({ error: err, message: 'Facilities not found' });
     }
   }
+
+
 
   @Post('/')
   async add(
@@ -164,6 +178,85 @@ export class FacilitiesController {
       response
         .status(422)
         .send({ error: err, message: 'Facility not deleted' });
+    }
+  }
+
+  @Get('/get-facility-image')
+  async getFacilityImage(
+    @Headers('Authorization') authHeader: string,
+    @Res() res
+  ): Promise<any> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const model = await this.facilityService.getFacility(loggedInUser);
+      const id = model?._id.toString();
+      const facilityDirectory = `src/common/uploads/facility`;
+      const readfiles = await fs.readdir(facilityDirectory);
+      let filePath;
+      const file = readfiles.find((file) => {
+        const fileName = file.replace(/\.[^/.]+$/, '')
+        if (fileName === id) {
+          filePath = `${facilityDirectory}/${file}`;
+        }
+      });
+      const imageBuffer = fs.readFileSync(filePath);
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Content-Disposition', 'attachment; filename=image.png');
+      res.send(imageBuffer);
+    }
+    catch (err) {
+      console.log('err in catch', err)
+    }
+  }
+
+  @Post('/update-facility-for-limware')
+  @UseInterceptors(FileInterceptor('facility_image_file'))
+  async updateFacility(
+    @Body() body: any,
+    @UploadedFile() file,
+    @Res() response,
+    @Headers('Authorization') authHeader: string,
+  ) {
+    try {
+      const data = JSON.parse(body?.data)
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const facility = await this.facilityService.getFacility(loggedInUser);
+      const type = 'facility';
+      const name = String(facility._id);
+      let pathFile;
+      if (file) {
+        const obj: FileManagerDto = {
+          file: file,
+          type: type,
+          name: name,
+          position: null
+        }
+        pathFile = await this.directoryManagerService.uploadFile(obj);
+      }
+      const facilityData = await this.facilityService.findAndUpdate(facility?.facility_id, data, pathFile);
+      response.status(200).send({ message: 'Facility updated', data: facilityData })
+      return facilityData;
+    }
+    catch (err) {
+      console.log(err)
+    }
+
+  }
+  @Get('/:id')
+  async getSingle(
+    @Res() response: Response,
+    @Param('id') id: string,
+    @Query() query,
+  ): Promise<any> {
+    try {
+      const queryFields = query?.expand?.split(',');
+      let data = await this.facilityService.getSingle(id, queryFields);
+      response.status(200).send(data);
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({ error: err, message: 'Facility not found' });
     }
   }
 }

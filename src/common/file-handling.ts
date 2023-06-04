@@ -2,7 +2,6 @@ import * as ejs from 'ejs';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as pdf from 'html-pdf';
-import moment from 'moment';
 
 export class FileHandling {
   async renderTemplate(template: string, data: any): Promise<string> {
@@ -11,7 +10,6 @@ export class FileHandling {
       `../../templates/${template}.ejs`,
     ); // Update the path to your template file
     const templateContent = fs.readFileSync(templatePath, 'utf-8');
-    console.log('templateContent', template, data);
     let templateData = data; // Create an object with the labName variable
     return ejs.render(templateContent, templateData);
   }
@@ -46,36 +44,5 @@ export class FileHandling {
       whole_number: ary[0],
       decimal_number: ary[1],
     };
-  }
-
-  async getDatesFromRange(start, end, format = 'YYYY-MM-DD') {
-    const array = [];
-    const startDate = new Date(start);
-    const endDate = new Date(end);
-    endDate.setDate(endDate.getDate() + 1);
-
-    for (
-      let date = new Date(startDate);
-      date < endDate;
-      date.setDate(date.getDate() + 1)
-    ) {
-      console.log('format', format, date);
-      // array.push(date.toLocaleDateString(format));
-      array.push(date);
-    }
-
-    return array;
-  }
-
-  async formatDate(date) {
-    var d = new Date(date),
-      month = '' + (d.getMonth() + 1),
-      day = '' + d.getDate(),
-      year = d.getFullYear();
-
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
-
-    return [year, month, day].join('-');
   }
 }
