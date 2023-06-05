@@ -41,6 +41,7 @@ import { ReferencesModule } from './entities/reference/references/references.mod
 import { PatientTestsModule } from './entities/patient/patient-tests/patient-tests.module';
 import { LabTestRateListsModule } from './entities/lab_test_rate/lab-test-rate-lists/lab-test-rate-lists.module';
 import { ReportsModule } from './entities/reports/reports/reports.module';
+import { DeletedTestsModule } from './entities/patient/deleted-tests/deleted-tests.module';
 
 const envFilePath: string = getEnvPath(`/common/envs`);
 dotenv.config();
@@ -100,6 +101,7 @@ dotenv.config();
     PatientTestsModule,
     LabTestRateListsModule,
     ReportsModule,
+    DeletedTestsModule,
   ],
   controllers: [],
   providers: [],

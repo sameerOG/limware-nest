@@ -4,21 +4,29 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { isEmpty, isNumber } from 'lodash';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Appointment } from 'src/entities/appointment/appointment.entity';
+import { Employee } from 'src/entities/employee/employee.entity';
 import { EmployeeFacility } from 'src/entities/employee/employee_facility.entity';
 import { EmployeeFacilityDepartment } from 'src/entities/employee/employee_facility_department.entity';
 import { Facility } from 'src/entities/Facility/facility.entity';
 import { Invoice } from 'src/entities/invoice/invoice.entity';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
+import { LaboratorySetting } from 'src/entities/laboratory/laboratory_setting.entity';
 import { TestCategory } from 'src/entities/test/test_category.entity';
+import { TestNormalRange } from 'src/entities/test/test_normal_range.entity';
 import { In, Repository } from 'typeorm';
-import { UpdatePatientRequestDto } from '../dto/request.dto';
 import {
+  MarkAsDoneRequestDto,
+  UpdatePatientRequestDto,
+} from '../dto/request.dto';
+import {
+  MarkAsDoneResponseDto,
   PatientInfoResponseDto,
   PatientListResponseDto,
 } from '../dto/response.dto';
 import { Patient } from '../patient.entity';
 import { PatientAccount } from '../patient_account.entity';
 import { PatientTest } from '../patient_test.entity';
+import { PatientTestParameterResult } from '../patient_test_parameter_result.entity';
 
 @Injectable()
 export class PatientsService {
@@ -43,6 +51,14 @@ export class PatientsService {
     private testCategoryRep: Repository<TestCategory>,
     @InjectRepository(EmployeeFacility)
     private empFacilityRep: Repository<EmployeeFacility>,
+    @InjectRepository(Employee)
+    private empRep: Repository<Employee>,
+    @InjectRepository(TestNormalRange)
+    private testNormalRangeRep: Repository<TestNormalRange>,
+    @InjectRepository(LaboratorySetting)
+    private labSettingsRep: Repository<LaboratorySetting>,
+    @InjectRepository(PatientTestParameterResult)
+    private patientTestParameterResultRep: Repository<PatientTestParameterResult>,
     @InjectRepository(EmployeeFacilityDepartment)
     private empFacilityDepartmentRep: Repository<EmployeeFacilityDepartment>,
   ) {}
@@ -124,25 +140,38 @@ export class PatientsService {
     if (text) {
       const facilityModel = await this.facilityRep
         .createQueryBuilder('facility')
-        .select(['facility._id,facility.unique_id'])
+        .select('facility._id,facility.unique_id')
         .where('facility._id = :id', { id: user.facility_id })
-        .getOne();
+        .getRawOne();
 
       lab_number = `${facilityModel.unique_id}-${text}`;
     }
 
+    const employee = await this.empRep
+      .createQueryBuilder('employee')
+      .select('employee._id')
+      .where('employee.user_id = :user_id', { user_id: user._id })
+      .andWhere('employee.facility_id = :facility_id', {
+        facility_id: user.facility_id,
+      })
+      .getRawOne();
+
+    const userAssignedDepartmentIds = await this.getUserDepartments(
+      user.facility_id,
+      employee._id,
+      user,
+    );
+    console.log('userAssignedDepartmentIds', userAssignedDepartmentIds);
+
     let aggregateResult = await this.patientRep
       .createQueryBuilder('patient')
-      .select('patient.*')
-      // .leftJoin('patient_test', 'pt', 'pt.patient_id = patient._id')
-      // .leftJoin('test', 't', 't._id = pt.test_id')
-      // .leftJoin('department', 'dep', 'dep._id = t.department_id')
+      .select(
+        'patient.age,patient.age_unit,patient.created_at,patient.gender,patient.name,patient._id,patient.created_at as registration_date,appointment.is_completed,appointment.lab_number',
+      )
+      .leftJoin('patient.appointment', 'appointment')
       .where('patient.facility_id = :facility_id', {
         facility_id: user.facility_id,
       })
-      // .andWhere(
-      //   'patient.deleted_at IS NULL AND pt.deleted_at IS NULL AND t.deleted_at is NULL AND dep.deleted_at IS NULL',
-      // )
       .andWhere('patient.deleted_at IS NULL')
       .andWhere(text ? 'patient.name LIKE :name' : '1=1', {
         name: `%${text}%`,
@@ -173,7 +202,8 @@ export class PatientsService {
 
     const patientTests = await this.patientTestRep
       .createQueryBuilder('patient_test')
-      .select('patient_test.*')
+      .select('patient_test.*,test.name,test.title_for_print')
+      .leftJoin('patient_test.test_id', 'test')
       .where('patient_test.patient_id = :patient_id', { patient_id })
       .getRawMany();
 
@@ -187,6 +217,8 @@ export class PatientsService {
 
     for (let i = 0; i < patientTests.length; i++) {
       let ptItem = patientTests[i];
+      ptItem.status = 15;
+      ptItem.sample_status = 5;
       for (let j = 0; j < userAssignedDepartmentIds.length; j++) {
         let department_id = userAssignedDepartmentIds[j];
         const test: any = await this.testRep.findOne({
@@ -217,13 +249,19 @@ export class PatientsService {
         }
       }
     }
-    // if (patientTestsFiltered.length > 0) {
-    return {
-      appointment,
-      patient,
-      patient_tests: patientTestsFiltered,
-    };
-    // }
+    if (patientTestsFiltered.length > 0) {
+      return {
+        appointment,
+        patient,
+        patient_tests: patientTestsFiltered,
+      };
+    } else {
+      return {
+        appointment,
+        patient,
+        patient_tests: patientTests,
+      };
+    }
   }
 
   async getSingle(id: string, user): Promise<any> {
@@ -288,7 +326,7 @@ export class PatientsService {
       let savedTest: any = await this.testRep
         .createQueryBuilder('test')
         .select(
-          'test.test_category_id as category_id,test.name,test.status,test.sequence,test.title_for_print,test._id,tg.name as category_name,tg.type as category_type',
+          'test.test_category_id as category_id,test.name,test.sequence,test.title_for_print,test._id,tg.name as category_name,tg.type as category_type',
         )
         .leftJoin('test_category', 'tg', 'tg._id = test.test_category_id')
         .where('test._id = :_id', { _id: pt.test_id })
@@ -299,6 +337,7 @@ export class PatientsService {
           Object.assign(test, {
             sample_status: pt.sample_status,
             is_printed: pt.is_printed,
+            status: 15,
           });
           tests.push(test);
         });
@@ -531,5 +570,327 @@ export class PatientsService {
       },
     );
     return userAssignedDepartmentIds;
+  }
+
+  async markAsDone(
+    body: MarkAsDoneRequestDto,
+    user,
+  ): Promise<MarkAsDoneResponseDto> {
+    let returnResult;
+    let appointment_id;
+    const { patient_id, patient_test_ids } = body;
+    const lab = await this.labRep
+      .createQueryBuilder('laboratory')
+      .select('laboratory.*')
+      .where('laboratory.facility_id = :facility_id', {
+        facility_id: user.facility_id,
+      })
+      .getRawOne();
+
+    const settingModel = await this.labSettingsRep
+      .createQueryBuilder('laboratory_setting')
+      .select('laboratory_setting.require_results_for_mark_as_done')
+      .where('laboratory_setting.laboratory_id = :laboratory_id', {
+        laboratory_id: lab?._id,
+      })
+      .andWhere('laboratory_setting.facility_id = :facility_id', {
+        facility_id: user.facility_id,
+      })
+      .getRawOne();
+    for (let i = 0; i < patient_test_ids.length; i++) {
+      const patientTestId = patient_test_ids[i];
+      let testsStatuses = await this.getResultEnteredCounts(patientTestId);
+      if (
+        !settingModel.require_results_for_mark_as_done ||
+        (settingModel.require_results_for_mark_as_done &&
+          testsStatuses.result_not_entered == 0 &&
+          testsStatuses.result_entered > 0)
+      ) {
+        let model = await this.patientTestRep.findOne({
+          where: { _id: patientTestId },
+        });
+        appointment_id = model.appointment_id;
+        model.status = 15;
+        const savedTest = await this.patientTestRep.update(
+          patientTestId,
+          model,
+        );
+        if (savedTest) {
+          returnResult = {
+            status: true,
+            patient_test_status: 15,
+          };
+        } else {
+          returnResult = {
+            status: false,
+            message: 'Problem updating status.',
+          };
+        }
+      } else {
+        console.log('elsee');
+        if (testsStatuses.result_entered > 1) {
+          returnResult = {
+            status: false,
+            message: 'Results are missing.',
+          };
+        } else {
+          returnResult = {
+            status: false,
+            message: 'Result is missing.',
+          };
+        }
+      }
+    }
+
+    const patientPendingTestsCount = await this.patientTestRep
+      .createQueryBuilder('patient_test')
+      .where('patient_test.patient_id = :patient_id', { patient_id })
+      .andWhere('patient_test.status != :status', { status: 15 })
+      .select('patient_test.status')
+      .getCount();
+
+    console.log('returnResult', returnResult);
+
+    Object.assign(returnResult, {
+      allResultsAreDone: patientPendingTestsCount > 0 ? false : true,
+    });
+    if (appointment_id) {
+      await this._updateAppointmentCompletionStatus(appointment_id);
+    }
+    return returnResult;
+  }
+
+  async getResultEnteredCounts(patient_test_id: string) {
+    let ptpr = await this.patientTestParameterResultRep
+      .createQueryBuilder('patient_test_parameter_result')
+      .select(
+        'patient_test_parameter_result._id,patient_test_parameter_result.status,patient_test_parameter_result.test_id,test_category.type',
+      )
+      .leftJoin('patient_test_parameter_result.test_id', 'test')
+      .leftJoin('test.test_category_id', 'test_category')
+      .where(
+        'patient_test_parameter_result.patient_test_id = :patient_test_id',
+        { patient_test_id },
+      )
+      .getRawMany();
+
+    let totalNew = 0;
+    let totalResultEntered = 0;
+    for (let i = 0; i < ptpr.length; i++) {
+      let item = ptpr[i];
+      if (item.type !== 'widal') {
+        if (item.status === 1) {
+          totalNew++;
+        } else if (item.status === 5) {
+          totalResultEntered++;
+        } else {
+          totalResultEntered = 1;
+        }
+      }
+    }
+
+    return {
+      result_entered: totalResultEntered,
+      result_not_entered: totalNew,
+    };
+  }
+
+  async _updateAppointmentCompletionStatus(appointment_id: string) {
+    const notDoneTestCount = await this.patientTestRep
+      .createQueryBuilder('patient_test')
+      .where('patient_test.appointment_id = :appointment_id', {
+        appointment_id,
+      })
+      .andWhere('patient_test.status != :status', { status: 15 })
+      .select('patient_test.status')
+      .getCount();
+
+    const model = await this.appointmentRep.findOne({
+      where: { _id: appointment_id },
+      relations: ['patient_id'],
+    });
+    if (notDoneTestCount == 0) {
+      model.is_completed = true;
+    } else {
+      model.is_completed = false;
+    }
+
+    const savedAppointment = await this.appointmentRep.update(
+      appointment_id,
+      model,
+    );
+    if (savedAppointment) {
+      await this.updateAppointmentInfo(model.patient_id?._id, {
+        is_completed: model.is_completed,
+      });
+    }
+  }
+
+  async getTestParameters(patient_test_id: string, user): Promise<any> {
+    let facility_id = user.facility_id;
+    const lab = await this.labRep
+      .createQueryBuilder('laboratory')
+      .select('laboratory.*')
+      .where('laboratory.facility_id = :facility_id', {
+        facility_id: user.facility_id,
+      })
+      .getRawOne();
+    if (lab?.type == 'cc') {
+      facility_id = lab.parent_facility_id;
+    }
+
+    const patientTest = await this.patientTestRep
+      .createQueryBuilder('patient_test')
+      .select('patient_test.*')
+      .where('patient_test._id = :_id', {
+        _id: patient_test_id,
+      })
+      .andWhere('patient_test.facility_id = :facility_id', {
+        facility_id: facility_id,
+      })
+      .getRawOne();
+
+    const testData = await this.testRep.findOne({
+      where: { _id: patientTest.test_id },
+      relations: ['test_category_id'],
+    });
+
+    const ptParameters = await this.patientTestParameterResultRep
+      .createQueryBuilder('patient_test_parameter_result')
+      .select(
+        'patient_test_parameter_result.*,patient_test.test_id as id_from_patient_test',
+      )
+      .leftJoin('patient_test_parameter_result.patient_test_id', 'patient_test')
+      .where(
+        'patient_test_parameter_result.patient_test_id = :patient_test_id',
+        {
+          patient_test_id,
+        },
+      )
+      .getRawMany();
+
+    let patientTestParameters = [];
+    let specimens = [];
+
+    for (let i = 0; i < ptParameters.length; i++) {
+      let ptParameterItem = ptParameters[i];
+      let test_id = ptParameterItem.test_id
+        ? ptParameterItem.test_id
+        : ptParameterItem.id_from_patient_test;
+      const test = await this.testRep
+        .createQueryBuilder('test')
+        .select('test.*,uom.name as uom_name,specimen.name as specimen_name')
+        .leftJoin('test.uom_id', 'uom')
+        .leftJoin('test.specimen_id', 'specimen')
+        .where('test._id = :_id', {
+          _id: test_id,
+        })
+        .getRawOne();
+
+      const testParameter = await this.patientTestParameterResultRep
+        .createQueryBuilder('test_parameter')
+        .select('test_parameter.*')
+        .where('test_parameter._id = :_id', {
+          _id: ptParameterItem.test_parameter_id,
+        })
+        .getRawOne();
+      let testGroup;
+      if (testParameter) {
+        const testGroupData = await this.patientTestParameterResultRep
+          .createQueryBuilder('test_group')
+          .select('test_group.*')
+          .where('test_group._id = :_id', {
+            _id: testParameter?.test_group_id,
+          })
+          .getRawOne();
+        testGroup = testGroupData;
+      } else {
+        testGroup = null;
+      }
+
+      let normalRanges = [];
+      // if (
+      //   !isEmpty(ptParameterItem.normal_ranges_ids) &&
+      //   ptParameterItem.normal_ranges_ids?.length > 0
+      // ) {
+      //   normalRanges = await this.testNormalRangeRep.find({
+      //     where: {
+      //       _id: In(ptParameterItem.normal_ranges_ids),
+      //     },
+      //   });
+      // }
+
+      let result = ptParameterItem.result;
+      let enforceDecimal = false;
+      let decimalLength = 0;
+      console.log('|test', test);
+
+      if (test.res_input_type == 'number_field') {
+        if (test.decimal_length && test.decimal_length > 0) {
+          enforceDecimal = true;
+          decimalLength = test.decimal_length;
+        }
+      }
+
+      let item = {
+        _id: ptParameterItem._id,
+        patient_test_id: ptParameterItem.parent_test_id,
+        test_parameter_id: ptParameterItem.test_parameter_id,
+        test_group_id: testGroup ? testGroup._id : null,
+        test_group_name: testGroup ? testGroup.name : null,
+        test_group_sequence: testGroup ? testGroup.sequence : null,
+        result,
+        result_formatted: null,
+        is_abnormal: ptParameterItem.is_abnormal,
+        status: ptParameterItem.status,
+        code: test.code,
+        name: test.name,
+        title_for_print: test.title_for_print,
+        uom_id: test.uom_id,
+        uom: test.uom_id ? test.uom_name : null,
+        res_input_type: test.res_input_type,
+        res_input_options: test.res_input_options,
+        sequence: testParameter ? testParameter.sequence : test.sequence,
+        normal_ranges: normalRanges,
+      };
+
+      if (test.specimen_id) {
+        specimens.push(test.specimen_name);
+      }
+
+      if (!isEmpty(ptParameterItem.widal_result)) {
+        Object.assign(item, { widal_result: ptParameterItem.widal_result });
+      }
+
+      patientTestParameters.push(item);
+    }
+
+    let specimensStr = '';
+    if (specimens.length > 0) {
+    }
+
+    let category = testData['test_category_id'];
+
+    let returnData = {
+      category,
+      patientTest,
+      test: testData,
+      patientTestParameters,
+      specimens,
+    };
+    return returnData;
+  }
+
+  async convertToDraft(parent_test_id: string, status: number) {
+    let model = await this.patientTestRep.findOne({
+      where: { _id: parent_test_id },
+    });
+    console.log('model', model);
+    if (model && status) {
+      model.status = status;
+      await this.patientTestRep.update(parent_test_id, model);
+    }
+    await this._updateAppointmentCompletionStatus(model.appointment_id);
+    return model;
   }
 }

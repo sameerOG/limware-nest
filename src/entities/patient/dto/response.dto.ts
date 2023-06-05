@@ -127,3 +127,15 @@ export class AppointmentInfo {
     this.lab = patient.lab;
   }
 }
+
+export class MarkAsDoneResponseDto {
+  readonly allResultsAreDone: boolean;
+  readonly patient_test_status: number;
+  readonly status: boolean;
+
+  constructor(data: MarkAsDoneResponseDto) {
+    (this.allResultsAreDone = data.allResultsAreDone),
+      (this.patient_test_status = data.patient_test_status),
+      (this.status = data.status);
+  }
+}
