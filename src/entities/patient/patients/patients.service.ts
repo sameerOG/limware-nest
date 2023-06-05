@@ -10,11 +10,10 @@ import { Facility } from 'src/entities/Facility/facility.entity';
 import { Invoice } from 'src/entities/invoice/invoice.entity';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 import { TestCategory } from 'src/entities/test/test_category.entity';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { UpdatePatientRequestDto } from '../dto/request.dto';
 import {
-  PatientInfoResponseDto,
-  PatientListResponseDto,
+  PatientListResponseDto
 } from '../dto/response.dto';
 import { Patient } from '../patient.entity';
 import { PatientAccount } from '../patient_account.entity';
@@ -45,7 +44,7 @@ export class PatientsService {
     private empFacilityRep: Repository<EmployeeFacility>,
     @InjectRepository(EmployeeFacilityDepartment)
     private empFacilityDepartmentRep: Repository<EmployeeFacilityDepartment>,
-  ) {}
+  ) { }
 
   async getAll(
     user,
@@ -541,4 +540,59 @@ export class PatientsService {
     );
     return userAssignedDepartmentIds;
   }
+
+  async getTodayPatients(loggedInUser,
+    perpage,
+    page,
+    sort,): Promise<PatientListResponseDto[]> {
+    const laboratory: Laboratory = await this.labRep.query(`
+    select * from public.laboratory
+    where facility_id = '${loggedInUser.facility_id}'
+   `);
+    const currentDate = new Date();
+
+    let patients = await this.patientRep
+      .createQueryBuilder('patient')
+      .select(
+        'patient._id,patient.age,patient.age_unit,patient.cc_facility_id,patient.gender,patient.mobile_number,patient.name,patient.registration_date,patient.unique_id, created_at',
+      )
+      .where('patient.facility_id = :facility_id', {
+        facility_id: laboratory[0]?.facility_id,
+      })
+      .andWhere('DATE(patient.created_at) = :currentDate', { currentDate })
+      .orderBy(transformSortField(sort))
+      .getRawMany();
+    const result = {
+      data: patients,
+      metadata: {
+        total: patients.length,
+        page: perpage,
+      },
+    };
+
+    return [result];
+
+  }
+  async getTodayPatientCount(user) {
+    const laboratory: Laboratory = await this.labRep.query(`
+    select * from public.laboratory
+    where facility_id = '${user.facility_id}'
+   `);
+    const currentDate = new Date();
+
+    const patients = await this.patientRep
+      .createQueryBuilder('patient')
+      .select(
+        'patient._id,patient.age,patient.age_unit,patient.cc_facility_id,patient.gender,patient.mobile_number,patient.name,patient.registration_date,patient.unique_id, created_at',
+      )
+      .where('patient.facility_id = :facility_id', {
+        facility_id: laboratory[0]?.facility_id,
+      })
+      .andWhere('DATE(patient.created_at) = :currentDate', { currentDate })
+      .getRawMany();
+
+    return patients;
+
+  }
+
 }
