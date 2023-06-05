@@ -55,14 +55,6 @@ export class PatientsService {
     filter?: string,
     sort?: string,
   ): Promise<PatientListResponseDto[]> {
-    let lab = await this.labRep
-      .createQueryBuilder('laboratory')
-      .select('laboratory._id,laboratory.type')
-      .where('laboratory.facility_id = :facility_id', {
-        facility_id: user.facility_id,
-      })
-      .getRawOne();
-
     let lab_number = '';
     if (isNumber(filter)) {
       const facilityModel = await this.facilityRep.findOne({
@@ -75,8 +67,9 @@ export class PatientsService {
     let patients = await this.patientRep
       .createQueryBuilder('patient')
       .select(
-        'patient._id,patient.age,patient.age_unit,patient.cc_facility_id,patient.gender,patient.mobile_number,patient.name,patient.registration_date,patient.unique_id',
+        'patient._id,appointment.is_completed,patient.age,patient.age_unit,patient.cc_facility_id,patient.gender,patient.mobile_number,patient.name,patient.registration_date,patient.unique_id',
       )
+      .leftJoin('patient.appointment', 'appointment')
       .where('patient.facility_id = :facility_id', {
         facility_id: user.facility_id,
       })
@@ -85,28 +78,29 @@ export class PatientsService {
       .take(take)
       .getRawMany();
 
-    patients.forEach(async (patient) => {
+    for (let i = 0; i < patients.length; i++) {
+      const patient = patients[i];
       Object.assign(patient, { lab_number, from_cc: false });
       const invoice = await this.invoiceRep
         .createQueryBuilder('invoice')
+        .select('invoice.*')
         .where('invoice.patient_id = :patient_id', { patient_id: patient._id })
         .getRawOne();
 
-      const appointment = await this.appointmentRep
-        .createQueryBuilder('appointment')
-        .where('appointment.patient_id = :patient_id', {
-          patient_id: patient._id,
-        })
-        .getRawOne();
+      let invoice_status;
+      if (invoice.status === 1) {
+        invoice_status = 'Unpaid';
+      } else if (invoice.status === 2) {
+        invoice_status = 'Partially';
+      } else if (invoice.status === 3) {
+        invoice_status = 'Paid';
+      }
 
       if (invoice) {
-        Object.assign(patient, { invoice_status: invoice.status });
+        console.log('invoice', invoice);
+        Object.assign(patient, { invoice_status });
       }
-
-      if (appointment) {
-        Object.assign(patient, { is_completed: appointment.is_completed });
-      }
-    });
+    }
 
     const result = {
       data: patients,
@@ -240,9 +234,6 @@ export class PatientsService {
       )
       .where('patient._id = :_id', { _id: id })
       .getRawOne();
-
-    console.log('patient', patient);
-
     const appointment = await this.appointmentRep
       .createQueryBuilder('appointment')
       .select('appointment.*')
