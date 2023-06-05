@@ -26,7 +26,7 @@ export class UsersService {
     @InjectRepository(Role) private rolesRep: Repository<Role>,
     @InjectRepository(Employee) private empRep: Repository<Employee>,
     @InjectRepository(Laboratory) private labRep: Repository<Laboratory>,
-  ) { }
+  ) {}
 
   async getUsers(
     user,
@@ -106,27 +106,6 @@ export class UsersService {
       return permissions;
     }
     return null;
-  }
-
-  async _getEmployeeFacilities(facility_id: string) {
-    let employeeFacilities = [];
-    let assignedFacilities = await this.empFacilityRep
-      .createQueryBuilder('employee_facility')
-      .select('employee_facility.*')
-      .where('employee_facility.facility_id = :facility_id', { facility_id })
-      .getRawMany();
-    for (let i = 0; i < assignedFacilities.length; i++) {
-      let employeeFacility = assignedFacilities[i];
-      for (let j = 0; j < employeeFacility.role_ids?.length; j++) {
-        let role = await this.rolesRep.findOne({
-          where: { _id: employeeFacility.role_ids[j] },
-        });
-        if (role.permissions) {
-          employeeFacilities = [...employeeFacilities, ...role.permissions];
-        }
-      }
-    }
-    return employeeFacilities;
   }
 
   async getUser(id: string): Promise<SingleUserDto> {

@@ -15,10 +15,10 @@ export class LaboratorySetting {
   _id!: string;
 
   @Column({ default: null })
-  facility_id!: string;
+  facility_id!: number;
 
   @Column()
-  laboratory_id!: string;
+  laboratory_id!: number;
 
   @Column()
   require_results_for_mark_as_done!: boolean;

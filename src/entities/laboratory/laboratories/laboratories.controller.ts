@@ -7,7 +7,6 @@ import {
   Param,
   Post,
   Put,
-  Headers,
   Query,
   Res,
   UseGuards,
@@ -17,17 +16,11 @@ import { AuthGuard } from 'src/guard/auth.guard';
 import { LaboratoryRequestDto } from '../dto/request.dto';
 import { LabRequestDto, LabResponseDto } from '../dto/response.dto';
 import { LaboratoriesService } from './laboratories.service';
-import jwtDecode from 'jwt-decode';
-import { FacilitiesService } from 'src/entities/Facility/facilities/facilities.service';
-import { Facility } from 'src/entities/Facility/facility.entity';
-import { FacilityDto } from 'src/entities/Facility/dto/response.dto';
-import { Laboratory } from '../laboratory.entity';
 
 @Controller('laboratories')
 @UseGuards(AuthGuard)
 export class LaboratoriesController {
-  constructor(private labService: LaboratoriesService,
-    private facilityService: FacilitiesService) { }
+  constructor(private labService: LaboratoriesService) {}
 
   @Get('/')
   async getAll(
@@ -45,14 +38,12 @@ export class LaboratoriesController {
       response.status(200).send(data);
       return data;
     } catch (err) {
-      console.log('err in catch all', err);
+      console.log('err in catch', err);
       response
         .status(400)
         .send({ error: err, message: 'Laboratories not found' });
     }
   }
-
-
 
   @Get('/get-main-labs')
   async getMainLab(
@@ -66,30 +57,8 @@ export class LaboratoriesController {
       response.status(200).send(data);
       return data;
     } catch (err) {
-      console.log('err in catch labs', err);
+      console.log('err in catch', err);
       response.status(400).send({ error: err, message: 'Labs not found' });
-    }
-  }
-  @Get('/view-lab-for-limware')
-  async viewLabForlimware(
-    @Res() res,
-    @Query('expand') expand: string,
-    @Headers('Authorization') authHeader: string,
-  ) {
-    try {
-      const token = authHeader.split(' ')[1];
-      const loggedInUser: any = jwtDecode(token);
-      if (expand === 'facility') {
-        const laboratory = await this.labService.getLab(loggedInUser?.facility_id);
-        const facility = await this.facilityService.getSingleFacilityById(laboratory?.facility_id);
-        laboratory['facility'] = facility;
-        res.status(200).send(laboratory)
-        return facility
-      }
-    }
-    catch (e) {
-      res.status(404).send({ message: 'Facility Not Found' })
-      console.log(e);
     }
   }
 
@@ -111,7 +80,7 @@ export class LaboratoriesController {
       response.status(200).send(data);
       return data;
     } catch (err) {
-      console.log('err in catch single', err);
+      console.log('err in catch', err);
       response.status(403).send({ error: err, message: 'Lab not found' });
     }
   }
@@ -179,5 +148,4 @@ export class LaboratoriesController {
       response.status(422).send({ error: err, message: 'Lab not deleted' });
     }
   }
-
 }

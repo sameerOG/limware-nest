@@ -70,8 +70,10 @@ export class UsersController {
   ): Promise<any> {
     try {
       const token = authHeader.split(' ')[1];
-      const loggedInUser: any = jwtDecode(token);
-      const data = await this.userService._getEmployeeFacilities(loggedInUser.facility_id);    
+      const loggedInUser = jwtDecode(token);
+      const data = await this.userService.reLoggedInUserPermissions(
+        loggedInUser,
+      );
       response.status(200).send(data);
     } catch (err) {
       console.log('err in catch', err);

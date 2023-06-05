@@ -14,11 +14,6 @@ import { UserAccessToken } from '../user_access_token/user_access_token.entity';
 import { UserRole } from '../user_role/user_role.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { ReportPrintSetting } from '../report_print_setting/report_print_setting.entity';
-import { LaboratorySetting } from '../laboratory/laboratory_setting.entity';
-import { InvoicePrintSettings } from '../invoice/invoice_print_settings.entity';
-import { FacilitySmsSetting } from '../Facility/facility_sms_settings/facility_sms_setting.entity';
-import { Addons } from '../addons/addons.entity';
 
 @Module({
   imports: [
@@ -34,11 +29,6 @@ import { Addons } from '../addons/addons.entity';
       EmployeeFacilityDepartment,
       Department,
       UserRole,
-      ReportPrintSetting,
-      LaboratorySetting,
-      InvoicePrintSettings,
-      FacilitySmsSetting,
-      Addons
     ]),
   ],
   controllers: [AuthController],

@@ -1,0 +1,186 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .header-row {
+        font-size: 12px;
+        font-weight: bold;
+        color: gray;
+        padding: 5px 5px;
+        border-bottom: 1px solid gray;
+      }
+
+      .header-item {
+        float: left;
+      }
+
+      .row {
+        font-size: 11px;
+        padding: 3px 5px;
+        border-bottom: 0.4px solid gray;
+      }
+
+      .row-item {
+        float: left;
+      }
+
+      .c1 {
+        width: 15%;
+      }
+      .c2 {
+        width: 70%;
+      }
+      .c3 {
+        width: 15%;
+      }
+
+      .pending {
+        color: red;
+      }
+      .done {
+        color: green;
+      }
+
+      .pb-8 {
+        padding-bottom: 8px;
+      }
+
+      .width {
+        width: 33%;
+        float: left;
+      }
+
+      .amount-size {
+        font-size: 18px;
+      }
+      .summary {
+        text-align: center;
+        display: inline-flex;
+        padding: 16px;
+        margin-bottom: 15px;
+      }
+      .warn-fg {
+        color: #f44336 !important;
+      }
+      .h2 {
+        font-size: 15px;
+      }
+      .left {
+        float: left;
+      }
+      .font10 {
+        font-size: 11px;
+      }
+      .font9 {
+        font-size: 9px;
+      }
+      .border-right {
+        border-right: 1px solid rgba(0, 0, 0, 0.12);
+      }
+      .border-left {
+        border-left: 1px solid rgba(0, 0, 0, 0.12);
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <div class="report-title-block">
+        <div class="report-title">Patient Count Report</div>
+        <div class="lab-name"><%= data.labModel['name'] %></div>
+      </div>
+
+      <div class="report-criteria">
+        <div style="font-size: 10px">
+          <div>
+            <span style="color: gray">From:</span> <%= data.startDate %>
+          </div>
+          <div><span style="color: gray">To:</span> <%= data.endDate %></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoice data -->
+    <div>
+      <div class="summary">
+        <div class="width" style="float: left">
+          <div class="h2 pb-8">Total Patients</div>
+
+          <div class="amount-size">
+            <%= data.reportDataTotals['totals']['total'] %>
+          </div>
+        </div>
+
+        <div class="width border-right border-left">
+          <div class="h2 pb-8">Report Status</div>
+
+          <div class="left" style="float: left">
+            <div class="left border-right" style="width: 50%">
+              <div class="font10">Done</div>
+
+              <div class="font9">
+                <%= data.reportDataTotals['totals']['done'] %>
+              </div>
+            </div>
+
+            <div class="left">
+              <div class="font10">Pending</div>
+
+              <div class="warn-fg font9">
+                <%= data.reportDataTotals['totals']['pending'] %>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="width">
+          <div class="h2 pb-8">Payment Status</div>
+
+          <div class="left">
+            <div class="width border-right">
+              <div class="font10">Paid</div>
+              <div class="font9">
+                <%= data.reportDataTotals['totals']['paid'] %>
+              </div>
+            </div>
+            <div class="width border-right">
+              <div class="font10">Partially</div>
+              <div class="warn-fg font9">
+                <%= data.reportDataTotals['totals']['partial'] %>
+              </div>
+            </div>
+            <div class="width">
+              <div class="font10">Unpaid</div>
+              <div class="warn-fg font9">
+                <%= data.reportDataTotals['totals']['unpaid'] %>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Header -->
+      <div class="header-row">
+        <div class="header-item c1">#</div>
+        <div class="header-item c2">Date</div>
+        <div class="header-item c7">Count</div>
+
+        <div style="clear: both"></div>
+      </div>
+
+      <div class="data-set">
+        <% let dataset = data.reportDataTotals.dataset; %> <% for (let i = 0; i
+        < dataset.length; i++) { %> <% let item = dataset[i]; %> <% let counter
+        = i + 1; %>
+        <div class="row">
+          <div class="row-item c1"><%= counter %></div>
+          <div class="row-item c2"><%= item.date %></div>
+          <div class="row-item c3"><%= item.count %></div>
+          <div style="clear: both"></div>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </body>
+</html>

@@ -6,39 +6,21 @@ import {
   Query,
   Res,
   UseGuards,
-  Headers
 } from '@nestjs/common';
 import { AddonsService } from './addons.service';
 import { Response } from 'express';
 import {
-  AddonDto
+  AddonDto,
+  AddonRequestDto,
+  SMS_AND_WHATSAPP_SETTINGS,
 } from '../dto/response.dto';
 import { AddonsRequest } from '../dto/request.dto';
 import { AuthGuard } from 'src/guard/auth.guard';
-import jwtDecode from 'jwt-decode';
-import { FacilitiesService } from 'src/entities/Facility/facilities/facilities.service';
 @Controller('addons')
 @UseGuards(AuthGuard)
 export class AddonsController {
-  constructor(private addonsService: AddonsService, private facilityService: FacilitiesService) { }
+  constructor(private addonsService: AddonsService) {}
 
-  @Get('/get-my-addons')
-  async getAddons(
-    @Res() response,
-    @Headers('Authorization') authHeader: string,
-  ) {
-    try {
-      const token = authHeader.split(' ')[1];
-      const loggedInUser: any = jwtDecode(token);
-      const facility = await this.facilityService.getSingleFacilityById(loggedInUser?.facility_id);
-      const addons = await this.addonsService.getMyAddOns(facility._id);
-      response.status(200).send(addons);
-      return addons;
-    } catch (err) {
-      console.log('err in catch', err);
-      response.status(422).send({ error: err, message: 'Addons not found' });
-    }
-  }
   @Get('/get-by-facility')
   async getAllByFacility(
     @Res() response: Response,
@@ -73,5 +55,4 @@ export class AddonsController {
       response.status(422).send({ error: err, message: 'Addons not Updated' });
     }
   }
-
 }

@@ -12,10 +12,10 @@ export class FacilitySmsSetting {
   _id!: string;
 
   @Column({ default: null })
-  employee_id!: string;
+  employee_id!: number;
 
   @Column({ default: null })
-  facility_id!: string;
+  facility_id!: number;
 
   @Column({ default: null })
   registration_sms!: string;

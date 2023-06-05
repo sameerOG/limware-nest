@@ -7,7 +7,6 @@ import { getRepository, Like, Repository } from 'typeorm';
 import { FacilityRequestDto } from '../dto/request.dto';
 import { FacilityDto, ParentFacilityDto } from '../dto/response.dto';
 import { Facility } from '../facility.entity';
-import { Users } from 'src/entities/user/user.entity';
 
 @Injectable()
 export class FacilitiesService {
@@ -18,7 +17,7 @@ export class FacilitiesService {
     private customerRep: Repository<Customers>,
     @InjectRepository(Addons)
     private addonsRep: Repository<Addons>,
-  ) { }
+  ) {}
 
   async getAll(
     skip: number,
@@ -203,63 +202,5 @@ export class FacilitiesService {
     } catch (err) {
       return err;
     }
-  }
-
-  async getFacility(user): Promise<any> {
-    try {
-      const data = await this.facilityRep.findOne({
-        select: [
-          '_id',
-          'address',
-          'city',
-          'created_at',
-          'email',
-          'mobile_number',
-          'facility_image_name',
-          'name',
-          'phone_number',
-          'status',
-          'type',
-          'unique_id',
-          'updated_at',
-        ],
-        where: { _id: user.facility_id }, relations: ['customer_id']
-      });
-      const { ...rest } = data
-      return {
-        ...rest,
-        customer_id: data.customer_id._id
-      }
-    }
-    catch (err) {
-      return err;
-    }
-  }
-
-  async findAndUpdate(facility_id, data: FacilityDto, path): Promise<any> {
-    try {
-      const facility = await this.facilityRep.findOne({ where: { _id: facility_id } })
-      if (facility) {        
-        facility.unique_id = data?.unique_id;
-        facility.name = data?.name;
-        facility.email = data?.email
-        // facility.customer_id = data?.customer_id
-        facility.address = data?.address;
-        facility.phone_number = data?.phone_number;
-        facility.city = data?.city;
-        facility.mobile_number = data?.mobile_number;
-        facility.type = data?.type;
-        if (path) { 
-          facility.facility_image_name = path;
-        }
-        return await this.facilityRep.save(facility)
-      }
-    }
-    catch (err) {
-      return err;
-    }
-  }
-  async getSingleFacilityById(facility_id): Promise<any>{
-    return await this.facilityRep.findOne({where:{_id: facility_id}})
   }
 }

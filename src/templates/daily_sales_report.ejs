@@ -1,0 +1,219 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .header-row {
+        font-size: 12px;
+        font-weight: bold;
+        color: gray;
+        padding: 5px 5px;
+        border-bottom: 1px solid gray;
+      }
+
+      .header-item {
+        float: left;
+      }
+
+      .row {
+        font-size: 11px;
+        padding: 3px 5px;
+        border-bottom: 0.4px solid gray;
+      }
+
+      .row-item {
+        float: left;
+      }
+
+      .c1 {
+        width: 5%;
+      }
+      .c2 {
+        width: 54%;
+      }
+      .c3 {
+        width: 10%;
+        float: right;
+      }
+      .c4 {
+        width: 10%;
+        float: right;
+      }
+      .c5 {
+        width: 10%;
+        float: right;
+      }
+      .c6 {
+        width: 10%;
+        float: right;
+      }
+
+      .due {
+        color: red;
+      }
+      .pb-8 {
+        padding-bottom: 8px;
+      }
+      .width50 {
+        width: 25%;
+        float: left;
+      }
+      .warn-fg {
+        color: #f44336 !important;
+      }
+      .amount-size {
+        font-size: 20px;
+      }
+      .decimal {
+        font-size: 11px;
+      }
+      .h7 {
+        font-size: 9px;
+      }
+      .summary {
+        text-align: center;
+        display: inline-flex;
+        padding: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div>
+        <div class="report-title-block">
+          <div class="report-title">Daily Sales Report</div>
+          <div class="lab-name"><%= data.labModel['name'] %></div>
+        </div>
+
+        <div class="report-criteria">
+          <div style="font-size: 10px">
+            <div>
+              <span style="color: gray">From:</span> <%= data.startDate %>
+            </div>
+            <div><span style="color: gray">To:</span> <%= data.endDate %></div>
+          </div>
+        </div>
+
+        <div class="summary"></div>
+      </div>
+    </div>
+
+    <!-- Invoice -->
+    <div>
+      <div class="summary" style="text-align: center">
+        <div class="width50">
+          <div class="h1">Total Amount</div>
+
+          <div>
+            <span class="h7">Rs.</span>
+            <span class="amount-size"
+              ><%= data.reportDataTotals.totals.total_amount_ary['whole_number']
+              %></span
+            ><span class="decimal"
+              >.<%=
+              data.reportDataTotals.totals.total_amount_ary['decimal_number']
+              %></span
+            >
+          </div>
+        </div>
+
+        <div class="width50">
+          <div class="h1">Total Discount</div>
+          <div>
+            <span class="h7">Rs.</span>
+            <span class="amount-size"
+              ><%=
+              data.reportDataTotals.totals.discount_amount_ary['whole_number']
+              %></span
+            ><span class="decimal"
+              >.<%=
+              data.reportDataTotals.totals.discount_amount_ary['decimal_number']
+              %></span
+            >
+          </div>
+        </div>
+
+        <div class="width50">
+          <div class="h1">Total Due</div>
+          <div class="warn-fg">
+            <span class="h7">Rs.</span>
+            <span class="amount-size"
+              ><%= data.reportDataTotals.totals.due_amount_ary['whole_number']
+              %></span
+            ><span class="decimal"
+              >.<%=
+              data.reportDataTotals.totals.due_amount_ary['decimal_number']
+              %></span
+            >
+          </div>
+        </div>
+
+        <div class="width50">
+          <div class="h1">Total Paid</div>
+          <div>
+            <span class="h7">Rs.</span>
+            <span class="amount-size"
+              ><%= data.reportDataTotals.totals.paid_amount_ary['whole_number']
+              %></span
+            ><span class="decimal"
+              >.<%=
+              data.reportDataTotals.totals.paid_amount_ary['decimal_number']
+              %></span
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Header -->
+      <div class="header-row">
+        <div class="header-item c1">#</div>
+        <div class="header-item c2">Date</div>
+        <div class="header-item c3">Total</div>
+        <div class="header-item c4">Discount</div>
+        <div class="header-item c5">Due</div>
+        <div class="header-item c6">Paid</div>
+
+        <div style="clear: both"></div>
+      </div>
+
+      <div class="data-set">
+        <% var counter = 0; %> <% for (var i = 0; i <
+        data.reportDataTotals.dataset.length; i++) { %> <% counter++; %>
+        <div class="row">
+          <div class="row-item c1"><%= counter %></div>
+          <div class="row-item c2">
+            <%= data.reportDataTotals.dataset[i].date %>
+          </div>
+          <div class="row-item c3">
+            <%= data.reportDataTotals.dataset[i].total_amount_ary.whole_number +
+            '.' +
+            data.reportDataTotals.dataset[i].total_amount_ary.decimal_number %>
+          </div>
+          <div class="row-item c4">
+            <%=
+            data.reportDataTotals.dataset[i].discount_amount_ary.whole_number +
+            '.' +
+            data.reportDataTotals.dataset[i].discount_amount_ary.decimal_number
+            %>
+          </div>
+          <div
+            class="row-item c5 <%= data.reportDataTotals.dataset[i].due_amount_ary.whole_number + '.' + data.reportDataTotals.dataset[i].due_amount_ary.decimal_number > 0 ? 'warn-fg' : '' %>"
+          >
+            <%= data.reportDataTotals.dataset[i].due_amount_ary.whole_number +
+            '.' + data.reportDataTotals.dataset[i].due_amount_ary.decimal_number
+            %>
+          </div>
+          <div class="row-item c6">
+            <%= data.reportDataTotals.dataset[i].paid_amount_ary.whole_number +
+            '.' +
+            data.reportDataTotals.dataset[i].paid_amount_ary.decimal_number %>
+          </div>
+          <div style="clear: both"></div>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </body>
+</html>

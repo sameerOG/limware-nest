@@ -1,0 +1,215 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .header-row {
+    font-size: 12px;
+    font-weight: bold;
+    color: gray;
+    padding: 5px 5px;
+    border-bottom: 1px solid gray;
+}
+
+.header-item {
+    float: left;
+}
+
+.row {
+    font-size: 11px;
+    padding: 3px 5px;
+    border-bottom: 0.4px solid gray;
+}
+
+.row-item {
+    float: left;
+}
+
+.c1 {
+    width: 5%;
+}
+.c2 {
+    width: 10%;
+}
+.c3 {
+    width: 30%;
+}
+.c4 {
+    width: 14%;
+}
+.c6 {
+    width: 18%;
+}
+.c7 {
+    width: 10%;
+}
+
+.pending {
+    color: red;
+}
+.done {
+    color: green;
+}
+
+.pb-8 {
+    padding-bottom: 8px;
+}
+
+.width {
+    width: 33%;
+    float: left;
+}
+
+.amount-size {
+    font-size: 18px;
+}
+.summary {
+    text-align: center;
+    display: inline-flex;
+    padding: 16px;
+    margin-bottom: 15px;
+}
+.warn-fg {
+    color: #f44336 !important;
+}
+.h2 {
+    font-size: 15px;
+}
+.left {
+    float: left;
+}
+.font10 {
+    font-size: 11px;
+}
+.font9 {
+    font-size: 9px;
+}
+.border-right {
+    border-right: 1px solid rgba(0, 0, 0, 0.12);
+}
+.border-left {
+    border-left: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+    </style>
+</head>
+<body>
+    <div class="header">
+
+        <div>
+    
+            <div class="report-title-block">
+                <div class="report-title">Patient Count Report</div>
+                <div class="lab-name"><%= data.labModel['name'] %></div>
+            </div>
+    
+    
+    
+            <div class="report-criteria">
+                <div style="font-size:10px;">
+                    <div><span style="color:gray">From:</span> <%= data.startDate %></div>
+                    <div><span style="color:gray">To:</span> <%= data.endDate %></div>
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Invoice -->
+        <div>
+            <div class="summary">
+                <div class="width" style="float: left;">
+                    <div class="h2 pb-8">Total Patients</div>
+                    <div class="amount-size">
+                        <%= data.reportDataTotals.totals.total %>
+                    </div>
+                </div>
+                <div class="width border-right border-left">
+                    <div class="h2 pb-8">Report Status</div>
+                    <div class="left" style="float: left;">
+                        <div class="left  border-right" style="width: 50%;">
+                            <div class="font10">Done</div>
+                            <div class="font9"><%= data.reportDataTotals.totals.done %></div>
+                        </div>
+                        <div class="left">
+                            <div class="font10">Pending</div>
+                            <div class="warn-fg font9"><%= data.reportDataTotals.totals.pending %></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="width">
+                    <div class="h2 pb-8">Payment Status</div>
+                    <div class="left">
+                        <div class="width border-right">
+                            <div class="font10">Paid</div>
+                            <div class="font9"><%= data.reportDataTotals.totals.paid %></div>
+                        </div>
+                        <div class="width border-right">
+                            <div class="font10">Partially</div>
+                            <div class="warn-fg font9 "><%= data.reportDataTotals.totals.partial %></div>
+                        </div>
+                        <div class="width">
+                            <div class="font10">Unpaid</div>
+                            <div class="warn-fg font9 "><%= data.reportDataTotals.totals.unpaid %></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Header -->
+            <div class="header-row">
+                <div class="header-item c1">#</div>
+                <div class="header-item c2">Lab #</div>
+                <div class="header-item c3">Patient Name</div>
+                <div class="header-item c4">Info</div>
+                <div class="header-item c6">Registration Date</div>
+                <div class="header-item c7">Report</div>
+                <div class="header-item c7">Payment</div>
+                <div style="clear:both"></div>
+            </div>
+            <div class="data-set">
+                <% let counter = 0; %>
+                <% let red = ''; %>
+                <% for (const item of data.reportDataTotals.dataset) { %>
+                    <% let gender_full_form = item.gender; %>
+                    <% if (item.gender === 'm') { %>
+                        <% gender_full_form = 'Male'; %>
+                    <% } else if (item.gender === 'f') { %>
+                        <% gender_full_form = 'Female'; %>
+                    <% } %>
+                    <% let invoice_payment_status = item.invoice_status; %>
+                    <% if (item.invoice_status === 1) { %>
+                        <% red = 'pending'; %>
+                        <% invoice_payment_status = 'Unpaid'; %>
+                    <% } else if (item.invoice_status === 2) { %>
+                        <% red = 'pending'; %>
+                        <% invoice_payment_status = 'Partially Paid'; %>
+                    <% } else if (item.invoice_status === 3) { %>
+                        <% invoice_payment_status = 'Paid'; %>
+                        <% } %>
+                        <% counter++; %>
+                        <div class="row">
+                        <div class="row-item c1"><%= counter %></div>
+                        <!-- <div class="row-item c2"><%= item.lab_number %></div> -->
+                        <div class="row-item c3"><%= item.name %></div>
+                        <div class="row-item c4"><%= item.age %> <%= item.age_unit %> / <%= gender_full_form %></div>
+                        <div class="row-item c6"><%= item.created_at %></div>
+                        <div class="row-item c7 <%= !item.is_completed ? 'pending' : '' %>"><%= item.is_completed ? 'Done' : 'Pending' %></div>
+                        <div class="row-item c7 <%= red %>"><%= invoice_payment_status %></div>
+                        <div style="clear:both"></div>
+                        </div>
+                        <% red = ''; %>
+                        <% } %>
+                        </div>
+                        
+                        </div>
+        
+    
+    
+    
+    </div>
+    
+    </div>
+    </div>
+</body>
+</html>
