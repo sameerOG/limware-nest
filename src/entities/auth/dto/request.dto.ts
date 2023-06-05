@@ -62,6 +62,10 @@ export class RegisterRequest {
   @IsBoolean()
   @IsNotEmpty()
   terms: boolean;
+
+  @IsString()
+  @IsOptional()
+  email: string;
 }
 
 export class CreateUserRequestDto {
