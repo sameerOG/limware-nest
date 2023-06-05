@@ -12,7 +12,7 @@ export class ReportPrintSetting {
   _id!: string;
 
   @Column()
-  laboratory_id!: number;
+  laboratory_id!: string;
 
   @Column({ default: null })
   margin_top!: string;
