@@ -68,16 +68,13 @@ export class TestRequestDto {
   @IsOptional()
   print_on_separate_page: boolean;
 
-  @IsObject()
   @IsOptional()
-  duration: Object;
+  duration: any;
 
-  @IsObject()
   @IsOptional()
-  sample_quantity: Object;
+  sample_quantity: any;
 
   // Optional Parameters
-  @IsNumber()
   @IsOptional()
   decimal_length: number;
 
@@ -89,7 +86,6 @@ export class TestRequestDto {
   @IsOptional()
   description: string;
 
-  @IsBoolean()
   @IsOptional()
   is_template: boolean;
 
@@ -110,7 +106,6 @@ export class TestRequestDto {
   @IsOptional()
   single_or_group: string;
 
-  @IsBoolean()
   @IsOptional()
   parametric_only: boolean;
 
@@ -122,7 +117,6 @@ export class TestRequestDto {
   @IsOptional()
   department_id: string;
 
-  @IsNumber()
   @IsOptional()
   price: number;
 

@@ -43,7 +43,7 @@ export class Appointment {
   lab_number: string;
 
   @Column({ default: null })
-  reference_number: number;
+  reference_number: string;
 
   @Column()
   appointment_date!: string;

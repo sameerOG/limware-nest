@@ -104,11 +104,11 @@ export class PatientsService {
         .getRawOne();
 
       let invoice_status;
-      if (invoice.status === 1) {
+      if (invoice?.status === 1) {
         invoice_status = 'Unpaid';
-      } else if (invoice.status === 2) {
+      } else if (invoice?.status === 2) {
         invoice_status = 'Partially';
-      } else if (invoice.status === 3) {
+      } else if (invoice?.status === 3) {
         invoice_status = 'Paid';
       }
 
@@ -502,7 +502,7 @@ export class PatientsService {
                 .update(Appointment)
                 .set({
                   reference_number: !isEmpty(body.reference_number)
-                    ? Number(body.reference_number)
+                    ? body.reference_number
                     : null,
                 })
                 .where({ _id: appointmentModel._id })
