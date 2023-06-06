@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { InjectRepository } from '@nestjs/typeorm';
 import { isEmpty, isNumber } from 'lodash';
+import { options } from 'src/common/helper/enums';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Appointment } from 'src/entities/appointment/appointment.entity';
 import { Employee } from 'src/entities/employee/employee.entity';
@@ -16,6 +17,7 @@ import { TestNormalRange } from 'src/entities/test/test_normal_range.entity';
 import { In, Repository } from 'typeorm';
 import {
   MarkAsDoneRequestDto,
+  printAllRequestDto,
   UpdatePatientRequestDto,
 } from '../dto/request.dto';
 import {
@@ -27,7 +29,9 @@ import { Patient } from '../patient.entity';
 import { PatientAccount } from '../patient_account.entity';
 import { PatientTest } from '../patient_test.entity';
 import { PatientTestParameterResult } from '../patient_test_parameter_result.entity';
-
+import * as path from 'path';
+import * as fs from 'fs';
+import { FileHandling } from 'src/common/file-handling';
 @Injectable()
 export class PatientsService {
   constructor(
@@ -61,6 +65,7 @@ export class PatientsService {
     private patientTestParameterResultRep: Repository<PatientTestParameterResult>,
     @InjectRepository(EmployeeFacilityDepartment)
     private empFacilityDepartmentRep: Repository<EmployeeFacilityDepartment>,
+    private fileHandling: FileHandling,
   ) {}
 
   async getAll(
@@ -217,7 +222,7 @@ export class PatientsService {
 
     for (let i = 0; i < patientTests.length; i++) {
       let ptItem = patientTests[i];
-      ptItem.status = 15;
+      ptItem.status = ptItem.status;
       ptItem.sample_status = 5;
       for (let j = 0; j < userAssignedDepartmentIds.length; j++) {
         let department_id = userAssignedDepartmentIds[j];
@@ -337,7 +342,7 @@ export class PatientsService {
           Object.assign(test, {
             sample_status: pt.sample_status,
             is_printed: pt.is_printed,
-            status: 15,
+            status: pt.status,
           });
           tests.push(test);
         });
@@ -611,6 +616,7 @@ export class PatientsService {
         });
         appointment_id = model.appointment_id;
         model.status = 15;
+        model.sample_status = 5;
         const savedTest = await this.patientTestRep.update(
           patientTestId,
           model,
@@ -726,7 +732,11 @@ export class PatientsService {
     }
   }
 
-  async getTestParameters(patient_test_id: string, user): Promise<any> {
+  async getTestParameters(
+    patient_test_id: string,
+    user,
+    patientData?: Patient,
+  ): Promise<any> {
     let facility_id = user.facility_id;
     const lab = await this.labRep
       .createQueryBuilder('laboratory')
@@ -739,7 +749,7 @@ export class PatientsService {
       facility_id = lab.parent_facility_id;
     }
 
-    const patientTest = await this.patientTestRep
+    let patientTest = await this.patientTestRep
       .createQueryBuilder('patient_test')
       .select('patient_test.*')
       .where('patient_test._id = :_id', {
@@ -749,7 +759,20 @@ export class PatientsService {
         facility_id: facility_id,
       })
       .getRawOne();
+    if (!patientTest) {
+      patientTest = await this.patientTestRep
+        .createQueryBuilder('patient_test')
+        .select('patient_test.*')
+        .where('patient_test.test_id = :test_id', {
+          test_id: patient_test_id,
+        })
+        .andWhere('patient_test.facility_id = :facility_id', {
+          facility_id: facility_id,
+        })
+        .getRawOne();
+    }
 
+    console.log('patientTest', patientTest, patient_test_id);
     const testData = await this.testRep.findOne({
       where: { _id: patientTest.test_id },
       relations: ['test_category_id'],
@@ -821,8 +844,8 @@ export class PatientsService {
       // }
 
       let result = ptParameterItem.result;
-      let enforceDecimal = false;
-      let decimalLength = 0;
+      var enforceDecimal = false;
+      var decimalLength = 0;
       console.log('|test', test);
 
       if (test.res_input_type == 'number_field') {
@@ -892,5 +915,208 @@ export class PatientsService {
     }
     await this._updateAppointmentCompletionStatus(model.appointment_id);
     return model;
+  }
+
+  async printAll(body: printAllRequestDto, user): Promise<any> {
+    const { patient_id, appointment_id, patient_test_ids } = body;
+    const data = await this.getPatientTestData(
+      patient_id,
+      appointment_id,
+      patient_test_ids,
+      user,
+    );
+    // return data;
+    let payload: any = {
+      data,
+    };
+    const reportTemplate = 'selected_test_template';
+    const content = await this.fileHandling.renderTemplate(
+      reportTemplate,
+      payload,
+    );
+    const folderPath = process.cwd() + '/src/common/uploads/invoices';
+    const fileName = `${
+      data.patient?._id
+    }-selected-tests-${new Date().getTime()}.pdf`;
+    const filePath = path.join(folderPath, fileName);
+    return await this.fileHandling.generatePdf(options, content, filePath);
+  }
+
+  async getPatientTestData(
+    patient_id: string,
+    appointment_id: string,
+    patient_test_ids: string[],
+    user,
+  ) {
+    const patientData = await this.patientRep.findOne({
+      where: { _id: patient_id },
+    });
+    let facility_id = patientData.facility_id;
+    if (user.facility_id) {
+      facility_id = user.facility_id;
+    }
+    const lab = await this.labRep
+      .createQueryBuilder('laboratory')
+      .select('laboratory.*')
+      .where('laboratory.facility_id = :facility_id', {
+        facility_id: facility_id,
+      })
+      .getRawOne();
+
+    if (lab?.type === 'cc') {
+      facility_id = lab.parent_facility_id;
+    }
+
+    const appointmentData = await this.appointmentRep.findOne({
+      where: { _id: appointment_id },
+    });
+    let testsData = [];
+    for (let i = 0; i < patient_test_ids.length; i++) {
+      let patient_test_id = patient_test_ids[i];
+      let data = await this.getTestParameters(patient_test_id, user);
+      let organizedParameters = await this.__organizeTests(
+        data.patientTestParameters,
+      );
+      let model = await this.patientTestRep
+        .createQueryBuilder('patient_test')
+        .select('patient_test.*')
+        .where('patient_test.test_id = :test_id', {
+          test_id: patient_test_id,
+        })
+        .getRawOne();
+      console.log('model', model, patient_test_id);
+      model.is_printed = 1;
+      await this.patientTestRep.update(patient_test_id, model);
+      let toPushObj = {
+        category: data.category,
+        patientTest: data.patientTest,
+        test: data.test,
+        parameters: organizedParameters,
+        specimens: data.specimens,
+      };
+
+      if (data.donor) {
+        Object.assign(toPushObj, { donor: data.donor });
+      }
+      testsData.push(toPushObj);
+    }
+    let testDataCategoryWise = await this.__groupTestsCategoryWise(testsData);
+    let reference = 'Self';
+    let settingModel = await this.labSettingsRep
+      .createQueryBuilder('laboratory_setting')
+      .select('laboratory_setting.print_empty_result')
+      .where('laboratory_setting.laboratory_id = :laboratory_id', {
+        laboratory_id: lab?._id,
+      })
+      .andWhere('laboratory_setting.facility_id = :facility_id', {
+        facility_id: user.facility_id,
+      })
+      .getRawOne();
+
+    return {
+      patient: patientData,
+      appointment: appointmentData,
+      categories: testDataCategoryWise,
+      reference,
+      settings: settingModel,
+    };
+  }
+
+  async __organizeTests(patientTestParameters: any) {
+    let singleTests = [];
+    let groups = [];
+
+    for (let i = 0; i < patientTestParameters.length; i++) {
+      let item = patientTestParameters[i];
+      if (item.test_group_id == null) {
+        singleTests.push(item);
+      } else {
+        let res = await this.__findAndGetIndex(groups, item.test_group_id);
+        let index = res.index;
+        if (res.isNewGroup) {
+          groups.push({
+            test_group_id: item.test_group_id,
+            test_group_name: item.test_group_name,
+            test_group_sequence: item.test_group_sequence,
+            tests: [],
+          });
+        }
+        groups[index]['tests'].push(item);
+      }
+    }
+
+    return {
+      singleTests,
+      groupedTests: groups,
+    };
+  }
+
+  async __findAndGetIndex(groups, test_group_id: string) {
+    let isNewGroup = true;
+    let index = 0;
+    for (let i = 0; i < groups.length; i++) {
+      let gItem = groups[i];
+      if (gItem.test_group_id === test_group_id) {
+        isNewGroup = false;
+        index = i;
+        return {
+          isNewGroup,
+          index: i,
+        };
+      }
+    }
+    return {
+      isNewGroup,
+      index,
+    };
+  }
+
+  async __groupTestsCategoryWise(testData) {
+    let categories = [];
+    for (let i = 0; i < testData.length; i++) {
+      let testItem = testData[i];
+      let catFound = false;
+      let catIndex = 0;
+      for (let j = 0; j < categories.length; j++) {
+        let catItem = categories[j];
+        if (
+          !catItem.print_on_separate_page &&
+          !testItem['test']['print_on_separate_page']
+        ) {
+          if (catItem['category']['_id'] === testItem['category']['_id']) {
+            catFound = true;
+            break;
+          }
+        }
+        catIndex++;
+      }
+      if (!catFound) {
+        let toPushObj = {
+          category: testItem.category,
+          specimens: testItem.specimens,
+          print_on_seperate_page: false,
+          report_template: testItem['category']['report_template'],
+          tests: [],
+        };
+        if (testItem.donor) {
+          Object.assign(toPushObj, { donor: testItem.donor });
+        }
+        categories.push(toPushObj);
+      }
+
+      if (testItem['test']['print_on_separate_page']) {
+        categories[catIndex]['print_on_separate_page'] = true;
+        categories[catIndex]['report_template'] =
+          testItem['test']['report_template'];
+      }
+
+      categories[catIndex]['tests'].push({
+        sequence: testItem['test']['sequence'],
+        patientTest: testItem.patientTest,
+        test: testItem.test,
+        parameters: testItem.parameters,
+      });
+    }
+    return categories;
   }
 }

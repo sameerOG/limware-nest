@@ -1,4 +1,10 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class UpdatePatientRequestDto {
   @IsString()
@@ -55,4 +61,24 @@ export class MarkAsDoneRequestDto {
 
   @IsNotEmpty()
   patient_test_ids: string[];
+}
+
+export class printAllRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  patient_id: string;
+
+  @IsString()
+  @IsNotEmpty()
+  appointment_id: string;
+
+  @IsNotEmpty()
+  patient_test_ids: string[];
+
+  @IsBoolean()
+  @IsNotEmpty()
+  print_half: boolean;
+
+  @IsOptional()
+  print_together: boolean;
 }
