@@ -1,0 +1,187 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      #header {
+        font-family: Muli, Helvetica Neue, Arial, sans-serif;
+        /* border-bottom: 0.5px solid gray; */
+      }
+      #header .p-info {
+        font-size: 10px;
+        padding: 0px 0px 0px 0px;
+      }
+      .p-info .cell {
+        padding-bottom: 3px;
+      }
+      .p-info .separator {
+        float: left;
+        width: 25px;
+      }
+      .p-info .col1 {
+        float: left;
+        width: 50%;
+      }
+      .col1 .lbl {
+        color: #3a3a3a;
+        float: left;
+        width: 100px;
+      }
+      .col1 .field {
+        float: left;
+        margin-left: -10px;
+      }
+      .p-info .col2 {
+        float: left;
+        width: 35%;
+      }
+      .col2 .lbl {
+        color: #3a3a3a;
+        float: left;
+        width: 90px;
+      }
+      .col2 .field {
+        float: left;
+        margin-left: -10px;
+      }
+      .p-info .col3 {
+        text-align: right;
+        float: right;
+      }
+      .qr-code {
+        width: 60px;
+        height: 60px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="header">
+      <div>
+        <div class="p-info" style="background: transparent !important">
+          <div class="col1">
+            <div class="cell">
+              <div class="lbl">Patient Number</div>
+              <div class="separator">:</div>
+              <div class="field"><%= data.patient.mobile_number %></div>
+              <div style="clear: both"></div>
+            </div>
+            <div class="cell">
+              <div class="lbl">Patient Name</div>
+              <div class="separator">:</div>
+              <div class="field"><strong><%= data.patient.name %></strong></div>
+              <div style="clear: both"></div>
+            </div>
+            <div class="cell">
+              <div class="lbl">Age/Gender</div>
+              <div class="separator">:</div>
+              <div class="field">
+                <strong
+                  ><%= data.patient.age + ' ' + data.patient.age_unit + ' / ' +
+                  data.patient.gender %></strong
+                >
+              </div>
+              <div style="clear: both"></div>
+            </div>
+            <div class="cell">
+              <div class="lbl">Referred By</div>
+              <div class="separator">:</div>
+              <div class="field"><%= data.reference %></div>
+              <div style="clear: both"></div>
+            </div>
+          </div>
+
+          <div class="col2">
+            <div class="cell">
+              <div class="lbl">Lab Number</div>
+              <div class="separator">:</div>
+              <div class="field"><%= data.appointment.lab_number %></div>
+              <div style="clear: both"></div>
+            </div>
+
+            <% if (data.appointment.reference_number &&
+            data.appointment.reference_number !== null &&
+            data.appointment.reference_number !== '') { %>
+            <div class="cell">
+              <div class="lbl">External Ref. #</div>
+              <div class="separator">:</div>
+              <div class="field"><%= data.appointment.reference_number %></div>
+              <div style="clear: both"></div>
+            </div>
+            <% } %>
+
+            <div class="cell">
+              <div class="lbl">Registration Date</div>
+              <div class="separator">:</div>
+              <div class="field">
+                <%= new Date(data.appointment.created_at) %>
+              </div>
+              <div style="clear: both"></div>
+            </div>
+
+            <div class="cell">
+              <div class="lbl">Report Date</div>
+              <div class="separator">:</div>
+              <div class="field"><%= new Date() %></div>
+              <div style="clear: both"></div>
+            </div>
+
+            <div class="cell">
+              <!-- <div class='lbl'>Specimen</div>
+                        <div class='separator'>:</div>
+                        <div class='field'>---</div>
+                        <div style='clear: both'></div> -->
+            </div>
+          </div>
+
+          <div class="col3">
+            <!-- <img src="<%= '@web/images/limware-qr-code.png' %>" class="qr-code" /> -->
+          </div>
+
+          <div style="clear: both"></div>
+        </div>
+
+        <div style="clear: both"></div>
+      </div>
+    </div>
+
+    <!-- Invoice -->
+    <div>
+        <div id="report">
+            <div>
+              <div style="clear: both"></div>
+              <% for (let i = 0; i < data.categories.length; i++) { %>
+                <% const categoryData = data.categories[i]; %>
+                <% if (categoryData && categoryData.category && categoryData.category.name) { %>
+                  <div class="category">
+                    <div class="category-title"><%= categoryData.category.name %></div>
+                    <div style="clear: both"></div>
+                  </div>
+                  <hr />
+          
+                  <% for (let j = 0; j < categoryData.tests.length; j++) { %>
+                    <% const testData = categoryData.tests[j]; %>
+                    <% if (testData) { %>
+                      <% if (testData.test.single_or_group === 'group') { %>
+                        <div class="p-info">
+                          <%= testData.test.title_for_print %>
+                        </div>
+                      <% } %>
+
+                      <% if (testData.test.single_or_group === 'single') { %>
+                        <div class="p-info">
+                          <%= testData.test.name %>
+                        </div>
+                      <% } %>
+                      <hr />
+                    <% } %>
+                  <% } %>
+                <% } %>
+              <% } %>
+            </div>
+          </div>
+          
+    </div>
+  </body>
+</html>

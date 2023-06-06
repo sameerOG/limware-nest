@@ -2,7 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Reference } from '../reference.entity';
-import { ReferencesListResponseDto } from './dto/response.dto';
+import { ReferenceRequestDto } from './dto/request.dto';
+import {
+  ReferencesCreateResponseDto,
+  ReferencesListResponseDto,
+} from './dto/response.dto';
 
 @Injectable()
 export class ReferencesService {
@@ -11,8 +15,16 @@ export class ReferencesService {
     private referenceRep: Repository<Reference>,
   ) {}
 
-  create(createReferenceDto) {
-    return 'This action adds a new reference';
+  async create(body: any): Promise<ReferencesCreateResponseDto> {
+    const data = await this.referenceRep.save(body);
+    if (data) {
+      const { created_at, updated_at, ...rest } = data;
+      return new ReferencesCreateResponseDto({
+        created_at: created_at.getTime(),
+        updated_at: updated_at.getTime(),
+        ...rest,
+      });
+    }
   }
 
   async getAll(user): Promise<ReferencesListResponseDto[]> {
@@ -25,15 +37,30 @@ export class ReferencesService {
       .getRawMany();
   }
 
-  findOne(id: string) {
-    return `This action returns a #${id} reference`;
+  async findOne(id: string): Promise<ReferencesCreateResponseDto> {
+    const data = await this.referenceRep.findOne({ where: { _id: id } });
+    const { created_at, updated_at, ...rest } = data;
+    return new ReferencesCreateResponseDto({
+      created_at: created_at.getTime(),
+      updated_at: updated_at.getTime(),
+      ...rest,
+    });
   }
 
-  update(id: string, updateReferenceDto) {
-    return `This action updates a #${id} reference`;
+  async update(id: string, body: any): Promise<ReferencesCreateResponseDto> {
+    const data = await this.referenceRep.update(id, body);
+    const savedData = await this.referenceRep.findOne({ where: { _id: id } });
+    if (data) {
+      const { created_at, updated_at, ...rest } = savedData;
+      return new ReferencesCreateResponseDto({
+        created_at: created_at.getTime(),
+        updated_at: updated_at.getTime(),
+        ...rest,
+      });
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} reference`;
+  async remove(id: string): Promise<any> {
+    return await this.referenceRep.softDelete(id);
   }
 }

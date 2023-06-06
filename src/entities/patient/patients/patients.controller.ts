@@ -15,6 +15,7 @@ import jwtDecode from 'jwt-decode';
 import { LaboratorySetting } from 'src/entities/laboratory/laboratory_setting.entity';
 import {
   MarkAsDoneRequestDto,
+  printAllRequestDto,
   UpdatePatientRequestDto,
 } from '../dto/request.dto';
 import {
@@ -201,31 +202,6 @@ export class PatientsController {
     }
   }
 
-  @Get('/patients/:id')
-  async getSingle(
-    @Res() response: Response,
-    @Param('id') id: string,
-    @Headers('Authorization') authHeader: string,
-  ): Promise<PatientInfoResponseDto> {
-    try {
-      const token = authHeader.split(' ')[1];
-      const loggedInUser = jwtDecode(token);
-      let data = await this.patientService.getSingle(id, loggedInUser);
-      response.status(200).send(data);
-      if (data) {
-        return data;
-      } else {
-        throw new HttpException(
-          { err: true, messages: 'Patient not found' },
-          422,
-        );
-      }
-    } catch (err) {
-      console.log('err in catch', err);
-      response.status(422).send({ error: err, message: 'Patient not found' });
-    }
-  }
-
   @Put('/patients/:id')
   async update(
     @Res() response: Response,
@@ -249,6 +225,83 @@ export class PatientsController {
     } catch (err) {
       console.log('err in catch', err);
       response.status(422).send({ error: err, message: 'Patient not updated' });
+    }
+  }
+
+  @Post('/patients/print-all')
+  async printAll(
+    @Res() response: Response,
+    @Body() body: printAllRequestDto,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<any> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.patientService.printAll(body, loggedInUser);
+      response.setHeader('Content-Type', 'application/pdf');
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Patient Details not found' });
+    }
+  }
+
+  @Get('/patients/print-report')
+  async printReport(
+    @Res() response: Response,
+    @Query() query,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<any> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let patient_id = query['patient_id'];
+      let appointment_id = query['appointment_id'];
+      let patient_test_id = query['patient_test_id'];
+      let print_half = query['print_half'];
+      const body: any = {
+        patient_id,
+        appointment_id,
+        patient_test_ids: [patient_test_id],
+        print_half,
+      };
+      let data = await this.patientService.printAll(body, loggedInUser);
+      response.setHeader('Content-Type', 'application/pdf');
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Patient Details not found' });
+    }
+  }
+
+  @Get('/patients/:id')
+  async getSingle(
+    @Res() response: Response,
+    @Param('id') id: string,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<PatientInfoResponseDto> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.patientService.getSingle(id, loggedInUser);
+      response.status(200).send(data);
+      if (data) {
+        return data;
+      } else {
+        throw new HttpException(
+          { err: true, messages: 'Patient not found' },
+          422,
+        );
+      }
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({ error: err, message: 'Patient not found' });
     }
   }
 }
