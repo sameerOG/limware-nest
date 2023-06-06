@@ -52,7 +52,7 @@ export class ReportsService {
         .getRawOne();
 
       if (invoice) {
-        Object.assign(invoice, { invoice_status: invoice.status });
+        Object.assign(invoice, { invoice_status: invoice?.status });
       }
 
       if (item.is_completed) {
@@ -61,11 +61,11 @@ export class ReportsService {
         totals.pending = totals.pending + 1;
       }
       console.log('status', item.invoice_status);
-      if (invoice.status === 1) {
+      if (invoice?.status === 1) {
         totals.unpaid = totals.unpaid + 1;
-      } else if (invoice.status === 2) {
+      } else if (invoice?.status === 2) {
         totals.partial = totals.partial + 1;
-      } else if (invoice.status === 3) {
+      } else if (invoice?.status === 3) {
         totals.paid = totals.paid + 1;
       }
     }
@@ -177,7 +177,7 @@ export class ReportsService {
             .where('invoice.patient_id = :patient_id', { patient_id: item._id })
             .getRawOne();
           if (invoice) {
-            Object.assign(invoice, { invoice_status: invoice.status });
+            Object.assign(invoice, { invoice_status: invoice?.status });
           }
 
           if (item.is_completed) {
@@ -185,12 +185,11 @@ export class ReportsService {
           } else {
             totals.pending = totals.pending + 1;
           }
-          console.log('status', invoice.status, item._id);
-          if (invoice.status === 1) {
+          if (invoice?.status === 1) {
             totals.unpaid = totals.unpaid + 1;
-          } else if (invoice.status === 2) {
+          } else if (invoice?.status === 2) {
             totals.partial = totals.partial + 1;
-          } else if (invoice.status === 3) {
+          } else if (invoice?.status === 3) {
             totals.paid = totals.paid + 1;
           }
           totals.total = totals.total + 1;
@@ -267,10 +266,16 @@ export class ReportsService {
         .where('invoice.patient_id = :patient_id', { patient_id: item._id })
         .getRawOne();
 
-      totals.total_amount = invoice.total_amount + invoice.total_amount;
-      totals.paid_amount = totals.paid_amount + invoice.paid_amount;
-      totals.due_amount = totals.due_amount + invoice.due_amount;
-      totals.discount_amount = invoice.discount_amount;
+      totals.total_amount = invoice
+        ? invoice.total_amount + invoice.total_amount
+        : 0;
+      totals.paid_amount = invoice
+        ? totals.paid_amount + invoice.paid_amount
+        : totals.paid_amount;
+      totals.due_amount = invoice
+        ? totals.due_amount + invoice.due_amount
+        : totals.due_amount;
+      totals.discount_amount = invoice ? invoice.discount_amount : 0;
 
       let total_amount_ary = await this.fileHandling.separateDecimalValue(
         totals.total_amount,
@@ -286,14 +291,20 @@ export class ReportsService {
       );
 
       let patient_total_amount_ary =
-        await this.fileHandling.separateDecimalValue(invoice.total_amount);
+        await this.fileHandling.separateDecimalValue(
+          invoice ? invoice.total_amount : 0,
+        );
       let patient_discount_amount_ary =
-        await this.fileHandling.separateDecimalValue(invoice.discount_amount);
+        await this.fileHandling.separateDecimalValue(
+          invoice ? invoice.discount_amount : 0,
+        );
       let patient_due_amount_ary = await this.fileHandling.separateDecimalValue(
-        invoice.due_amount,
+        invoice ? invoice.due_amount : 0,
       );
       let patient_paid_amount_ary =
-        await this.fileHandling.separateDecimalValue(invoice.paid_amount);
+        await this.fileHandling.separateDecimalValue(
+          invoice ? invoice.paid_amount : 0,
+        );
       Object.assign(totals, {
         total_amount_ary,
         discount_amount_ary,
@@ -305,10 +316,10 @@ export class ReportsService {
         discount_amount_ary: patient_discount_amount_ary,
         due_amount_ary: patient_due_amount_ary,
         paid_amount_ary: patient_paid_amount_ary,
-        due_amount: invoice.due_amount,
-        paid_amount: invoice.paid_amount,
-        discount_amount: invoice.discount_amount,
-        total_amount: invoice.total_amount,
+        due_amount: invoice ? invoice.due_amount : 0,
+        paid_amount: invoice ? invoice.paid_amount : 0,
+        discount_amount: invoice ? invoice.discount_amount : 0,
+        total_amount: invoice ? invoice.total_amount : 0,
       });
     }
 

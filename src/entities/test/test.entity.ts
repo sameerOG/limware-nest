@@ -72,7 +72,7 @@ export class Test {
   @Column({ default: null })
   decimal_length!: number;
 
-  @Column({ default: null })
+  @Column({ default: null, type: 'json' })
   res_input_options!: string;
 
   @Column({ default: null })
@@ -127,7 +127,7 @@ export class Test {
 
   @ManyToOne(() => UOM, (uom) => uom.test)
   @JoinColumn({ name: 'uom_id' })
-  uom_id!: UOM;
+  uom_id: UOM;
 
   @ManyToOne(() => specimen, (spec) => spec.test)
   @JoinColumn({ name: 'specimen_id' })
