@@ -45,4 +45,34 @@ export class FileHandling {
       decimal_number: ary[1],
     };
   }
+
+  async getDatesFromRange(start, end, format = 'YYYY-MM-DD') {
+    const array = [];
+    const startDate = new Date(start);
+    const endDate = new Date(end);
+    endDate.setDate(endDate.getDate() + 1);
+
+    for (
+      let date = new Date(startDate);
+      date < endDate;
+      date.setDate(date.getDate() + 1)
+    ) {
+      // array.push(date.toLocaleDateString(format));
+      array.push(date);
+    }
+
+    return array;
+  }
+
+  async formatDate(date) {
+    var d = new Date(date),
+      month = '' + (d.getMonth() + 1),
+      day = '' + d.getDate(),
+      year = d.getFullYear();
+
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+
+    return [year, month, day].join('-');
+  }
 }

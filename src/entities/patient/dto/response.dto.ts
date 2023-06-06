@@ -9,7 +9,7 @@ export class PatientList {
   readonly lab_number: string;
   readonly mobile_number: string;
   readonly name: string;
-  readonly registration_date: string;
+  readonly registration_date: string | number;
   readonly unique_id: string;
   readonly _id: string;
 
@@ -125,5 +125,17 @@ export class AppointmentInfo {
 
   constructor(patient: AppointmentInfo) {
     this.lab = patient.lab;
+  }
+}
+
+export class MarkAsDoneResponseDto {
+  readonly allResultsAreDone: boolean;
+  readonly patient_test_status: number;
+  readonly status: boolean;
+
+  constructor(data: MarkAsDoneResponseDto) {
+    (this.allResultsAreDone = data.allResultsAreDone),
+      (this.patient_test_status = data.patient_test_status),
+      (this.status = data.status);
   }
 }

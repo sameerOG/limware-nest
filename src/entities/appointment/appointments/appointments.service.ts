@@ -266,7 +266,7 @@ export class AppointmentsService {
     let patientAttributes: any = {
       facility_id: null,
       patient_account_id,
-      registration_date: String(new Date().getTime()),
+      registration_date: new Date().getTime(),
       mobile_number,
       name,
       dob,

@@ -13,8 +13,12 @@ import {
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
 import { LaboratorySetting } from 'src/entities/laboratory/laboratory_setting.entity';
-import { UpdatePatientRequestDto } from '../dto/request.dto';
 import {
+  MarkAsDoneRequestDto,
+  UpdatePatientRequestDto,
+} from '../dto/request.dto';
+import {
+  MarkAsDoneResponseDto,
   PatientInfoResponseDto,
   PatientListResponseDto,
 } from '../dto/response.dto';
@@ -117,6 +121,75 @@ export class PatientsController {
       let data = await this.patientService.getPatientDetails(
         patient_id,
         loggedInUser,
+      );
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Patient Details not found' });
+    }
+  }
+
+  @Post('/assigned-tests/mark-as-done')
+  async markAsDone(
+    @Res() response: Response,
+    @Body() body: MarkAsDoneRequestDto,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<MarkAsDoneResponseDto> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.patientService.markAsDone(body, loggedInUser);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Patient Details not found' });
+    }
+  }
+
+  @Get('/assigned-tests/get-test-parameters')
+  async getTestParameters(
+    @Res() response: Response,
+    @Query() query,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<any> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const patient_test_id: string = query['patient_test_id'];
+
+      let data = await this.patientService.getTestParameters(
+        patient_test_id,
+        loggedInUser,
+      );
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Patient Details not found' });
+    }
+  }
+
+  @Post('/assigned-tests/convert-to-draft')
+  async convertToDraft(
+    @Res() response: Response,
+    @Body() body,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<any> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      //10 for STATUS_RESULT_ENTERED
+      let data = await this.patientService.convertToDraft(
+        body.patient_test_id,
+        10,
       );
       response.status(200).send(data);
       return data;

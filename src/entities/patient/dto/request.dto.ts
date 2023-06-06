@@ -47,3 +47,12 @@ export class UpdatePatientTestStatusRequestDto {
   @IsNotEmpty()
   sample_status: number;
 }
+
+export class MarkAsDoneRequestDto {
+  @IsString()
+  @IsNotEmpty()
+  patient_id: string;
+
+  @IsNotEmpty()
+  patient_test_ids: string[];
+}

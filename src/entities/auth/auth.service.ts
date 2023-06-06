@@ -31,7 +31,12 @@ import { ReportPrintSetting } from '../report_print_setting/report_print_setting
 import { InvoicePrintSettings } from '../invoice/invoice_print_settings.entity';
 import { FacilitySmsSetting } from '../Facility/facility_sms_settings/facility_sms_setting.entity';
 import { Addons } from '../addons/addons.entity';
-import { AddonsSettingData, FacilitySMSsettingsData, LabSettingsData, ReportPrintSettingsData } from 'src/common/settings/lab.settings.default';
+import {
+  AddonsSettingData,
+  FacilitySMSsettingsData,
+  LabSettingsData,
+  ReportPrintSettingsData,
+} from 'src/common/settings/lab.settings.default';
 
 const uid = new ShortUniqueId({ length: 6, dictionary: 'number' });
 @Injectable()
@@ -68,8 +73,8 @@ export class AuthService {
     @InjectRepository(FacilitySmsSetting)
     private facilitySmsSettingRep: Repository<FacilitySmsSetting>,
     @InjectRepository(Addons)
-    private addonsRep: Repository<Addons>
-  ) { }
+    private addonsRep: Repository<Addons>,
+  ) {}
 
   async login(body: AuthRequest): Promise<AuthDto | Error[]> {
     const username = body.username.replace(/-/g, '');
@@ -391,10 +396,11 @@ export class AuthService {
     labSettingEntity.created_at = new Date();
     labSettingEntity.facility_id = facility_id;
     labSettingEntity.updated_at = new Date();
-    labSettingEntity.laboratory_id = lab_id
+    labSettingEntity.laboratory_id = lab_id;
     labSettingEntity.print_empty_result = data.print_empty_result;
-    labSettingEntity.require_results_for_mark_as_done = data.require_results_for_mark_as_done;
-    return await this.labSettingsRep.save(labSettingEntity)
+    labSettingEntity.require_results_for_mark_as_done =
+      data.require_results_for_mark_as_done;
+    return await this.labSettingsRep.save(labSettingEntity);
   }
   async reportPrintSetting(data, lab_id): Promise<ReportPrintSetting> {
     const reportSettingEntity = new ReportPrintSetting();
@@ -404,15 +410,19 @@ export class AuthService {
     reportSettingEntity.updated_at = new Date();
     reportSettingEntity.footer_text = data.footer_text;
     reportSettingEntity.header_text = data.header_text;
-    reportSettingEntity.default_download_footer_type = data.default_download_footer_type;
-    reportSettingEntity.default_download_header_type = data.default_download_header_type;
+    reportSettingEntity.default_download_footer_type =
+      data.default_download_footer_type;
+    reportSettingEntity.default_download_header_type =
+      data.default_download_header_type;
     reportSettingEntity.margin_left = data.margin_left;
     reportSettingEntity.margin_bottom = data.margin_bottom;
     reportSettingEntity.margin_right = data.margin_right;
     reportSettingEntity.margin_top = data.margin_top;
     return await this.reportPrintSettinRep.save(reportSettingEntity);
   }
-  async invoicePrintSettings(lab_id): Promise<InvoicePrintSettings | undefined> {
+  async invoicePrintSettings(
+    lab_id,
+  ): Promise<InvoicePrintSettings | undefined> {
     const invoiceSettings = new InvoicePrintSettings();
     invoiceSettings.laboratory_id = lab_id;
     invoiceSettings.updated_at = new Date();
@@ -428,21 +438,26 @@ export class AuthService {
     facilitySetting.payment_done_sms = data.payment_done_sms;
     facilitySetting.payment_done_sms = data.payment_done_sms;
     facilitySetting.payment_done_whatsapp = data.payment_done_whatsapp;
-    facilitySetting.payment_done_whatsapp_status = data.payment_done_whatsapp_status;
+    facilitySetting.payment_done_whatsapp_status =
+      data.payment_done_whatsapp_status;
     facilitySetting.registration_sms = data.registration_sms;
-    facilitySetting.reports_done_and_payment_pending_whatsapp = data.reports_done_and_payment_pending_whatsapp;
+    facilitySetting.reports_done_and_payment_pending_whatsapp =
+      data.reports_done_and_payment_pending_whatsapp;
     facilitySetting.registration_sms_status = data.registration_sms_status;
     facilitySetting.registration_whatsapp = data.registration_whatsapp;
-    facilitySetting.registration_whatsapp_status = data.registration_whatsapp_status;
-    facilitySetting.reports_done_and_payment_pending_sms = data.reports_done_and_payment_pending_sms;
-    facilitySetting.reports_done_and_payment_pending_sms_status = data.reports_done_and_payment_pending_sms_status;
+    facilitySetting.registration_whatsapp_status =
+      data.registration_whatsapp_status;
+    facilitySetting.reports_done_and_payment_pending_sms =
+      data.reports_done_and_payment_pending_sms;
+    facilitySetting.reports_done_and_payment_pending_sms_status =
+      data.reports_done_and_payment_pending_sms_status;
     facilitySetting.reports_done_sms = data.reports_done_sms;
     facilitySetting.reports_done_whatsapp = data.reports_done_whatsapp;
     facilitySetting.reports_done_sms_status = data.reports_done_sms_status;
     facilitySetting.reports_done_whatsapp = data.reports_done_whatsapp;
-    facilitySetting.reports_done_whatsapp_status = data.reports_done_whatsapp_status;
+    facilitySetting.reports_done_whatsapp_status =
+      data.reports_done_whatsapp_status;
     return await this.facilitySmsSettingRep.save(facilitySetting);
-
   }
   async getMyAddons(data, facility_id) {
     const addons = new Addons();
@@ -532,10 +547,14 @@ export class AuthService {
       body.status,
       body.portal,
     );
-    await this.labSettings(LabSettingsData, lab._id, facility._id)
-    await this.reportPrintSetting(ReportPrintSettingsData, lab._id)
+    await this.labSettings(LabSettingsData, lab._id, facility._id);
+    await this.reportPrintSetting(ReportPrintSettingsData, lab._id);
     await this.invoicePrintSettings(lab._id);
-    await this.facilitySmsSettings(FacilitySMSsettingsData, facility._id, employee._id);
+    await this.facilitySmsSettings(
+      FacilitySMSsettingsData,
+      facility._id,
+      employee._id,
+    );
     await this.getMyAddons(AddonsSettingData, facility._id);
     await this._assignEmployeeFacility(facility._id, employee._id);
     const { ...rest } = savedUser;
@@ -661,6 +680,9 @@ export class AuthService {
     portal?: string,
   ): Promise<Users> {
     delete data.terms;
+    if (data.email == '') {
+      delete data.email;
+    }
     const { password, ...rest } = data;
     const hashed = await bcrypt.hashSync(password, 10);
     const obj = {
