@@ -948,7 +948,7 @@ export class PatientsService {
 
     return [result];
 
-  
+  }
   async printAll(body: printAllRequestDto, user): Promise<any> {
     const { patient_id, appointment_id, patient_test_ids } = body;
     const data = await this.getPatientTestData(
@@ -1151,7 +1151,7 @@ export class PatientsService {
     }
     return categories;
   }
-}
+
   async getTodayPatientCount(user) {
     const laboratory: Laboratory = await this.labRep.query(`
     select * from public.laboratory
