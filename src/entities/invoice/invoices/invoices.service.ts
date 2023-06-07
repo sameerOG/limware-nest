@@ -35,7 +35,7 @@ export class InvoicesService {
     private paymentTransactionRep: Repository<PaymentTRansaction>,
     private fileHandling: FileHandling,
     private patientService: PatientsService,
-  ) {}
+  ) { }
 
   async getWithLineItems(
     invoice_id: string,
@@ -349,5 +349,14 @@ export class InvoicesService {
     this.patientService.updateAppointmentInfo(invoice.patient_id, {
       invoice_status: invoice.status,
     });
+  }
+  async todaySales(patient_id): Promise<Invoice | undefined> {
+    const data = await this.invoiceRep.query(`select paid_amount from public.invoice where patient_id = '${patient_id}'`)
+    return data;
+  }
+
+  async todayDues(patient_id): Promise<Invoice | undefined> {
+    const data = await this.invoiceRep.query(`select * from public.invoice where patient_id = '${patient_id}'`)
+    return data;
   }
 }

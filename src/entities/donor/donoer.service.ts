@@ -55,8 +55,6 @@ export class DonorsService {
     }
     async update(id, data) {
         const donor = await this.donorRepo.query(`select * from public.donor where _id = '${id}'`)
-        console.log(donor, 'this.update');
-
         if (donor) {
             donor[0].address = data?.address;
             donor[0].age = data?.age;

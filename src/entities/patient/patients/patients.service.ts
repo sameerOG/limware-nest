@@ -930,7 +930,7 @@ export class PatientsService {
     let patients = await this.patientRep
       .createQueryBuilder('patient')
       .select(
-        'patient._id,patient.age,patient.age_unit,patient.cc_facility_id,patient.gender,patient.mobile_number,patient.name,patient.registration_date,patient.unique_id, created_at',
+        'patient._id,patient.age,patient.age_unit,patient.cc_facility_id,patient.gender,patient.mobile_number,patient.name,patient.registration_date,patient.unique_id,patient.created_at',
       )
       .where('patient.facility_id = :facility_id', {
         facility_id: laboratory[0]?.facility_id,
@@ -938,15 +938,7 @@ export class PatientsService {
       .andWhere('DATE(patient.created_at) = :currentDate', { currentDate })
       .orderBy(transformSortField(sort))
       .getRawMany();
-    const result = {
-      data: patients,
-      metadata: {
-        total: patients.length,
-        page: perpage,
-      },
-    };
-
-    return [result];
+    return patients;
 
   }
   async printAll(body: printAllRequestDto, user): Promise<any> {

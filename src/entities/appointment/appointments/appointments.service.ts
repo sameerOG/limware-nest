@@ -74,7 +74,7 @@ export class AppointmentsService {
     private invoiceLineItemRep: Repository<InvoiceLineItem>,
     @InjectRepository(PatientTestParameterResult)
     private patientTestParameterResultRep: Repository<PatientTestParameterResult>,
-  ) {}
+  ) { }
 
   async add(body: AddAppointmentRequestDto, user): Promise<any> {
     const labModal = await this.labRep
@@ -1198,5 +1198,9 @@ export class AppointmentsService {
         return savedData;
       }
     }
+  }
+  async todayPendingPatients(patient_id): Promise<Appointment | undefined> {
+    const data = await this.invoiceRep.query(`select * from public.appointment where patient_id = '${patient_id}' and is_completed = false`)
+    return data;
   }
 }
