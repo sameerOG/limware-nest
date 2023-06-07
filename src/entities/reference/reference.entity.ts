@@ -7,6 +7,7 @@ import {
   OneToMany,
   JoinColumn,
   ManyToOne,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Appointment } from '../appointment/appointment.entity';
 import { UserRole } from '../user_role/user_role.entity';
@@ -44,4 +45,8 @@ export class Reference {
   @Column()
   @UpdateDateColumn()
   updated_at!: Date;
+
+  @Column()
+  @DeleteDateColumn()
+  deleted_at!: Date;
 }

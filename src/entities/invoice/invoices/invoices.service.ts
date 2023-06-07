@@ -16,6 +16,7 @@ import { FileHandling } from 'src/common/file-handling';
 import { AddDiscountRequestDto, AddPaymentRequestDto } from './dto/request.dto';
 import { PaymentTRansaction } from 'src/entities/pricing/payment_transaction.entity';
 import { PatientsService } from 'src/entities/patient/patients/patients.service';
+import { options } from 'src/common/helper/enums';
 
 @Injectable()
 export class InvoicesService {
@@ -169,21 +170,6 @@ export class InvoicesService {
     const content = await this.fileHandling.renderTemplate(reportTemplate, {
       data,
     });
-    const options = {
-      format: 'A4',
-      border: {
-        left: '7px',
-        right: '0px',
-        top: '16px',
-        bottom: '16px',
-      },
-      header: {
-        height: '9px',
-      },
-      footer: {
-        height: '10px',
-      },
-    };
     const folderPath = process.cwd() + '/src/common/uploads/invoices';
     const fileName = `${data.invoice_id}-${new Date().getTime()}.pdf`;
     const filePath = path.join(folderPath, fileName);

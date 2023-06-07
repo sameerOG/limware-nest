@@ -79,13 +79,13 @@ export class PatientTestsService {
       const testName = patientTest?.test_id?.name;
       const test_title_for_print = patientTest?.test_id?.title_for_print;
       Object.assign(patient, {
-        status: 15,
+        status: patientTest?.status,
         _id: {
           $oid: patient.patient_id,
         },
         title_for_print: test_title_for_print,
         test_name: testName,
-        lab_number: '497',
+        lab_number: '',
       });
     }
     const data = [

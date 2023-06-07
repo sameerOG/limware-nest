@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { FileHandling } from 'src/common/file-handling';
 import { Appointment } from 'src/entities/appointment/appointment.entity';
 import { Employee } from 'src/entities/employee/employee.entity';
 import { EmployeeFacility } from 'src/entities/employee/employee_facility.entity';
@@ -40,7 +41,7 @@ import { PatientsService } from './patients.service';
     ]),
   ],
   controllers: [PatientsController],
-  providers: [PatientsService],
+  providers: [PatientsService, FileHandling],
   exports: [PatientsService],
 })
 export class PatientsModule {}
