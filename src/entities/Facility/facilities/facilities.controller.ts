@@ -190,7 +190,7 @@ export class FacilitiesController {
       const token = authHeader.split(' ')[1];
       const loggedInUser = jwtDecode(token);
       const model = await this.facilityService.getFacility(loggedInUser);
-      const id = model?._id.toString();
+      const id = model._id.toString();
       const facilityDirectory = `src/common/uploads/facility`;
       const readfiles = await fs.readdir(facilityDirectory);
       let filePath;

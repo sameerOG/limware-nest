@@ -25,8 +25,8 @@ export class Donor {
   @Column()
   age!: number;
 
-  @Column()
-  unique_id!: number;
+  @Column({ unique: true, default: null })
+  unique_id!: string;
 
   @Column()
   age_unit!: string;
@@ -51,7 +51,7 @@ export class Donor {
   @Column()
   mobile_number!: string;
 
-  @Column()
+  @Column({default: null})
   registration_date!: Date;
 
   @Column()

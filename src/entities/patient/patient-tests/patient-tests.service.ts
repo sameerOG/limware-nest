@@ -16,7 +16,7 @@ export class PatientTestsService {
     private facilityRep: Repository<Facility>,
     @InjectRepository(Patient)
     private patientRep: Repository<Patient>,
-  ) {}
+  ) { }
 
   async updateStatus(
     id: string,
@@ -100,5 +100,17 @@ export class PatientTestsService {
       },
     ];
     return data;
+  }
+
+  async getPatientByIdAndUpdate(patient_test_id, donor_id): Promise<PatientTest | any> {
+    const patientTest = await this.patientTestRep.findOne({ where: { test_id: patient_test_id } })
+    if (patientTest) {
+      patientTest.donor_id = donor_id;
+      return await this.patientTestRep.save(patientTest)
+    } else {
+      const message = 'Record not found for this patient'
+      return message;
+    }
+
   }
 }
