@@ -14,9 +14,9 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
   app.enableCors();
   app.use(cookieParser());
-
+  app.setGlobalPrefix('api');
   await app.listen(port, () => {
-    console.log("[API UP]", port);
+    console.log('[API UP]', port);
   });
 }
 bootstrap();
