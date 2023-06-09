@@ -238,7 +238,7 @@ export class FacilitiesService {
 
   async findAndUpdate(facility_id, data: FacilityDto, path): Promise<any> {
     try {
-      const facility = await this.facilityRep.findOne({ where: { _id: facility_id } })
+      const facility = await this.facilityRep.findOne({ where: { _id: facility_id } })      
       if (facility) {        
         facility.unique_id = data?.unique_id;
         facility.name = data?.name;
@@ -251,7 +251,7 @@ export class FacilitiesService {
         facility.type = data?.type;
         if (path) { 
           facility.facility_image_name = path;
-        }
+        } 
         return await this.facilityRep.save(facility)
       }
     }

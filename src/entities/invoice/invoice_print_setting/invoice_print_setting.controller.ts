@@ -30,7 +30,7 @@ export class InvoicePrintSettingsController {
             const loggedInUser: any = jwtDecode(token);
             const facility: any = await this.facilityService.getSingleFacilityById(loggedInUser.facility_id);
             const laboratory = await this.laboratoriesService.getLabForSetting(facility?._id);
-            const InvoicePrintSettings = await this.invoicePrintService.getReportPrintSettings(laboratory?.laboratory_id);
+            const InvoicePrintSettings = await this.invoicePrintService.getReportPrintSettings(laboratory?._id);
             response.status(200).send(InvoicePrintSettings);
             return InvoicePrintSettings;
         } catch (err) {
@@ -73,7 +73,7 @@ export class InvoicePrintSettingsController {
                 const facility: any = await this.facilityService.getSingleFacilityById(loggedInUser.facility_id);
                 const laboratory = await this.laboratoriesService.getLabForSetting(facility?._id);
                 const type = 'invoices';
-                const name = laboratory?.laboratory_id;
+                const name = laboratory?._id;
                 const position = 'logo';
                 const obj = {
                     type: type,
@@ -106,7 +106,7 @@ export class InvoicePrintSettingsController {
         const loggedInUser: any = jwtDecode(token);
         const facility: any = await this.facilityService.getSingleFacilityById(loggedInUser.facility_id);
         const laboratory = await this.laboratoriesService.getLabForSetting(facility?._id);
-        const id = laboratory?.laboratory_id;
+        const id = laboratory?._id;
         const facilityDirectory = `src/common/uploads/invoices/${id}/logo`;
         const readfiles = await fs.readdir(facilityDirectory);    
         let filePath;
