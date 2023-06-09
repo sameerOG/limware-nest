@@ -14,10 +14,21 @@ export class FacilitySmsSettingService {
   return await this.facilitySmsRep.findOne({where: {facility_id: facility_id}})
   }
   async updateFacilitySmsSetting(data, facility_id){
-    const smsSettings = await this.facilitySmsRep.findOne({where:{facility_id: facility_id}})
+    const smsSettings = await this.facilitySmsRep.findOne({where:{facility_id: facility_id}}); 
     if(smsSettings){
-        {/** need to done */}
+        if(data.reports_done_and_payment_pending_sms != undefined && data.reports_done_and_payment_pending_sms_status != undefined){
+          smsSettings.reports_done_and_payment_pending_sms = data.reports_done_and_payment_pending_sms;
+          smsSettings.reports_done_and_payment_pending_sms_status = data.reports_done_and_payment_pending_sms_status
+          return await this.facilitySmsRep.save(smsSettings)
+        }
+        if(data.reports_done_sms != undefined && data.reports_done_sms_status != undefined){
+          smsSettings.reports_done_sms = data.reports_done_sms;
+          smsSettings.reports_done_sms_status = data.reports_done_sms_status;
+          return await this.facilitySmsRep.save(smsSettings)
+        }
     }
-  return smsSettings;
+    else{
+      return {message: 'settings not updated'}
+    }
   }
   }

@@ -377,6 +377,15 @@ export class AuthService {
         employee,
         body,
       );
+      await this.labSettings(LabSettingsData, lab._id, facility._id);
+      await this.reportPrintSetting(ReportPrintSettingsData, lab._id);
+      await this.invoicePrintSettings(lab._id);
+      await this.facilitySmsSettings(
+        FacilitySMSsettingsData,
+        facility._id,
+        employee._id,
+      );
+      await this.getMyAddons(AddonsSettingData, facility._id);
       await this._assignEmployeeFacility(facility._id, employee._id);
       const otpCode = await this.generateVerificationPin(savedUser._id);
 
@@ -389,14 +398,15 @@ export class AuthService {
     }
   }
   async labSettings(data, lab_id, facility_id): Promise<LaboratorySetting> {
+    console.log('Create a account Api ***************');
+    
     const labSettingEntity = new LaboratorySetting();
     labSettingEntity.created_at = new Date();
     labSettingEntity.facility_id = facility_id;
     labSettingEntity.updated_at = new Date();
     labSettingEntity.laboratory_id = lab_id;
-    labSettingEntity.print_empty_result = data.print_empty_result;
-    labSettingEntity.require_results_for_mark_as_done =
-      data.require_results_for_mark_as_done;
+    labSettingEntity.print_empty_result = false;
+    labSettingEntity.require_results_for_mark_as_done = false;
     return await this.labSettingsRep.save(labSettingEntity);
   }
   async reportPrintSetting(data, lab_id): Promise<ReportPrintSetting> {
@@ -434,6 +444,9 @@ export class AuthService {
     facilitySetting.employee_id = employee_id;
     facilitySetting.payment_done_sms = data.payment_done_sms;
     facilitySetting.payment_done_sms = data.payment_done_sms;
+    facilitySetting.payment_done_sms_status = data.payment_done_sms_status;
+    facilitySetting.reports_done_and_payment_pending_whatsapp_status = data.reports_done_and_payment_pending_whatsapp_status;
+    facilitySetting.reports_done_whatsapp_status = data.reports_done_whatsapp_status;
     facilitySetting.payment_done_whatsapp = data.payment_done_whatsapp;
     facilitySetting.payment_done_whatsapp_status =
       data.payment_done_whatsapp_status;
@@ -452,8 +465,7 @@ export class AuthService {
     facilitySetting.reports_done_whatsapp = data.reports_done_whatsapp;
     facilitySetting.reports_done_sms_status = data.reports_done_sms_status;
     facilitySetting.reports_done_whatsapp = data.reports_done_whatsapp;
-    facilitySetting.reports_done_whatsapp_status =
-      data.reports_done_whatsapp_status;
+    facilitySetting.reports_done_whatsapp_status = data.reports_done_whatsapp_status;
     return await this.facilitySmsSettingRep.save(facilitySetting);
   }
   async getMyAddons(data, facility_id) {

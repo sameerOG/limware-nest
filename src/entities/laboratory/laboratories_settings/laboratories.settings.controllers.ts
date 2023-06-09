@@ -25,9 +25,9 @@ export class LaboratorySettingsController {
             const token = authHeader.split(' ')[1];
             const loggedInUser: any = jwtDecode(token);
             const facility: any = await this.facilityService.getSingleFacilityById(loggedInUser?.facility_id);
-            const laboratory: Laboratory = await this.labService.getLabForSetting(facility?._id);
-            res.status(200).send(laboratory)
-            return laboratory;
+            const laboratorySetting = await this.labService.getSingleLabSettings(facility?._id);
+            res.status(200).send(laboratorySetting)
+            return laboratorySetting;
         }
         catch (e) {
             res.status(404).send({ message: 'Facility Not Found' })
@@ -46,7 +46,10 @@ export class LaboratorySettingsController {
             const token = authHeader.split(' ')[1];
             const loggedInUser: any = jwtDecode(token);
             const facility: any = await this.facilityService.getSingleFacilityById(loggedInUser?.facility_id);
-            const settings: any = await this.labService.updateLabSettings(data, facility?._id);
+            const laboratory = await this.labService.getLab(facility._id);
+            const settings: any = await this.labService.updateLabSettings(data, facility?._id, laboratory._id);
+            console.log(settings, 'tum hi ana');
+            
             response.status(201).send(settings);
             return settings;
         }

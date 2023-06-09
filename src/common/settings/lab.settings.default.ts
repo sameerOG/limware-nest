@@ -30,7 +30,7 @@ export const FacilitySMSsettingsData = {
     registration_whatsapp_status: true,
     payment_done_whatsapp_status: true,
     reports_done_and_payment_pending_whatsapp_status: true,
-
+    reports_done_whatsapp_status: true
 
 }
 

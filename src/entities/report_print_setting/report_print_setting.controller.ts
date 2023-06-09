@@ -210,7 +210,7 @@ export class LaboratoriesController {
           facility?._id,
         );
         const type = 'laboratories';
-        const name = laboratory?.laboratory_id;
+        const name = laboratory?._id;
         const position = 'header';
         const obj = {
           type: type,
@@ -255,7 +255,7 @@ export class LaboratoriesController {
           facility?._id,
         );
         const type = 'laboratories';
-        const name = laboratory?.laboratory_id;
+        const name = laboratory?._id;
         const position = 'footer';
         const obj = {
           type: type,
@@ -295,7 +295,7 @@ export class LaboratoriesController {
       const laboratory = await this.laboratoriesService.getLabForSetting(
         facility?._id,
       );
-      const id = laboratory?.laboratory_id;
+      const id = laboratory?._id;
       const facilityDirectory = `src/common/uploads/laboratories/${id}/header`;
       const readfiles = await fs.readdir(facilityDirectory);
       let filePath;
@@ -326,9 +326,9 @@ export class LaboratoriesController {
         loggedInUser.facility_id,
       );
       const laboratory = await this.laboratoriesService.getLabForSetting(
-        facility?._id,
+        facility?._id
       );
-      const id = laboratory?.laboratory_id;
+      const id = laboratory?._id;
       const facilityDirectory = `src/common/uploads/laboratories/${id}/footer`;
       const readfiles = await fs.readdir(facilityDirectory);
       let filePath;

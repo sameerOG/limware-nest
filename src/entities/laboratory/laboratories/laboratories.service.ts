@@ -16,8 +16,8 @@ export class LaboratoriesService {
     @InjectRepository(Laboratory)
     private labRep: Repository<Laboratory>,
     @InjectRepository(LaboratorySetting)
-    private labSetRep: Repository<LaboratorySetting> 
-  ) {}
+    private labSetRep: Repository<LaboratorySetting>,
+  ) { }
 
   async getAll(
     skip: number,
@@ -172,12 +172,12 @@ export class LaboratoriesService {
       return err;
     }
   }
-  async getLab(facility_id :any): Promise<any>{  
+  async getLab(facility_id: any): Promise<any> {
     return await this.labRep.createQueryBuilder("laboratory")
-    .select("laboratory.*")
-    .where("laboratory.facility_id = :facility_id",{facility_id:facility_id})
-    // .leftJoin('facility','f','f._id=laboratory.facility_id')
-    .getRawOne();
+      .select("laboratory.*")
+      .where("laboratory.facility_id = :facility_id", { facility_id: facility_id })
+      // .leftJoin('facility','f','f._id=laboratory.facility_id')
+      .getRawOne();
   }
 
   // async getLabForSetting(facility_id: any): Promise<any>{
@@ -188,22 +188,28 @@ export class LaboratoriesService {
   //   .getRawOne();
   // }
 
-  async getLabForSetting(facility_id): Promise<LaboratorySetting | any> {
-    return await this.labSetRep.findOne({where: {facility_id: facility_id}})
+  async getLabForSetting(facility_id): Promise<Laboratory | any> {
+    const data = await this.labRep.query(`select _id from public.laboratory where facility_id = '${facility_id}'`)
+    return data[0];
   }
-
-  async updateLabSettings(data: LaboratoriesSettingsDto, id): Promise<LaboratorySetting | undefined>{
-    const settings = await this.labSetRep.findOne({where: {facility_id: id}});
-    if(settings.print_empty_result){
-      settings.print_empty_result = data.print_empty_result;
-      return await this.labSetRep.save(settings); 
-    }
-    if(settings.require_results_for_mark_as_done){
-      settings.require_results_for_mark_as_done = data.print_empty_result;
-      return await this.labSetRep.save(settings); 
+  async getSingleLabSettings(facility_id): Promise<LaboratorySetting | any> {
+    const data = await this.labSetRep.query(`select * from public.laboratory_setting where facility_id = '${facility_id}'`)
+    return data[0];
+  }
+  async updateLabSettings(data: LaboratoriesSettingsDto, facility_id, lab_id): Promise<LaboratorySetting | undefined> {
+    const settings = await this.labSetRep.findOne({ where: { facility_id: facility_id } });
+    if (settings) {      
+      if (data.print_empty_result != undefined) {
+        settings.print_empty_result = data.print_empty_result;
+        return await this.labSetRep.save(settings);
+      }
+      if (data.require_results_for_mark_as_done != undefined) {
+        settings.require_results_for_mark_as_done = data.require_results_for_mark_as_done;
+        return await this.labSetRep.save(settings);
+      }
     }
   }
-  async getLabSettingForSaveTest(user):Promise<LaboratorySetting> {
+  async getLabSettingForSaveTest(user): Promise<LaboratorySetting> {
     const labModel = await this.labRep
       .createQueryBuilder('laboratory')
       .select('laboratory.*')
@@ -211,13 +217,13 @@ export class LaboratoriesService {
         facility_id: user.facility_id,
       })
       .getRawOne();
-      if(labModel) {
-        const laboratorySetting = await this.labSetRep.createQueryBuilder("laboratory_setting")
+    if (labModel) {
+      const laboratorySetting = await this.labSetRep.createQueryBuilder("laboratory_setting")
         .select("laboratory_setting.*")
-        .where("laboratory_setting.laboratory_id = :laboratory_id",{laboratory_id:labModel._id})
+        .where("laboratory_setting.laboratory_id = :laboratory_id", { laboratory_id: labModel._id })
         .getRawOne()
-        return laboratorySetting
-      }
+      return laboratorySetting
+    }
   }
 
   async delete(id: string): Promise<any> {
