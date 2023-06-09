@@ -66,7 +66,7 @@ export class PatientsService {
     @InjectRepository(EmployeeFacilityDepartment)
     private empFacilityDepartmentRep: Repository<EmployeeFacilityDepartment>,
     private fileHandling: FileHandling,
-  ) { }
+  ) {}
 
   async getAll(
     user,
@@ -917,10 +917,12 @@ export class PatientsService {
     return model;
   }
 
-  async getTodayPatients(loggedInUser,
+  async getTodayPatients(
+    loggedInUser,
     perpage,
     page,
-    sort,): Promise<PatientListResponseDto[]> {
+    sort,
+  ): Promise<PatientListResponseDto[]> {
     const laboratory: Laboratory = await this.labRep.query(`
     select * from public.laboratory
     where facility_id = '${loggedInUser.facility_id}'
@@ -939,7 +941,6 @@ export class PatientsService {
       .orderBy(transformSortField(sort))
       .getRawMany();
     return patients;
-
   }
   async printAll(body: printAllRequestDto, user): Promise<any> {
     const { patient_id, appointment_id, patient_test_ids } = body;
@@ -1163,7 +1164,5 @@ export class PatientsService {
       .getRawMany();
 
     return patients;
-
   }
-
 }

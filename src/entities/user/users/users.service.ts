@@ -26,7 +26,7 @@ export class UsersService {
     @InjectRepository(Role) private rolesRep: Repository<Role>,
     @InjectRepository(Employee) private empRep: Repository<Employee>,
     @InjectRepository(Laboratory) private labRep: Repository<Laboratory>,
-  ) { }
+  ) {}
 
   async getUsers(
     user,
@@ -225,6 +225,12 @@ export class UsersService {
 
   async addUser(data: UserRequestDto): Promise<SingleUserDto> {
     try {
+      if (data.email === '') {
+        delete data.email;
+      }
+      if (data.portal == 'administration') {
+        Object.assign(data, { isSuperUser: 1 });
+      }
       const hashed = await bcrypt.hashSync(data.password, SALT_ROUNDS);
       data.password = hashed;
       data.password_hash = hashed;
@@ -241,6 +247,9 @@ export class UsersService {
 
   async addFacilityUser(data: any, loggedInUser): Promise<SingleUserDto> {
     try {
+      if (data.email === '') {
+        delete data.email;
+      }
       const savedUser = await this.usersRep.findOne({
         where: { _id: loggedInUser._id },
         relations: ['customer_id', 'facility_id', 'employee_id'],

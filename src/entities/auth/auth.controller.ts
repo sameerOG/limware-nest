@@ -17,12 +17,20 @@ import { Response } from 'express';
 import {
   AuthRequest,
   ChangePasswordRequest,
+  checkUserVerified,
+  GenerateVerificationPinRequest,
   LoginIntoFacility,
   ProfileRequest,
   RegisterRequest,
   ValidateOtpRequest,
 } from './dto/request.dto';
-import { AuthDto, AuthRegisterDto, ProfileResponse } from './dto/response.dto';
+import {
+  AuthDto,
+  AuthRegisterDto,
+  GenerateVerificationPinResponse,
+  ProfileResponse,
+  UserVeifiedResponse,
+} from './dto/response.dto';
 import jwtDecode from 'jwt-decode';
 import { diskStorage } from 'multer';
 import { extname } from 'path';
@@ -223,6 +231,44 @@ export class AuthController {
     } catch (err) {
       console.log('err in catch', err);
       response.status(422).send({ error: err, message: 'User not added' });
+    }
+  }
+
+  @Post('/registrations/check-if-user-verified')
+  async checkIfUserVerified(
+    @Res() response: Response,
+    @Body() body: checkUserVerified,
+  ): Promise<UserVeifiedResponse> {
+    try {
+      let data = await this.authService.checkIfUserVerified(body);
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        throw new HttpException({ err: true, messages: 'User not added' }, 422);
+      }
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({ error: err, message: 'User not found' });
+    }
+  }
+
+  @Post('/registrations/generate-verification-pin')
+  async generateVerificationPin(
+    @Res() response: Response,
+    @Body() body: GenerateVerificationPinRequest,
+  ): Promise<GenerateVerificationPinResponse> {
+    try {
+      let data = await this.authService.generateVerificationPin(body._id);
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        throw new HttpException({ err: true, messages: 'User not found' }, 422);
+      }
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({ error: err, message: 'User not found' });
     }
   }
 
