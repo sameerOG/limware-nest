@@ -67,7 +67,7 @@ export class Users {
   @JoinColumn({ name: 'facility_id' })
   facility_id!: Facility;
 
-  @Column({ unique: true, default: null })
+  @Column({ default: null })
   email!: string;
 
   @Column({ unique: true })

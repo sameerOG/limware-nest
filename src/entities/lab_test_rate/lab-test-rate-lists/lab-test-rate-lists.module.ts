@@ -6,6 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 import { LabTestRateList } from '../lab_test_rate_list.entity';
 import { LabTestRateListItem } from '../lab_test_rate_list_item.entity';
+import { FileHandling } from 'src/common/file-handling';
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { LabTestRateListItem } from '../lab_test_rate_list_item.entity';
     ]),
   ],
   controllers: [LabTestRateListsController],
-  providers: [LabTestRateListsService],
+  providers: [LabTestRateListsService, FileHandling],
 })
 export class LabTestRateListsModule {}

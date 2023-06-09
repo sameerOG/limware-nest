@@ -1,0 +1,77 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <style>
+      .header {
+        border-bottom: 1px dotted gray;
+        padding-bottom: 10px;
+      }
+
+      .rate-list-title-block {
+        float: left;
+        width: 50%;
+      }
+
+      .rate-list-title {
+        font-size: 24px;
+      }
+
+      .lab-name {
+        font-size: 13px;
+      }
+
+      .rate-list-name {
+        font-size: 11px;
+      }
+
+      .rate-list-item {
+        width: 45%;
+        padding-top: 3px;
+      }
+      .rate-list-item .name {
+        width: 70%;
+        float: left;
+      }
+
+      .rate-list-item .price {
+        text-align: right;
+        width: 20%;
+        float: right;
+      }
+
+      .font-10 {
+        font-size: 9x;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="rate-list-title-block">
+        <div class="rate-list-title">
+          Rate List
+          <span class="rate-list-name"> (<%= model['name'] %>) </span>
+        </div>
+        <div class="lab-name"><%= labModel['name'] %></div>
+      </div>
+    </div>
+
+    <!-- Invoice -->
+    <div>
+      <div class="font-10">
+        <% let counter = 1; %> <% for (const rlItem of model.items) { %> <% let
+        float = 'left'; %> <% if (counter % 2 === 0) { %> <% float = 'right'; %>
+        <% } %>
+        <div class="rate-list-item">
+          <div class="name"><%= rlItem.test.name %></div>
+          <div class="price"><%= rlItem.price %></div>
+        </div>
+        <% if (counter % 2 === 0) { %>
+        <div style="clear: both"></div>
+        <% } %> <% counter++; %> <% } %>
+      </div>
+    </div>
+  </body>
+</html>

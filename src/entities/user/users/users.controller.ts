@@ -71,7 +71,9 @@ export class UsersController {
     try {
       const token = authHeader.split(' ')[1];
       const loggedInUser: any = jwtDecode(token);
-      const data = await this.userService._getEmployeeFacilities(loggedInUser.facility_id);    
+      const data = await this.userService._getEmployeeFacilities(
+        loggedInUser.facility_id,
+      );
       response.status(200).send(data);
     } catch (err) {
       console.log('err in catch', err);
@@ -124,7 +126,7 @@ export class UsersController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({ error: err, message: 'User not updated' });
+      response.status(422).send(err);
     }
   }
 
@@ -176,9 +178,7 @@ export class UsersController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response
-        .status(422)
-        .send({ error: err, message: 'Facility User not added' });
+      response.status(422).send(err);
     }
   }
 

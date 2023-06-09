@@ -11,7 +11,6 @@ export class FileHandling {
     ); // Update the path to your template file
     const templateContent = fs.readFileSync(templatePath, 'utf-8');
     let templateData = data; // Create an object with the labName variable
-    console.log('templateData', templateData);
     return ejs.render(templateContent, templateData);
   }
 

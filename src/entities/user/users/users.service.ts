@@ -56,7 +56,6 @@ export class UsersService {
     let filterUsers;
     if (user.portal === 'limware') {
       filterUsers = users.filter((info) => {
-        console.log('info', info);
         return info.facility_id?._id == user.facility_id;
       });
     } else {
@@ -76,8 +75,6 @@ export class UsersService {
         .where('employee.user_id = :user_id', { user_id: user._id })
         .getRawOne();
 
-      console.log('employee', employee);
-
       const employeeFacility = await this.empFacilityRep
         .createQueryBuilder('employee_facility')
         .select('employee_facility.*')
@@ -88,10 +85,8 @@ export class UsersService {
           facility_id: user.facility_id,
         })
         .getRawOne();
-      console.log('after');
 
       const permissions = [];
-      console.log('employeeFacility', employeeFacility);
       const role_ids = employeeFacility.role_ids
         ? employeeFacility.role_ids
         : [];
@@ -192,6 +187,40 @@ export class UsersService {
 
   async updateUser(id: string, data: UserRequestDto): Promise<SingleUserDto> {
     try {
+      const user = await this.usersRep.findOne({
+        where: [
+          {
+            mobile_number: data.mobile_number,
+          },
+          {
+            username: data.username,
+          },
+        ],
+      });
+      if (user) {
+        if (user._id !== id) {
+          // Another user already has the same username or mobile_number
+          const errors = [];
+
+          if (user.username === data.username) {
+            errors.push({
+              field: 'username',
+              message: `Username ${data.username} has already been taken.`,
+            });
+          }
+
+          if (user.mobile_number === data.mobile_number) {
+            errors.push({
+              field: 'mobile_number',
+              message: `Mobile Number ${data.mobile_number} has already been taken.`,
+            });
+          }
+
+          if (errors.length > 0) {
+            throw errors;
+          }
+        }
+      }
       await this.usersRep.update(id, data);
       const savedUser = await this.usersRep.findOne({
         select: [
@@ -219,7 +248,7 @@ export class UsersService {
         created_at: savedUser.created_at.getTime(), // set created_at field as timestamp
       });
     } catch (err) {
-      return err;
+      throw err;
     }
   }
 
@@ -251,39 +280,77 @@ export class UsersService {
         delete data.email;
       }
       const savedUser = await this.usersRep.findOne({
-        where: { _id: loggedInUser._id },
+        where: [
+          { username: data.username },
+          { mobile_number: data.mobile_number },
+        ],
         relations: ['customer_id', 'facility_id', 'employee_id'],
       });
-      const hashed = await bcrypt.hashSync(data.password, SALT_ROUNDS);
-      data.password = hashed;
-      data.password_hash = hashed;
-      if (savedUser?.portal === 'limware') {
-        data.customer_id = savedUser?.customer_id;
-        data.facility_id = savedUser.facility_id;
-      }
-      const user = await this.usersRep.save(data);
-      if (user) {
-        const employeeModel = await this.empRep.findOne({
-          where: { _id: user.employee_id },
+      if (savedUser) {
+        if (
+          savedUser.username === data.username &&
+          savedUser.mobile_number === data.mobile_number
+        ) {
+          throw [
+            {
+              field: 'username',
+              message: `Username ${data.username} has already been taken.`,
+            },
+            {
+              field: 'mobile_number',
+              message: `Mobile Number ${data.mobile_number} has already been taken.`,
+            },
+          ];
+        } else if (savedUser.username === data.username) {
+          // Only username matches
+          throw [
+            {
+              field: 'username',
+              message: `Username ${data.username} has already been taken.`,
+            },
+          ];
+        } else if (savedUser.mobile_number === data.mobile_number) {
+          // Only mobile_number matches
+          throw [
+            {
+              field: 'mobile_number',
+              message: `Mobile Number ${data.mobile_number} has already been taken.`,
+            },
+          ];
+        }
+      } else {
+        const hashed = await bcrypt.hashSync(data.password, SALT_ROUNDS);
+        data.password = hashed;
+        data.password_hash = hashed;
+        if (data?.portal === 'limware' || loggedInUser.portal === 'limware') {
+          data.customer_id = data?.customer_id;
+          data.facility_id = data.facility_id;
+        }
+        const user = await this.usersRep.save(data);
+        if (user) {
+          const employeeModel = await this.empRep.findOne({
+            where: { _id: user.employee_id },
+          });
+          const { full_name, email, mobile_number, status, address, city } =
+            user;
+          employeeModel.user_id = user;
+          employeeModel.name = full_name;
+          employeeModel.email = email;
+          employeeModel.mobile_number = mobile_number;
+          employeeModel.status = status;
+          employeeModel.address = address;
+          employeeModel.city = city;
+          await this.empRep.update(employeeModel._id, employeeModel);
+        }
+        const { ...rest } = user;
+        return new SingleFacilityUserDto({
+          ...rest,
+          created_at: user.created_at.getTime(),
         });
-        const { full_name, email, mobile_number, status, address, city } = user;
-        employeeModel.user_id = user;
-        employeeModel.name = full_name;
-        employeeModel.email = email;
-        employeeModel.mobile_number = mobile_number;
-        employeeModel.status = status;
-        employeeModel.address = address;
-        employeeModel.city = city;
-        await this.empRep.update(employeeModel._id, employeeModel);
       }
-      const { ...rest } = user;
-      return new SingleFacilityUserDto({
-        ...rest,
-        created_at: user.created_at.getTime(),
-      });
     } catch (err) {
       console.log('err', err);
-      return err;
+      throw err;
     }
   }
 
