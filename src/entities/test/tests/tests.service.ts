@@ -23,7 +23,7 @@ import { TestCategory } from '../test_category.entity';
 import { TestGroup } from '../test_group.entity';
 import { TestNormalRange } from '../test_normal_range.entity';
 import { TestParameter } from '../test_parameter.entity';
-
+import { isEmpty } from 'lodash';
 @Injectable()
 export class TestsService {
   constructor(
@@ -457,9 +457,10 @@ export class TestsService {
       if (normal_ranges?.length > 0) {
         //normal ranges logic here
         normal_ranges.forEach(async (range) => {
-          if (range.min_value === '') {
+          if (isEmpty(range.min_value)) {
             delete range.min_value;
-          } else if (range.max_value === '') {
+          }
+          if (isEmpty(range.max_value)) {
             delete range.max_value;
           }
           Object.assign(range, { test_id: savedTest._id });

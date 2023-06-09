@@ -126,6 +126,39 @@ export class LabTestRateListsController {
     }
   }
 
+  @Get('/print-rate-list')
+  async printRateList(
+    @Query() query,
+    @Res() response: Response,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<any> {
+    try {
+      const id = query['id'];
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const data = await this.labTestRateListsService.printRateList(
+        id,
+        loggedInUser,
+      );
+      if (data) {
+        response.setHeader('Content-Type', 'application/pdf');
+        response.status(200).send(data);
+        return data;
+      } else {
+        throw new HttpException(
+          { err: true, messages: 'Lab Test Rate not found' },
+          422,
+        );
+      }
+    } catch (err) {
+      console.log(err);
+      throw new HttpException(
+        { err: err, messages: 'Lab Test Rate not found' },
+        422,
+      );
+    }
+  }
+
   @Get('/:id')
   async findOne(
     @Param('id') id: string,

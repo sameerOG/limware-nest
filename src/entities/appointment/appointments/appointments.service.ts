@@ -74,7 +74,7 @@ export class AppointmentsService {
     private invoiceLineItemRep: Repository<InvoiceLineItem>,
     @InjectRepository(PatientTestParameterResult)
     private patientTestParameterResultRep: Repository<PatientTestParameterResult>,
-  ) { }
+  ) {}
 
   async add(body: AddAppointmentRequestDto, user): Promise<any> {
     const labModal = await this.labRep
@@ -374,7 +374,8 @@ export class AppointmentsService {
     appointment_id: string,
     data: AddAppointmentRequestDto,
   ): Promise<Invoice> {
-    const { total_amount, discount_amount, invoiceLineItems } = data;
+    const { total_amount, discount_amount, invoiceLineItems, paid_amount } =
+      data;
     let total_payable_amount = total_amount - discount_amount;
     let invoiceAttributes: any = {
       facility_id,
@@ -388,8 +389,8 @@ export class AppointmentsService {
       total_amount,
       discount_amount,
       total_payable_amount,
-      paid_amount: 0,
-      due_amount: total_payable_amount,
+      paid_amount: paid_amount,
+      due_amount: total_payable_amount - paid_amount,
     };
 
     const savedData = await this.invoiceRep.save(invoiceAttributes);
@@ -719,7 +720,7 @@ export class AppointmentsService {
         .getRawMany();
 
       for (let j = 0; j < tests.length; j++) {
-        if (!tests[i].parametric_only) {
+        if (!tests[i]?.parametric_only) {
           let testToPush = {
             _id: tests[j]._id,
             name: tests[j].name,
@@ -1200,7 +1201,9 @@ export class AppointmentsService {
     }
   }
   async todayPendingPatients(patient_id): Promise<Appointment | undefined> {
-    const data = await this.invoiceRep.query(`select * from public.appointment where patient_id = '${patient_id}' and is_completed = false`)
+    const data = await this.invoiceRep.query(
+      `select * from public.appointment where patient_id = '${patient_id}' and is_completed = false`,
+    );
     return data;
   }
 }

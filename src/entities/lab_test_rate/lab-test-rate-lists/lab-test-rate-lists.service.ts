@@ -4,6 +4,7 @@ import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 import { Test } from 'src/entities/test/test.entity';
 import { Repository } from 'typeorm';
+import * as path from 'path';
 import { LabTestRateList } from '../lab_test_rate_list.entity';
 import { LabTestRateListItem } from '../lab_test_rate_list_item.entity';
 import { LabTestRateListRequestDto } from './dto/request.dto';
@@ -12,6 +13,8 @@ import {
   RateListCreateResponseDto,
   RateListResponseDto,
 } from './dto/response.dto';
+import { FileHandling } from 'src/common/file-handling';
+import { options } from 'src/common/helper/enums';
 
 @Injectable()
 export class LabTestRateListsService {
@@ -24,7 +27,83 @@ export class LabTestRateListsService {
     private labTestRateListRep: Repository<LabTestRateList>,
     @InjectRepository(LabTestRateListItem)
     private labTestRateListItemRep: Repository<LabTestRateListItem>,
+    private fileHandling: FileHandling,
   ) {}
+
+  async printRateList(id: string, user): Promise<any> {
+    const labModel = await this.labRep
+      .createQueryBuilder('laboratory')
+      .select('laboratory.*')
+      .where('laboratory.facility_id = :facility_id', {
+        facility_id: user.facility_id,
+      })
+      .getRawOne();
+    let laboratory_id = labModel?._id;
+    let facility_id = user.facility_id;
+    if (labModel?.type == 'cc') {
+      const parentLabModel = await this.labRep
+        .createQueryBuilder('laboratory')
+        .select('laboratory.*')
+        .where('laboratory._id = :_id', {
+          _id: labModel.parent_lab_id,
+        })
+        .getRawOne();
+      facility_id = parentLabModel?.facility_id;
+      laboratory_id = parentLabModel?._id;
+    }
+
+    const labTestRateList = await this.labTestRateListRep
+      .createQueryBuilder('lab_test_rate_list')
+      .select('lab_test_rate_list.*')
+      .where('lab_test_rate_list._id = :_id', { _id: id })
+      .andWhere('lab_test_rate_list.facility_id = :facility_id', {
+        facility_id,
+      })
+      .andWhere('lab_test_rate_list.laboratory_id = :laboratory_id', {
+        laboratory_id,
+      })
+      .getRawOne();
+
+    console.log('labTestRateList', labTestRateList);
+
+    const labTestRateListItem = await this.labTestRateListItemRep
+      .createQueryBuilder('lab_test_rate_list_item')
+      .select('lab_test_rate_list_item.price,lab_test_rate_list_item.test_id')
+      .where(
+        'lab_test_rate_list_item.lab_test_rate_list_id = :lab_test_rate_list_id',
+        { lab_test_rate_list_id: labTestRateList?._id },
+      )
+      .getRawMany();
+
+    let items = [];
+    for (let i = 0; i < labTestRateListItem.length; i++) {
+      const savedTest = await this.testRep.findOne({
+        where: { _id: labTestRateListItem[i].test_id },
+      });
+      let test = {
+        name: savedTest.name,
+      };
+      items.push({ test, price: labTestRateListItem[i].price });
+    }
+    Object.assign(labTestRateList, { items: items });
+
+    let payload: any = {
+      model: labTestRateList,
+      labModel,
+    };
+    console.log('payload', JSON.stringify(payload));
+    const reportTemplate = 'lab_test_rate_list';
+    const content = await this.fileHandling.renderTemplate(
+      reportTemplate,
+      payload,
+    );
+    const folderPath = process.cwd() + '/src/common/uploads/invoices';
+    const fileName = `${
+      labTestRateList?._id
+    }-lab-test-rate-list-${new Date().getTime()}.pdf`;
+    const filePath = path.join(folderPath, fileName);
+    return await this.fileHandling.generatePdf(options, content, filePath);
+  }
 
   async create(
     body: LabTestRateListRequestDto,
@@ -141,7 +220,7 @@ export class LabTestRateListsService {
           'lab_test_rate_list._id,lab_test_rate_list.type,lab_test_rate_list.facility_id',
         )
         .where('lab_test_rate_list.facility_id = :facility_id', { facility_id })
-        .andWhere('lab_test_rate_list.status = :status', { status: 1 }) //confirm active status
+        // .andWhere('lab_test_rate_list.status = :status', { status: 1 }) //confirm active status
         .andWhere('lab_test_rate_list.name LIKE :name', {
           name: `%${filter['name']}%`,
         })
@@ -156,7 +235,7 @@ export class LabTestRateListsService {
           'lab_test_rate_list._id,lab_test_rate_list.name,lab_test_rate_list.facility_id',
         )
         .where('lab_test_rate_list.facility_id = :facility_id', { facility_id })
-        .andWhere('lab_test_rate_list.status = :status', { status: 1 })
+        // .andWhere('lab_test_rate_list.status = :status', { status: 1 })
         .getRawMany();
     }
     return data;
@@ -192,6 +271,7 @@ export class LabTestRateListsService {
       .select('test._id,test.code,test.name')
       .where('test.laboratory_id = :laboratory_id', { laboratory_id })
       .andWhere('test.facility_id = :facility_id', { facility_id: facility_id })
+      .orWhere('test.is_template = :is_template', { is_template: 1 })
       .andWhere(
         '(test.parametric_only IS NULL OR test.parametric_only = false)',
       )

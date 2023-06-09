@@ -73,6 +73,17 @@ export class TestCategoriesService {
     } else {
       filterData = data;
     }
+    for (let i = 0; i < filterData.length; i++) {
+      let info = filterData[i];
+      let testCount = await this.testRep
+        .createQueryBuilder('test')
+        .select('test.*')
+        .where('test.test_category_id = :test_category_id', {
+          test_category_id: info._id,
+        })
+        .getCount();
+      Object.assign(info, { testCount });
+    }
     return filterData;
   }
 
@@ -107,9 +118,37 @@ export class TestCategoriesService {
         'description',
       ],
       where,
-      relations: ['test'],
+      relations: ['test', 'test.department_id'],
     });
-    Object.assign(data, { tests: data.test });
+    let tests = [];
+    for (let i = 0; i < data.test?.length; i++) {
+      let test = data.test[i];
+      const {
+        code,
+        name,
+        sequence,
+        single_or_group,
+        status,
+        title_for_print,
+        _id,
+        department_id,
+      } = test;
+      tests.push({
+        code,
+        name,
+        sequence,
+        single_or_group,
+        status,
+        title_for_print,
+        _id,
+        department: {
+          name: department_id?.name,
+          _id: department_id?._id,
+        },
+      });
+    }
+    delete data.test;
+    Object.assign(data, { testsWithDepartment: tests });
     return data;
   }
 
