@@ -9,6 +9,7 @@ import {
   SingleTestCategory,
   TestCategoryDto,
 } from '../dto/test-category/response.dto';
+import { Test } from '../test.entity';
 import { TestCategory } from '../test_category.entity';
 
 @Injectable()
@@ -18,8 +19,8 @@ export class TestCategoriesService {
     private testCategoryRep: Repository<TestCategory>,
     @InjectRepository(Laboratory)
     private labRep: Repository<Laboratory>,
-    @InjectRepository(Department)
-    private departmentRep: Repository<Department>,
+    @InjectRepository(Test)
+    private testRep: Repository<Test>,
   ) {}
 
   async getAll(
@@ -39,8 +40,8 @@ export class TestCategoriesService {
       ];
     }
     const data = await this.testCategoryRep.find({
-      select: ['_id', 'name', 'title_for_print', 'description'],
-      relations: ['facility_id'],
+      select: ['_id', 'name', 'title_for_print', 'description', 'is_template'],
+      relations: ['facility_id', 'department_id'],
       where,
       skip,
       take,
@@ -49,25 +50,28 @@ export class TestCategoriesService {
     let filterData;
     if (user.portal === 'limware') {
       filterData = data.filter((info) => {
-        return info.facility_id?._id === user.facility_id;
+        if (info.department_id) {
+          Object.assign(info, {
+            department_id: info.department_id._id,
+            department: {
+              _id: info.department_id._id,
+              name: info.department_id.name,
+            },
+          });
+        } else {
+          Object.assign(info, {
+            department: {
+              name: '',
+            },
+          });
+        }
+        return (
+          info.facility_id?._id === user.facility_id ||
+          info.is_template === true
+        );
       });
     } else {
       filterData = data;
-    }
-    if (user.portal === 'limware') {
-      const department = await this.departmentRep
-        .createQueryBuilder('department')
-        .select('department.*')
-        .where('department.facility_id = :facility_id', {
-          facility_id: user.facility_id,
-        })
-        .getRawOne();
-
-      if (department) {
-        filterData.forEach((info) => {
-          Object.assign(info, { department_id: department._id, department });
-        });
-      }
     }
     return filterData;
   }

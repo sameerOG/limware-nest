@@ -30,6 +30,18 @@ export class ValidateOtpRequest {
   otp: number;
 }
 
+export class checkUserVerified {
+  @IsString()
+  @IsNotEmpty()
+  id: string;
+}
+
+export class GenerateVerificationPinRequest {
+  @IsString()
+  @IsNotEmpty()
+  _id: string;
+}
+
 export class RegisterRequest {
   @IsString()
   @IsNotEmpty()
@@ -59,8 +71,7 @@ export class RegisterRequest {
   @IsNotEmpty()
   address: string;
 
-  @IsBoolean()
-  @IsNotEmpty()
+  @IsOptional()
   terms: boolean;
 
   @IsString()

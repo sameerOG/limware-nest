@@ -5,12 +5,20 @@ import { Users } from '../user/user.entity';
 import {
   AuthRequest,
   ChangePasswordRequest,
+  checkUserVerified,
   CreateUserRequestDto,
+  GenerateVerificationPinRequest,
   LoginIntoFacility,
   RegisterRequest,
   ValidateOtpRequest,
 } from './dto/request.dto';
-import { AuthDto, AuthRegisterDto, ProfileResponse } from './dto/response.dto';
+import {
+  AuthDto,
+  AuthRegisterDto,
+  GenerateVerificationPinResponse,
+  ProfileResponse,
+  UserVeifiedResponse,
+} from './dto/response.dto';
 import * as bcrypt from 'bcryptjs';
 import * as jwt from 'jsonwebtoken';
 import { UserAccessToken } from '../user_access_token/user_access_token.entity';
@@ -78,50 +86,40 @@ export class AuthService {
 
   async login(body: AuthRequest): Promise<AuthDto | Error[]> {
     const username = body.username.replace(/-/g, '');
-    const user = await this.userRep
-      .createQueryBuilder('u')
-      .select('u.*, JSON_AGG(f.*) as facilities')
-      .leftJoin('facility', 'f', 'f._id = u.facility_id')
-      .where(
-        'u.email = :email OR u.username = :username OR u.mobile_number = :mobile_number',
-        {
-          email: username,
-          username: username,
-          mobile_number: username,
-        },
-      )
-      .andWhere('u.status = :status', { status: 1 })
-      .groupBy('u._id')
-      .getRawOne();
+    const user = await this.userRep.findOne({
+      relations: ['facility_id', 'customer_id'],
+      where: [
+        { email: username },
+        { username: username },
+        { mobile_number: username },
+      ],
+    });
 
     const facilities = [];
-    user?.facilities?.map(async (facility) => {
-      if (facility) {
-        const { name, type, _id, unique_id } = facility;
-        let obj = {
-          name,
-          unique_id,
-          type,
-          permissions: [],
-          _id: {
-            $oid: _id,
-          },
-        };
-        if (user.portal === 'administration') {
-          obj.permissions = await this._getAssignedPermissions_AdminPortal(
-            user,
+    if (user.facility_id) {
+      const { name, type, _id, unique_id } = user.facility_id;
+      let obj = {
+        name,
+        unique_id,
+        type,
+        permissions: [],
+        _id: {
+          $oid: _id,
+        },
+      };
+      if (user.portal === 'administration') {
+        obj.permissions = await this._getAssignedPermissions_AdminPortal(user);
+      } else if (user.portal === 'limware') {
+        if (user.facility_id) {
+          obj.permissions = await this._getEmployeeFacilities(
+            user.facility_id?._id,
           );
-        } else if (user.portal === 'limware') {
-          if (user.facility_id) {
-            obj.permissions = await this._getEmployeeFacilities(
-              user.facility_id,
-            );
-          }
         }
-        facilities.push(obj);
       }
-    });
-    if (user) {
+      facilities.push(obj);
+    }
+
+    if (user && user.status === 1) {
       const authenticated = await bcrypt.compare(
         body.password,
         user['password'],
@@ -153,15 +151,14 @@ export class AuthService {
           status: status === 1 ? true : false,
           user_name: username,
           permissions: null,
-          facility_id,
+          facility_id: facility_id?._id,
           employee_id: employee?._id,
-          customer_id,
+          customer_id: customer_id?._id,
           user_id: {
             $oid: user._id,
           },
           _id,
         };
-        console.log('login obj', obj);
         const token = jwt.sign(obj, 'secretOrKey');
         const tokenExists: UserAccessToken = await this.userTokenRep
           .createQueryBuilder('user_access_token')
@@ -188,7 +185,7 @@ export class AuthService {
         ];
       }
     } else {
-      return [{ field: 'password', message: 'Incorrect username or password' }];
+      throw [{ field: 'password', message: 'Incorrect username or password' }];
     }
   }
 
@@ -530,9 +527,54 @@ export class AuthService {
     return model;
   }
 
+  async checkIfUserVerified(
+    body: checkUserVerified,
+  ): Promise<UserVeifiedResponse> {
+    const user = await this.userRep.findOne({
+      where: { _id: body.id },
+      select: ['full_name', 'status'],
+    });
+    if (user) {
+      return {
+        user_verified: user.status ? true : false,
+        full_name: user.full_name,
+      };
+    } else {
+      throw [
+        {
+          field: 'Error',
+          message: 'User not found',
+        },
+      ];
+    }
+  }
+
+  async generateVerificationPin(
+    id: string,
+  ): Promise<GenerateVerificationPinResponse> {
+    const user = await this.userRep.findOne({
+      where: { _id: id },
+      relations: ['customer_id', 'facility_id'],
+    });
+    const otpCode = uid.randomUUID(6);
+    user.otp = otpCode;
+    await this.userRep.update(id, user);
+    const { created_at, updated_at, customer_id, facility_id, ...rest } = user;
+    return new GenerateVerificationPinResponse({
+      created_at: created_at.getTime(),
+      updated_at: updated_at.getTime(),
+      customer_id: customer_id?._id,
+      facility_id: facility_id?._id,
+      ...rest,
+    });
+  }
+
   async createNewUser(body: CreateUserRequestDto): Promise<SingleUserDto> {
+    if (body.email === '') {
+      delete body.email;
+    }
     Object.assign(body, { name: body.full_name });
-    if (body.portal != 'limware') {
+    if (body.portal == 'administration') {
       Object.assign(body, { isSuperUser: 1 });
     }
     const customer = await this.createCustomer(body);
@@ -707,13 +749,5 @@ export class AuthService {
         },
       ];
     }
-  }
-
-  async generateVerificationPin(user_id: string): Promise<Users> {
-    const user = await this.userRep.findOne({ where: { _id: user_id } });
-    const otpCode = uid.randomUUID(6);
-    user.otp = otpCode;
-    await this.userRep.update(user_id, user);
-    return user;
   }
 }

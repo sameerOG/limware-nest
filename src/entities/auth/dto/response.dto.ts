@@ -28,13 +28,57 @@ export class AuthRegisterDto {
   readonly errors: boolean;
   readonly user_id: string;
   readonly full_name: string;
-  readonly otpCode: string;
+  readonly otpCode: string | number;
 
   constructor(auth: AuthRegisterDto) {
     (this.errors = auth.errors),
       (this.full_name = auth.full_name),
       (this.otpCode = auth.otpCode),
       (this.user_id = auth.user_id);
+  }
+}
+
+export class UserVeifiedResponse {
+  readonly full_name: string;
+  readonly user_verified: boolean;
+
+  constructor(auth: UserVeifiedResponse) {
+    (this.full_name = auth.full_name),
+      (this.user_verified = auth.user_verified);
+  }
+}
+
+export class GenerateVerificationPinResponse {
+  readonly address: string;
+  readonly auth_key: string;
+  readonly city: string;
+  readonly created_at: number;
+  readonly customer_id: string;
+  readonly facility_id: string;
+  readonly full_name: string;
+  readonly mobile_number: string;
+  readonly otp: number | string;
+  readonly portal: string;
+  readonly status: number;
+  readonly updated_at: number;
+  readonly username: string;
+  readonly _id: string;
+
+  constructor(auth: GenerateVerificationPinResponse) {
+    (this.address = auth.address),
+      (this.auth_key = auth.auth_key),
+      (this.city = auth.city),
+      (this.created_at = auth.created_at),
+      (this.customer_id = auth.customer_id),
+      (this.facility_id = auth.facility_id),
+      (this.full_name = auth.full_name),
+      (this.mobile_number = auth.mobile_number),
+      (this.otp = auth.otp),
+      (this.portal = auth.portal),
+      (this.status = auth.status),
+      (this.updated_at = auth.updated_at),
+      (this.username = auth.username),
+      (this._id = auth._id);
   }
 }
 

@@ -76,6 +76,7 @@ export class TestsService {
         'tags',
         'code',
         'facility_id',
+        'is_template',
       ],
       where,
       skip,
@@ -85,7 +86,9 @@ export class TestsService {
     let filteredTest;
     if (user.portal === 'limware') {
       filteredTest = data.filter((info) => {
-        return info.facility_id === user.facility_id;
+        return (
+          info.facility_id === user.facility_id || info.is_template === true
+        );
       });
     } else {
       filteredTest = data;
@@ -454,7 +457,12 @@ export class TestsService {
       if (normal_ranges?.length > 0) {
         //normal ranges logic here
         normal_ranges.forEach(async (range) => {
-          range.test_id = savedTest._id;
+          if (range.min_value === '') {
+            delete range.min_value;
+          } else if (range.max_value === '') {
+            delete range.max_value;
+          }
+          Object.assign(range, { test_id: savedTest._id });
           const normalRange = await this.testNormalRangeRep.save(range);
           if (!normalRange) {
             await this.__deleteTestWithNR_and_ThrowError(savedTest._id);
@@ -642,31 +650,32 @@ export class TestsService {
 
   async delete(id: any, user): Promise<any> {
     try {
-      let whereCondition = {};
-      if (user.portal === 'limware') {
-        const lab = await this.labRep
-          .createQueryBuilder('laboratory')
-          .select('laboratory.*')
-          .where('laboratory.facility_id = :facility_id', {
-            facility_id: user.facility_id,
-          })
-          .getRawOne();
-        whereCondition = {
+      const lab = await this.labRep
+        .createQueryBuilder('laboratory')
+        .select('laboratory.*')
+        .where('laboratory.facility_id = :facility_id', {
           facility_id: user.facility_id,
-          laboratory_id: lab._id,
-        };
-      }
-      Object.assign(whereCondition, { _id: id });
-      const test = await this.testRep.findOne({
-        where: whereCondition,
+        })
+        .getRawOne();
+      let savedTest: any = await this.testRep.findOne({
+        where: { _id: id, facility_id: user.facility_id },
         relations: [
           'test_normal_range',
           'test_parameter_parent',
           'test_parameter_child',
           'patient_test',
           'ptpr',
+          'laboratory_id',
         ],
       });
+      let test;
+      if (user.portal === 'limware') {
+        if (savedTest.laboratory_id?._id === lab?._id) {
+          test = savedTest;
+        }
+      } else {
+        test = savedTest;
+      }
 
       if (test.patient_test.length === 0 && test.ptpr.length === 0) {
         await this.testNormalRangeRep.delete({ test_id: id });
