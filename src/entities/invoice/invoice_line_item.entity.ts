@@ -6,6 +6,7 @@ import {
   UpdateDateColumn,
   JoinColumn,
   ManyToOne,
+  DeleteDateColumn,
 } from 'typeorm';
 import { Invoice } from './invoice.entity';
 
@@ -43,4 +44,8 @@ export class InvoiceLineItem {
   @Column()
   @UpdateDateColumn()
   updated_at!: Date;
+
+  @Column()
+  @DeleteDateColumn()
+  deleted_at!: Date;
 }

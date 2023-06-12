@@ -450,9 +450,7 @@ export class TestsService {
         department_id: department_id,
       });
     }
-    console.log('testData', testData);
     const savedTest = await this.testRep.save(testData);
-    console.log('savedTest', savedTest);
     if (savedTest) {
       if (normal_ranges?.length > 0) {
         //normal ranges logic here

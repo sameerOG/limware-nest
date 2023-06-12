@@ -118,7 +118,6 @@ export class PatientsService {
       }
 
       if (invoice) {
-        console.log('invoice', invoice);
         Object.assign(patient, { invoice_status });
       }
     }
@@ -166,8 +165,6 @@ export class PatientsService {
       employee._id,
       user,
     );
-    console.log('userAssignedDepartmentIds', userAssignedDepartmentIds);
-
     let aggregateResult = await this.patientRep
       .createQueryBuilder('patient')
       .select(
@@ -349,6 +346,26 @@ export class PatientsService {
       }
     }
 
+    const deletedTests = await this.patientTestRep
+      .createQueryBuilder('patient_test')
+      .select(
+        'patient_test.delete_reason,patient_test.deleted_at,patient_test.is_printed,patient_test.user_comment,patient_test._id,test.name',
+      )
+      .withDeleted()
+      .leftJoin('patient_test.test_id', 'test')
+      .where('patient_test.patient_id = :patient_id', {
+        patient_id: patient?._id,
+      })
+      .andWhere('patient_test.appointment_id = :appointment_id', {
+        appointment_id: appointment?._id,
+      })
+      .andWhere('patient_test.deleted_at IS NOT NULL')
+      .getRawMany();
+
+    deletedTests.forEach((info) => {
+      Object.assign(info, { deleted_by_full_name: user.full_name });
+    });
+
     let appointmentsWithDetails = [
       {
         appointment_date,
@@ -359,7 +376,7 @@ export class PatientsService {
         reference_number,
         tests,
         invoices,
-        deletedTests: [], // for this do deletedTests apis
+        deletedTests, // for this do deletedTests apis
       },
     ];
     Object.assign(
@@ -633,7 +650,6 @@ export class PatientsService {
           };
         }
       } else {
-        console.log('elsee');
         if (testsStatuses.result_entered > 1) {
           returnResult = {
             status: false,
@@ -654,8 +670,6 @@ export class PatientsService {
       .andWhere('patient_test.status != :status', { status: 15 })
       .select('patient_test.status')
       .getCount();
-
-    console.log('returnResult', returnResult);
 
     Object.assign(returnResult, {
       allResultsAreDone: patientPendingTestsCount > 0 ? false : true,
@@ -772,7 +786,6 @@ export class PatientsService {
         .getRawOne();
     }
 
-    console.log('patientTest', patientTest, patient_test_id);
     const testData = await this.testRep.findOne({
       where: { _id: patientTest.test_id },
       relations: ['test_category_id'],
@@ -846,7 +859,6 @@ export class PatientsService {
       let result = ptParameterItem.result;
       var enforceDecimal = false;
       var decimalLength = 0;
-      console.log('|test', test);
 
       if (test.res_input_type == 'number_field') {
         if (test.decimal_length && test.decimal_length > 0) {
@@ -908,7 +920,6 @@ export class PatientsService {
     let model = await this.patientTestRep.findOne({
       where: { _id: parent_test_id },
     });
-    console.log('model', model);
     if (model && status) {
       model.status = status;
       await this.patientTestRep.update(parent_test_id, model);
@@ -1009,7 +1020,6 @@ export class PatientsService {
           test_id: patient_test_id,
         })
         .getRawOne();
-      console.log('model', model, patient_test_id);
       model.is_printed = 1;
       await this.patientTestRep.update(patient_test_id, model);
       let toPushObj = {

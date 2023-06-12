@@ -89,7 +89,6 @@ export class LabTestRateListsController {
       const token = authHeader.split(' ')[1];
       const loggedInUser = jwtDecode(token);
       const data = await this.labTestRateListsService.getAllTests(loggedInUser);
-      console.log('data', data);
       response.status(200).send(data);
       return data;
     } catch (err) {

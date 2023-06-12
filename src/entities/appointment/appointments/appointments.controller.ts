@@ -49,6 +49,28 @@ export class AppointmentsController {
     }
   }
 
+  @Get('/get-patient-completed-test-for-delete')
+  async getPatientCompletedTestForDelete(
+    @Res() response: Response,
+    @Query() query,
+  ): Promise<PatientTestForDeleteResponseDto> {
+    try {
+      let patient_test_id = query['patient_test_id'];
+      let invoice_id = query['invoice_id'];
+      let data = await this.appointmentService.getPatientCompletedTestForDelete(
+        patient_test_id,
+        invoice_id,
+      );
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Patient Test not found' });
+    }
+  }
+
   @Get('/get-all-references')
   async getAllReferences(
     @Res() response: Response,
@@ -171,6 +193,29 @@ export class AppointmentsController {
       const token = authHeader.split(' ')[1];
       const loggedInUser = jwtDecode(token);
       let data = await this.appointmentService.deletTest(body, loggedInUser);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Patient Test not deleted' });
+    }
+  }
+
+  @Post('/delete-completed-test')
+  async deleteCompletedTest(
+    @Res() response: Response,
+    @Body() body: DeleteTestDto,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<any> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      let data = await this.appointmentService.deleteCompletedTest(
+        body,
+        loggedInUser,
+      );
       response.status(200).send(data);
       return data;
     } catch (err) {

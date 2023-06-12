@@ -963,7 +963,6 @@ export class AppointmentsService {
     patientTest: PatientTest,
     invoice_id: string,
   ): Promise<PatientTestForDeleteResponseDto> {
-    console.log('invoice_id', invoice_id);
     const invoice = await this.invoiceRep
       .createQueryBuilder('invoice')
       .select('invoice.*')
@@ -1038,9 +1037,9 @@ export class AppointmentsService {
       .createQueryBuilder('invoice')
       .select('invoice.*')
       .where('invoice._id = :_id', { _id: invoice_id })
-      .andWhere('invoice.patient_id = :patient_id', {
-        patient_id: patientTest.patient_id,
-      })
+      // .andWhere('invoice.patient_id = :patient_id', {
+      //   patient_id: patientTest.patient_id,
+      // })
       .getRawOne();
 
     const invoiceLineItem = await this.invoiceLineItemRep
@@ -1059,7 +1058,7 @@ export class AppointmentsService {
       .where('invoice_line_item._id = :_id', { _id: invoiceLineItem._id })
       .getRawOne();
     iliModel.delete_reason = delete_reason;
-    let res = await this.invoiceLineItemRep.delete(iliModel._id);
+    let res = await this.invoiceLineItemRep.softDelete(iliModel._id);
     if (res.affected > 0) {
       const {
         total_amount,
@@ -1092,7 +1091,7 @@ export class AppointmentsService {
               body.user_comment,
             type: 2,
           };
-          const ptModel = await this.addPayment(ptData, false, user);
+          await this.addPayment(ptData, false, user);
         }
         await this.patientTestParameterResultRep
           .createQueryBuilder('patient_test_parameter_result')
@@ -1102,19 +1101,25 @@ export class AppointmentsService {
             'patient_test_parameter_result.patient_test_id = :patient_test_id',
             { patient_test_id: body.patient_test_id },
           )
+          .orWhere('patient_test_parameter_result.test_id = :test_id', {
+            test_id: body.patient_test_id,
+          })
           .execute();
 
         let ptModel = await this.patientTestRep
           .createQueryBuilder('patient_test')
           .select('patient_test.*')
           .where('patient_test._id = :_id', { _id: body.patient_test_id })
+          .orWhere('patient_test.test_id = :test_id', {
+            test_id: body.patient_test_id,
+          })
           .getRawOne();
 
-        console.log('ptModel', ptModel);
         if (ptModel) {
           ptModel.delete_reason = body.delete_reason;
           ptModel.user_comment = body.user_comment;
-          await this.patientTestRep.delete(patientTest._id);
+          await this.patientTestRep.update(patientTest._id, ptModel);
+          await this.patientTestRep.softDelete(patientTest._id);
         }
         await this._updateAppointmentCompletionStatus(invoice.appointment_id);
         await this.updateAppointmentInfo(body.patient_test_id, {
@@ -1138,7 +1143,8 @@ export class AppointmentsService {
     };
 
     if (newAmounts.due_amount > 0) {
-      if (newAmounts.due_amount === rollbackAmount) {
+      if (newAmounts.due_amount >= rollbackAmount) {
+        newAmounts.due_amount = newAmounts.due_amount - rollbackAmount;
         rollbackAmount = 0;
       } else {
         rollbackAmount = rollbackAmount - newAmounts.due_amount;
@@ -1147,7 +1153,7 @@ export class AppointmentsService {
     }
 
     if (rollbackAmount > 0 && newAmounts.discount_amount > 0) {
-      if (newAmounts.discount_amount > -rollbackAmount) {
+      if (newAmounts.discount_amount >= rollbackAmount) {
         newAmounts.discount_amount =
           newAmounts.discount_amount - rollbackAmount;
         rollbackAmount = 0;
@@ -1205,5 +1211,45 @@ export class AppointmentsService {
       `select * from public.appointment where patient_id = '${patient_id}' and is_completed = false`,
     );
     return data;
+  }
+
+  async getPatientCompletedTestForDelete(
+    patient_test_id: string,
+    invoice_id: string,
+  ): Promise<any> {
+    const patientTest = await this.patientTestRep
+      .createQueryBuilder('patient_test')
+      .select('patient_test.*')
+      .where('patient_test.test_id = :test_id', { test_id: patient_test_id })
+      .getRawOne();
+
+    if (patientTest) {
+      return this._getPatientTestForDelete(patientTest, invoice_id);
+    } else {
+      return {
+        status: false,
+        message: 'Unable to find test',
+      };
+    }
+  }
+
+  async deleteCompletedTest(body: DeleteTestDto, user): Promise<any> {
+    const { patient_test_id } = body;
+    const patientTest = await this.patientTestRep
+      .createQueryBuilder('patient_test')
+      .select('patient_test.*')
+      .where('patient_test.test_id = :test_id', {
+        test_id: patient_test_id,
+      })
+      .getRawOne();
+
+    if (patientTest) {
+      return this._deleteTest(body, patientTest, user);
+    } else {
+      return {
+        status: false,
+        message: 'Unable to find test',
+      };
+    }
   }
 }

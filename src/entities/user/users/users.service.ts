@@ -66,7 +66,6 @@ export class UsersService {
   }
 
   async reLoggedInUserPermissions(user): Promise<any> {
-    console.log('user', user);
     if (user.isSsuperUser === 0 && user.portal === 'limware') {
       console.log('before');
       const employee = await this.empRep

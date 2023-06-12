@@ -34,41 +34,56 @@ export class DeletedTestsService {
 
       lab_number = `${facilityModel.unique_id}-${text}`;
     }
-
     let aggregateResult = await this.patientRep
       .createQueryBuilder('patient')
       .select(
-        'patient.age,patient.age_unit,patient.created_at,patient.gender,patient._id as patient_id,patient.name as patient_name,patient.created_at as registration_date',
+        'patient._id,patient.age,patient.age_unit,patient.created_at,patient.gender,patient._id as patient_id,patient.name as patient_name,patient.created_at as registration_date',
       )
+      .withDeleted()
       .where('patient.facility_id = :facility_id', {
         facility_id: user.facility_id,
       })
       .skip(skip)
       .take(take)
-      .orderBy(transformSortField(sort))
+      .orderBy(transformSortField('deleted_at'))
       .getRawMany();
-    console.log('aggregateResult', aggregateResult);
+    let resultData = [];
     for (let i = 0; i < aggregateResult.length; i++) {
       let patient = aggregateResult[i];
-      delete patient._id;
-      const patientTest = await this.patientTestRep.findOne({
-        where: { patient_id: patient.patient_id },
-        relations: ['test_id'],
-      });
-      console.log('patientTest', patientTest);
-      const testName = patientTest?.test_id?.name;
-      const test_title_for_print = patientTest?.test_id?.title_for_print;
-      Object.assign(patient, {
-        deleted_by_full_name: user.full_name,
-        deleted_by_username: user.user_name,
-        status: 15,
-        _id: {
-          $oid: patient.patient_id,
-        },
-        title_for_print: test_title_for_print,
-        test_name: testName,
-        lab_number: '497',
-      });
+      const patientTests = await this.patientTestRep
+        .createQueryBuilder('patient_test')
+        .select('patient_test.*,test.name as test_name,test.title_for_print')
+        .withDeleted()
+        .leftJoin('patient_test.test_id', 'test')
+        .where('patient_test.patient_id = :patient_id', {
+          patient_id: patient?._id,
+        })
+        .getRawMany();
+
+      for (let j = 0; j < patientTests.length; j++) {
+        let patientData = { ...patient };
+        let patientTest = patientTests[j];
+        const deleteDate = new Date(patientTest.deleted_at);
+        Object.assign(patientData, {
+          deleted_by_full_name: user.full_name,
+          deleted_by_username: user.user_name,
+          delete_reason: patientTest?.delete_reason,
+          test_deleted_at:
+            deleteDate.getFullYear() +
+            '-' +
+            (deleteDate.getMonth() + 1) +
+            '-' +
+            deleteDate.getDate(),
+          status: 15,
+          _id: {
+            $oid: patient.patient_id,
+          },
+          title_for_print: patientTest?.title_for_print,
+          test_name: patientTest?.test_name,
+          lab_number: '',
+        });
+        resultData.push(patientData);
+      }
     }
     const data = [
       {
@@ -78,7 +93,7 @@ export class DeletedTestsService {
             page: 1,
           },
         ],
-        data: aggregateResult,
+        data: resultData,
       },
     ];
     return data;

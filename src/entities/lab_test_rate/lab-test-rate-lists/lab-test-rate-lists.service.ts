@@ -91,7 +91,6 @@ export class LabTestRateListsService {
       model: labTestRateList,
       labModel,
     };
-    console.log('payload', JSON.stringify(payload));
     const reportTemplate = 'lab_test_rate_list';
     const content = await this.fileHandling.renderTemplate(
       reportTemplate,

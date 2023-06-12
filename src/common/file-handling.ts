@@ -27,7 +27,6 @@ export class FileHandling {
               console.error(err);
               reject(err);
             } else {
-              console.log('fileData', fileData);
               resolve(fileData);
             }
           });
