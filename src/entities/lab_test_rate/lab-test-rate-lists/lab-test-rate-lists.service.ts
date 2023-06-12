@@ -216,7 +216,7 @@ export class LabTestRateListsService {
       data = await this.labTestRateListRep
         .createQueryBuilder('lab_test_rate_list')
         .select(
-          'lab_test_rate_list._id,lab_test_rate_list.type,lab_test_rate_list.facility_id',
+          'lab_test_rate_list._id,lab_test_rate_list.type,lab_test_rate_list.facility_id,lab_test_rate_list.status',
         )
         .where('lab_test_rate_list.facility_id = :facility_id', { facility_id })
         // .andWhere('lab_test_rate_list.status = :status', { status: 1 }) //confirm active status
@@ -231,7 +231,7 @@ export class LabTestRateListsService {
       data = await this.labTestRateListRep
         .createQueryBuilder('lab_test_rate_list')
         .select(
-          'lab_test_rate_list._id,lab_test_rate_list.name,lab_test_rate_list.facility_id',
+          'lab_test_rate_list._id,lab_test_rate_list.name,lab_test_rate_list.facility_id,lab_test_rate_list.status',
         )
         .where('lab_test_rate_list.facility_id = :facility_id', { facility_id })
         // .andWhere('lab_test_rate_list.status = :status', { status: 1 })

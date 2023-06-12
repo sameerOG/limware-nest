@@ -13,6 +13,7 @@ import { PatientTest } from 'src/entities/patient/patient_test.entity';
 import { PatientTestParameterResult } from 'src/entities/patient/patient_test_parameter_result.entity';
 import { PaymentTRansaction } from 'src/entities/pricing/payment_transaction.entity';
 import { Reference } from 'src/entities/reference/reference.entity';
+import { ReferencesService } from 'src/entities/reference/references/references.service';
 import { Test } from 'src/entities/test/test.entity';
 import { TestCategory } from 'src/entities/test/test_category.entity';
 import { TestNormalRange } from 'src/entities/test/test_normal_range.entity';
@@ -45,6 +46,6 @@ import { AppointmentsService } from './appointments.service';
     ]),
   ],
   controllers: [AppointmentsController],
-  providers: [AppointmentsService],
+  providers: [AppointmentsService, ReferencesService],
 })
 export class AppointmentsModule {}

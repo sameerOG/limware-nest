@@ -11,6 +11,9 @@ import {
 } from '@nestjs/common';
 import { query, Response } from 'express';
 import jwtDecode from 'jwt-decode';
+import { ReferenceRequestDto } from 'src/entities/reference/references/dto/request.dto';
+import { ReferencesCreateResponseDto } from 'src/entities/reference/references/dto/response.dto';
+import { ReferencesService } from 'src/entities/reference/references/references.service';
 import { AuthGuard } from 'src/guard/auth.guard';
 import {
   AddAppointmentRequestDto,
@@ -30,7 +33,10 @@ import { AppointmentsService } from './appointments.service';
 @Controller('appointments')
 @UseGuards(AuthGuard)
 export class AppointmentsController {
-  constructor(private appointmentService: AppointmentsService) {}
+  constructor(
+    private appointmentService: AppointmentsService,
+    private referencesService: ReferencesService,
+  ) {}
 
   @Get('/get-all-tests')
   async getAllTests(
@@ -46,6 +52,27 @@ export class AppointmentsController {
     } catch (err) {
       console.log('err in catch', err);
       response.status(422).send({ error: err, message: 'Tests not found' });
+    }
+  }
+
+  @Post('create-reference')
+  async createReference(
+    @Res() response: Response,
+    @Body() body: ReferenceRequestDto,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<ReferencesCreateResponseDto> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser: any = jwtDecode(token);
+      Object.assign(body, { facility_id: loggedInUser.facility_id });
+      const data = await this.referencesService.create(body);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'References not found' });
     }
   }
 
