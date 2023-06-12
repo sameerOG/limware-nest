@@ -34,6 +34,9 @@ export class TestNormalRange {
   @Column({ default: null })
   min_value!: number;
 
+  @Column({ default: false })
+  archieved: boolean;
+
   @Column({ default: null })
   max_op!: string;
 

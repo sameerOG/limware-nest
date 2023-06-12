@@ -8,6 +8,7 @@ import {
   Put,
   Query,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { FeaturesService } from './features.service';
@@ -16,8 +17,10 @@ import {
   SingleAppFeatureResponseDto,
 } from './dto/response.dto';
 import { FeatureRequestDto } from './dto/request.dto';
+import { AuthGuard } from 'src/guard/auth.guard';
 
 @Controller('')
+@UseGuards(AuthGuard)
 export class FeaturesController {
   constructor(private featureService: FeaturesService) {}
 

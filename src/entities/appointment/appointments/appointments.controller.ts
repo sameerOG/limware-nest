@@ -7,9 +7,11 @@ import {
   Body,
   HttpException,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { query, Response } from 'express';
 import jwtDecode from 'jwt-decode';
+import { AuthGuard } from 'src/guard/auth.guard';
 import {
   AddAppointmentRequestDto,
   AddTestDto,
@@ -26,6 +28,7 @@ import {
 import { AppointmentsService } from './appointments.service';
 
 @Controller('appointments')
+@UseGuards(AuthGuard)
 export class AppointmentsController {
   constructor(private appointmentService: AppointmentsService) {}
 

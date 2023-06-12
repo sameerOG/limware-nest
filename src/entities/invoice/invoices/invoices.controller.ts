@@ -10,6 +10,7 @@ import {
   Res,
   Headers,
   HttpException,
+  UseGuards,
 } from '@nestjs/common';
 import { InvoicesService } from './invoices.service';
 import { Response } from 'express';
@@ -21,8 +22,10 @@ import {
 } from './dto/response.dto';
 import { AddDiscountRequestDto, AddPaymentRequestDto } from './dto/request.dto';
 import { PaymentTRansaction } from 'src/entities/pricing/payment_transaction.entity';
+import { AuthGuard } from 'src/guard/auth.guard';
 
 @Controller('invoices')
+@UseGuards(AuthGuard)
 export class InvoicesController {
   constructor(private readonly invoicesService: InvoicesService) {}
 

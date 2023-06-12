@@ -9,10 +9,12 @@ import {
   Body,
   Put,
   Post,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
 import { LaboratorySetting } from 'src/entities/laboratory/laboratory_setting.entity';
+import { AuthGuard } from 'src/guard/auth.guard';
 import {
   MarkAsDoneRequestDto,
   printAllRequestDto,
@@ -27,6 +29,7 @@ import { Patient } from '../patient.entity';
 import { PatientsService } from './patients.service';
 
 @Controller('')
+@UseGuards(AuthGuard)
 export class PatientsController {
   constructor(private patientService: PatientsService) {}
 

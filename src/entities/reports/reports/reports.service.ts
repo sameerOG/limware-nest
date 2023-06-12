@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as path from 'path';
 import { FileHandling } from 'src/common/file-handling';
 import { options } from 'src/common/helper/enums';
-import { Invoice } from 'src/entities/invoice/invoices/entities/invoice.entity';
+import { Invoice } from 'src/entities/invoice/invoice.entity';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 import { Patient } from 'src/entities/patient/patient.entity';
 import { Repository } from 'typeorm';

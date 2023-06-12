@@ -1,8 +1,17 @@
-import { Controller, Get, Headers, Query, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Headers,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { DeletedTestsService } from './deleted-tests.service';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
+import { AuthGuard } from 'src/guard/auth.guard';
 @Controller('deleted-tests')
+@UseGuards(AuthGuard)
 export class DeletedTestsController {
   constructor(private deleteTestService: DeletedTestsService) {}
 

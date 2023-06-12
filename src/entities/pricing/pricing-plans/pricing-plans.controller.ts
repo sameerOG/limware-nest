@@ -1,10 +1,21 @@
-import { Body, Controller, Get, Param, Post, Query, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { Response } from 'express';
+import { AuthGuard } from 'src/guard/auth.guard';
 import { PricingPlanRequestDto } from '../dto/request.dto';
 import { PricingPlanResponseDto } from '../dto/response.dto';
 import { PricingPlansService } from './pricing-plans.service';
 
 @Controller('pricing-plans')
+@UseGuards(AuthGuard)
 export class PricingPlansController {
   constructor(private pricingPlanService: PricingPlansService) {}
 

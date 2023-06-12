@@ -49,6 +49,9 @@ export class TestParameter {
   @JoinColumn({ name: 'test_group_id' })
   test_group_id!: TestGroup;
 
+  @Column({ default: false })
+  archieved: boolean;
+
   @Column()
   @CreateDateColumn()
   created_at!: Date;

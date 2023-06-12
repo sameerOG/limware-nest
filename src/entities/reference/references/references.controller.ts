@@ -10,6 +10,7 @@ import {
   Query,
   Headers,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { ReferencesService } from './references.service';
 import { response, Response } from 'express';
@@ -19,7 +20,9 @@ import {
 } from './dto/response.dto';
 import jwtDecode from 'jwt-decode';
 import { ReferenceRequestDto } from './dto/request.dto';
+import { AuthGuard } from 'src/guard/auth.guard';
 @Controller('references')
+@UseGuards(AuthGuard)
 export class ReferencesController {
   constructor(private readonly referencesService: ReferencesService) {}
 

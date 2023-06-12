@@ -10,10 +10,13 @@ import {
   Put,
   Delete,
   HttpException,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
+import { AuthGuard } from 'src/guard/auth.guard';
 import {
+  MultiplePayload,
   TestParameterRequest,
   UpdateTestParameterRequestDto,
 } from '../dto/test-category/request.dto';
@@ -28,6 +31,7 @@ import { TestParameter } from '../test_parameter.entity';
 import { TestParametersService } from './test-parameters.service';
 
 @Controller('')
+@UseGuards(AuthGuard)
 export class TestParametersController {
   constructor(private testParameterService: TestParametersService) {}
 
@@ -210,6 +214,35 @@ export class TestParametersController {
       response
         .status(422)
         .send({ error: err, message: 'Test Parameter not deleted' });
+    }
+  }
+
+  @Post('/test-parameters/create-multiple')
+  async createMultiple(
+    @Body() body: MultiplePayload,
+    @Headers('Authorization') authHeader: string,
+    @Res() response: Response,
+  ): Promise<boolean> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+      const data = await this.testParameterService.createMultiple(
+        body,
+        loggedInUser,
+      );
+      if (data) {
+        response.status(200).send(data);
+        return data;
+      } else {
+        response
+          .status(422)
+          .send({ error: true, message: 'Test Parameter not created' });
+      }
+    } catch (err) {
+      console.log('err', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Test Parameter not created' });
     }
   }
 }

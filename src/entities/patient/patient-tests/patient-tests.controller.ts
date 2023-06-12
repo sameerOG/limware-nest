@@ -8,12 +8,15 @@ import {
   HttpException,
   Query,
   Get,
+  UseGuards,
 } from '@nestjs/common';
 import { PatientTestsService } from './patient-tests.service';
 import { Response } from 'express';
 import { UpdatePatientTestStatusRequestDto } from '../dto/request.dto';
 import jwtDecode from 'jwt-decode';
+import { AuthGuard } from 'src/guard/auth.guard';
 @Controller('patient-tests')
+@UseGuards(AuthGuard)
 export class PatientTestsController {
   constructor(private patientTestService: PatientTestsService) {}
 

@@ -235,7 +235,10 @@ export class TestParametersService {
       testParameter = await this.testParameterRep
         .createQueryBuilder('test_parameter')
         .select('test_parameter.*')
-        .where('test_parameter.facility_id = :facility_id', {
+        .where('test_parameter._id = :_id', {
+          _id: id,
+        })
+        .andWhere('test_parameter.facility_id = :facility_id', {
           facility_id: user.facility_id,
         })
         .andWhere('test_parameter.laboratory_id = :laboratory_id', {
@@ -297,7 +300,7 @@ export class TestParametersService {
       relations: [
         'test_normal_range',
         'test_parameter_parent',
-        'test_parameter_parent',
+        'test_parameter_child',
       ],
     });
 
@@ -310,17 +313,13 @@ export class TestParametersService {
 
     if (updatedTestParameter) {
       if (test && test.parametric_only) {
-        await this.deleteTest(test, user);
-        return true;
+        await this.deleteTest(test);
       }
     }
-
     return testParameter;
   }
 
-  async deleteTest(data: Test, user): Promise<any> {
-    let test;
-
+  async deleteTest(data: Test): Promise<any> {
     let patientTestsCount = await this.patientTestRep
       .createQueryBuilder('patient_test')
       .where('patient_test.test_id = :test_id', { test_id: data._id })
@@ -334,13 +333,19 @@ export class TestParametersService {
       .getCount();
 
     if (patientTestsCount === 0 && patientTestsParametersCount === 0) {
-      await this.testRep.delete(data._id);
+      return await this.testRep.softDelete(data._id);
     } else if (patientTestsCount > 0 || patientTestsParametersCount > 0) {
       await this._archiveEverything(
         data,
         patientTestsCount,
         patientTestsParametersCount,
       );
+      return await this.testRep
+        .createQueryBuilder('test')
+        .update(Test)
+        .set({ archived: true })
+        .where('test._id = :_id', { _id: data._id })
+        .execute();
     }
   }
 
@@ -351,27 +356,30 @@ export class TestParametersService {
   ): Promise<any> {
     if (patientTestsCount > 0 || patientTestsParametersCount > 0) {
       data.test_normal_range.forEach(async (nr) => {
-        // await this.normalRangeRep.createQueryBuilder("test_normal_range")
-        // .update(TestNormalRange)
-        // .set({archieved:true})
-        // .where("test_normal_range.test_id = :test_id",{test_id:data._id})
-        // .execute()
+        await this.normalRangeRep
+          .createQueryBuilder('test_normal_range')
+          .update(TestNormalRange)
+          .set({ archieved: true })
+          .where('test_normal_range.test_id = :test_id', { test_id: data._id })
+          .execute();
       });
 
       data.test_parameter_parent.forEach(async (tpp) => {
-        // await this.testParameterRep.createQueryBuilder("test_parameter")
-        // .update(TestParameter)
-        // .set({archieved:true})
-        // .where("test_normal_range.test_id = :test_id",{test_id:data._id})
-        // .execute()
+        await this.testParameterRep
+          .createQueryBuilder('test_parameter')
+          .update(TestParameter)
+          .set({ archieved: true })
+          .where('test_normal_range.test_id = :test_id', { test_id: data._id })
+          .execute();
       });
 
       data.test_parameter_child.forEach(async (tpc) => {
-        // await this.testParameterRep.createQueryBuilder("test_parameter")
-        // .update(TestParameter)
-        // .set({archieved:true})
-        // .where("test_normal_range.test_id = :test_id",{test_id:data._id})
-        // .execute()
+        await this.testParameterRep
+          .createQueryBuilder('test_parameter')
+          .update(TestParameter)
+          .set({ archieved: true })
+          .where('test_normal_range.test_id = :test_id', { test_id: data._id })
+          .execute();
       });
     }
   }

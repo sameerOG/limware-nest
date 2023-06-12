@@ -11,9 +11,11 @@ import {
   HttpException,
   Query,
   Put,
+  UseGuards,
 } from '@nestjs/common';
 import { Response } from 'express';
 import jwtDecode from 'jwt-decode';
+import { AuthGuard } from 'src/guard/auth.guard';
 import { LabTestRateListRequestDto } from './dto/request.dto';
 import {
   GetAllTestsResponseDto,
@@ -23,6 +25,7 @@ import {
 import { LabTestRateListsService } from './lab-test-rate-lists.service';
 
 @Controller('lab-test-rate-lists')
+@UseGuards(AuthGuard)
 export class LabTestRateListsController {
   constructor(
     private readonly labTestRateListsService: LabTestRateListsService,
