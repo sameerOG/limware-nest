@@ -236,6 +236,39 @@ export class LaboratoriesController {
       response.status(400).send({ error: err, message: 'Settings not change' });
     }
   }
+  @Get('/get-header-image')
+  async getHeaderImage(
+    @Headers('Authorization') authHeader: string,
+    @Res() res,
+  ): Promise<any> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser: any = jwtDecode(token);
+      const facility: any = await this.facilityService.getSingleFacilityById(
+        loggedInUser.facility_id,
+      );
+      const laboratory = await this.laboratoriesService.getLabForSetting(
+        facility?._id,
+      );
+      const id = laboratory?._id;
+      const facilityDirectory = `src/common/uploads/laboratories/${id}/header`;
+      const readfiles = await fs.readdir(facilityDirectory);
+      let filePath;
+      const file = readfiles.find((file) => {
+        const fileName = file.replace(/\.[^/.]+$/, '');
+        if (fileName === id) {
+          filePath = `${facilityDirectory}/${file}`;
+        }
+      });
+      const imageBuffer = fs.readFileSync(filePath);
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Cache-Control', 'no-store');
+      res.setHeader('Content-Disposition', 'attachment; filename=image.png');
+      res.send(imageBuffer);
+    } catch (err) {
+      console.log('err in catch', err);
+    }
+  }
 
   @Post('/save-footer-image')
   @UseInterceptors(FileInterceptor('footer_image_file'))
@@ -279,38 +312,6 @@ export class LaboratoriesController {
     } catch (err) {
       console.log('err in catch', err);
       response.status(400).send({ error: err, message: 'Settings not change' });
-    }
-  }
-  @Get('/get-header-image')
-  async getHeaderImage(
-    @Headers('Authorization') authHeader: string,
-    @Res() res,
-  ): Promise<any> {
-    try {
-      const token = authHeader.split(' ')[1];
-      const loggedInUser: any = jwtDecode(token);
-      const facility: any = await this.facilityService.getSingleFacilityById(
-        loggedInUser.facility_id,
-      );
-      const laboratory = await this.laboratoriesService.getLabForSetting(
-        facility?._id,
-      );
-      const id = laboratory?._id;
-      const facilityDirectory = `src/common/uploads/laboratories/${id}/header`;
-      const readfiles = await fs.readdir(facilityDirectory);
-      let filePath;
-      const file = readfiles.find((file) => {
-        const fileName = file.replace(/\.[^/.]+$/, '');
-        if (fileName === id) {
-          filePath = `${facilityDirectory}/${file}`;
-        }
-      });
-      const imageBuffer = fs.readFileSync(filePath);
-      res.setHeader('Content-Type', 'image/png');
-      res.setHeader('Content-Disposition', 'attachment; filename=image.png');
-      res.send(imageBuffer);
-    } catch (err) {
-      console.log('err in catch', err);
     }
   }
 

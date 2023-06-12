@@ -142,8 +142,16 @@ export class LaboratoriesService {
     });
   }
 
-  async update(id: string, body: LaboratoryRequestDto): Promise<LabRequestDto> {
+  async update(id: string, body: LaboratoryRequestDto,user): Promise<LabRequestDto> {
     try {
+      if(id === 'update-lab-for-limware') {
+        const lab = await this.labRep.createQueryBuilder("laboratory")
+        .select("laboratory.*")
+        .where("laboratory.facility_id = :facility_id",{facility_id:user.facility_id})
+        .getRawOne()
+
+        id = lab?._id
+      }
       await this.labRep.update(id, body);
       const data = await this.labRep.findOne({
         select: [
@@ -169,6 +177,7 @@ export class LaboratoriesService {
         updated_by: '',
       });
     } catch (err) {
+      console.log("error",err)
       return err;
     }
   }
