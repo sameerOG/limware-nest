@@ -99,6 +99,10 @@ export class AppointmentsService {
       laboratory_id = labModal.parent_lab_id;
     }
 
+    if (!labModal) {
+      throw 'Cannot save appointment, laboratory type is not set.';
+    }
+
     const patient_account_id = await this.__findOrCreatePatientAccount(
       parent_facility_id,
       user.facility_id,
@@ -298,7 +302,7 @@ export class AppointmentsService {
         cc_facility_id: facility_id,
       });
     } else {
-      throw 'Cannot save patient, lab type does not set.';
+      throw 'Cannot save patient, laboratory type is not set.';
     }
 
     if (!isEmpty(guardian_type) && !isEmpty(guardian_name)) {
@@ -347,7 +351,7 @@ export class AppointmentsService {
         cc_facility_id: facility_id,
       });
     } else {
-      throw 'Cannot save appointment, lab type does not set.';
+      throw 'Cannot save appointment, laboratory type is not set.';
     }
 
     // setLabAndAppointmentNumber (check php code for this)
@@ -653,10 +657,6 @@ export class AppointmentsService {
       })
       .getRawOne();
 
-    const totalTestCategories = await this.testCategoryRep
-      .createQueryBuilder('test_category.*')
-      .getCount();
-
     let laboratory_id = labModal?._id;
 
     if (labModal?.type === 'cc') {
@@ -671,23 +671,6 @@ export class AppointmentsService {
       laboratory_id = mainLabModal?._id;
     }
 
-    let categoryModal = await this.testCategoryRep
-      .createQueryBuilder('test_category')
-      .select(
-        'test_category._id,test_category.name,test_category.title_for_print',
-      )
-      .where('test_category.laboratory_id = :laboratory_id', { laboratory_id })
-      .getRawMany();
-
-    console.log('categoryModal', categoryModal.length, totalTestCategories);
-    if (totalTestCategories !== categoryModal.length) {
-      categoryModal = await this.testCategoryRep
-        .createQueryBuilder('test_category')
-        .select(
-          'test_category._id,test_category.name,test_category.title_for_print',
-        )
-        .getRawMany();
-    }
     const rateListModal = await this.labTestRateListRep
       .createQueryBuilder('lab_test_rate_list')
       .select('lab_test_rate_list.*')
@@ -711,37 +694,44 @@ export class AppointmentsService {
 
     let returnResult = [];
 
-    for (let i = 0; i < categoryModal.length; i++) {
-      const tests = await this.testRep
-        .createQueryBuilder('test')
-        .select('test.*')
-        .where('test.test_category_id = :test_category_id', {
-          test_category_id: categoryModal[i]._id,
-        })
-        .andWhere('test.archived = :archived', { archived: false })
-        .getRawMany();
+    const tests = await this.testRep
+      .createQueryBuilder('test')
+      .select('test.*')
+      .where('test.facility_id = :facility_id', {
+        facility_id: user.facility_id,
+      })
+      .andWhere('test.archived = :archived', { archived: false })
+      .getRawMany();
 
-      for (let j = 0; j < tests.length; j++) {
-        if (!tests[i]?.parametric_only) {
-          let testToPush = {
-            _id: tests[j]._id,
-            name: tests[j].name,
-            code: tests[j].code,
-            title_for_print: tests[j].title_for_print,
-            price: 0,
-            category: categoryModal[i].name,
-            tags: tests[j].tags,
-          };
+    const templateTests = await this.testRep
+      .createQueryBuilder('test')
+      .select('test.*')
+      .where('test.is_template = :is_template', {
+        is_template: 1,
+      })
+      .andWhere('test.archived = :archived', { archived: false })
+      .getRawMany();
 
-          for (let k = 0; k < rateListItemModal.length; k++) {
-            if (rateListItemModal[k].test_id === tests[j]._id) {
-              testToPush.price = rateListItemModal[k].price;
-            }
-          }
+    const finalTests = [...templateTests, ...tests];
 
-          returnResult.push(testToPush);
+    for (let j = 0; j < finalTests.length; j++) {
+      let testToPush = {
+        _id: finalTests[j]._id,
+        name: finalTests[j].name,
+        code: finalTests[j].code,
+        title_for_print: finalTests[j].title_for_print,
+        price: 0,
+        category: '',
+        tags: finalTests[j].tags,
+      };
+
+      for (let k = 0; k < rateListItemModal.length; k++) {
+        if (rateListItemModal[k].test_id === finalTests[j]._id) {
+          testToPush.price = rateListItemModal[k].price;
         }
       }
+
+      returnResult.push(testToPush);
     }
 
     return returnResult;

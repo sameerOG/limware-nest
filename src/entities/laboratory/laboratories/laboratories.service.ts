@@ -17,6 +17,8 @@ export class LaboratoriesService {
     private labRep: Repository<Laboratory>,
     @InjectRepository(LaboratorySetting)
     private labSetRep: Repository<LaboratorySetting>,
+    @InjectRepository(Facility)
+    private facilityRep: Repository<Facility>,
   ) {}
 
   async getAll(
@@ -157,8 +159,13 @@ export class LaboratoriesService {
           })
           .getRawOne();
 
+        await this.facilityRep.update(user.facility_id, {
+          address: body.address,
+        });
+
         id = lab?._id;
       }
+      delete body.address;
       await this.labRep.update(id, body);
       const data = await this.labRep.findOne({
         select: [

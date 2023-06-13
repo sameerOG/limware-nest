@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsNumber, IsObject } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsObject,
+  IsOptional,
+} from 'class-validator';
 
 export class LaboratoryRequestDto {
   @IsString()
@@ -14,6 +20,9 @@ export class LaboratoryRequestDto {
 
   @IsNotEmpty()
   facility_id: any;
+
+  @IsOptional()
+  address: string;
 
   @IsString()
   @IsNotEmpty()
