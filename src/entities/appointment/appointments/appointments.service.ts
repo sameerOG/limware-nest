@@ -678,6 +678,8 @@ export class AppointmentsService {
       )
       .where('test_category.laboratory_id = :laboratory_id', { laboratory_id })
       .getRawMany();
+
+    console.log('categoryModal', categoryModal.length, totalTestCategories);
     if (totalTestCategories !== categoryModal.length) {
       categoryModal = await this.testCategoryRep
         .createQueryBuilder('test_category')
@@ -720,25 +722,25 @@ export class AppointmentsService {
         .getRawMany();
 
       for (let j = 0; j < tests.length; j++) {
-        // if (!tests[i]?.parametric_only) {
-        let testToPush = {
-          _id: tests[j]._id,
-          name: tests[j].name,
-          code: tests[j].code,
-          title_for_print: tests[j].title_for_print,
-          price: 0,
-          category: categoryModal[i].name,
-          tags: tests[j].tags,
-        };
+        if (!tests[i]?.parametric_only) {
+          let testToPush = {
+            _id: tests[j]._id,
+            name: tests[j].name,
+            code: tests[j].code,
+            title_for_print: tests[j].title_for_print,
+            price: 0,
+            category: categoryModal[i].name,
+            tags: tests[j].tags,
+          };
 
-        for (let k = 0; k < rateListItemModal.length; k++) {
-          if (rateListItemModal[k].test_id === tests[j]._id) {
-            testToPush.price = rateListItemModal[k].price;
+          for (let k = 0; k < rateListItemModal.length; k++) {
+            if (rateListItemModal[k].test_id === tests[j]._id) {
+              testToPush.price = rateListItemModal[k].price;
+            }
           }
-        }
 
-        returnResult.push(testToPush);
-        // }
+          returnResult.push(testToPush);
+        }
       }
     }
 
