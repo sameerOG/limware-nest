@@ -140,12 +140,15 @@ export class LaboratoriesController {
     @Res() response: Response,
     @Body() body: LaboratoryRequestDto,
     @Param('id') id: string,
+    @Headers('Authorization') authHeader: string,
   ): Promise<LabRequestDto> {
     try {
-      let data = await this.labService.update(id, body);
-      if (data) {
-        response.status(200).send(data);
-        return data;
+      const token = authHeader.split(' ')[1];
+      const loggedInUser: any = jwtDecode(token);
+      let result = await this.labService.update(id, body,loggedInUser);
+      if (result) {
+        response.status(200).send(result);
+        return result;
       } else {
         throw new HttpException(
           { err: true, messages: 'Lab not updated' },

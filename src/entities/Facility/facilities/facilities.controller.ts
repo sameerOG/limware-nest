@@ -221,21 +221,22 @@ export class FacilitiesController {
     try {
       const data = JSON.parse(body?.data)
       const token = authHeader.split(' ')[1];
-      const loggedInUser = jwtDecode(token);
-      const facility = await this.facilityService.getFacility(loggedInUser);
-      const type = 'facility';
-      const name = String(facility._id);
+      const loggedInUser: any = jwtDecode(token);
       let pathFile;
-      if (file) {
-        const obj: FileManagerDto = {
-          file: file,
-          type: type,
-          name: name,
-          position: null
+      if(file){
+        const type = 'facility';
+        const name = String(loggedInUser?.facility._id);
+        if (file) {
+          const obj: FileManagerDto = {
+            file: file,
+            type: type,
+            name: name,
+            position: null
+          }
+          pathFile = await this.directoryManagerService.uploadFile(obj);
         }
-        pathFile = await this.directoryManagerService.uploadFile(obj);
       }
-      const facilityData = await this.facilityService.findAndUpdate(facility?.facility_id, data, pathFile);
+      const facilityData = await this.facilityService.findAndUpdate(loggedInUser?.facility_id, data, pathFile);
       response.status(200).send({ message: 'Facility updated', data: facilityData })
       return facilityData;
     }
