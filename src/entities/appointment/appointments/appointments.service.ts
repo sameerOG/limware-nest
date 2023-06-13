@@ -820,10 +820,7 @@ export class AppointmentsService {
         patients: filteredPatients,
       };
     } else {
-      throw {
-        field: 'mobile_number',
-        message: 'Patient not found',
-      };
+      return null;
     }
   }
 

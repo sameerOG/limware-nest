@@ -132,6 +132,30 @@ export class TestsService {
         where: { _id: id },
       });
 
+      const parentTests = await this.testParameterRep
+        .createQueryBuilder('test_parameter')
+        .select('test_parameter._id,test_parameter.parent_test_id')
+        .where('test_parameter.child_test_id = :child_test_id', {
+          child_test_id: id,
+        })
+        .where('test_parameter.archived = :archived', {
+          archived: false,
+        })
+        .getRawMany();
+
+      let parentTestsActive = [];
+
+      for (let i = 0; i < parentTests.length; i++) {
+        const test = await this.testRep.findOne({
+          where: { _id: parentTests[i].parent_test_id },
+        });
+        let obj = {
+          test_parameter_id: parentTests[i]._id,
+          parentTest: test,
+        };
+        parentTestsActive.push(obj);
+      }
+
       const { ...rest } = data;
       return new SingleTestResponseDto({
         ...rest,
@@ -142,7 +166,7 @@ export class TestsService {
         specimen: data.specimen_id,
         uom: data.uom_id,
         category: data.test_category_id,
-        parentTestsActive: [],
+        parentTestsActive,
         rest_input_options: [],
         test_category_id: data.test_category_id?._id,
         specimen_id: data.specimen_id?._id,

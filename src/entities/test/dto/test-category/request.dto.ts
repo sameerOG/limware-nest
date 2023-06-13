@@ -159,7 +159,7 @@ export class MultiplePayload {
   parent_test_id: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   test_group_id: string;
 
   @IsArray()
@@ -202,6 +202,10 @@ export class TestParameterRequest {
   @IsString()
   @IsOptional()
   test_group_name: string;
+
+  @IsString()
+  @IsOptional()
+  test_group_id: string;
 
   @IsString()
   @IsOptional()

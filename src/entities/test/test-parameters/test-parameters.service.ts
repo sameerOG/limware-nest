@@ -45,7 +45,7 @@ export class TestParametersService {
   ): Promise<TestParameterResponse> {
     const query: any = {
       where: {
-        archived: Not(true), // equivalent to `archived IS NULL OR archived = false`
+        archived: false, // equivalent to `archived IS NULL OR archived = false`
       },
       select: [
         '_id',
@@ -312,7 +312,7 @@ export class TestParametersService {
       .execute();
 
     if (updatedTestParameter) {
-      if (test && test.parametric_only) {
+      if (test) {
         await this.deleteTest(test);
       }
     }
@@ -335,17 +335,11 @@ export class TestParametersService {
     if (patientTestsCount === 0 && patientTestsParametersCount === 0) {
       return await this.testRep.softDelete(data._id);
     } else if (patientTestsCount > 0 || patientTestsParametersCount > 0) {
-      await this._archiveEverything(
+      return await this._archiveEverything(
         data,
         patientTestsCount,
         patientTestsParametersCount,
       );
-      return await this.testRep
-        .createQueryBuilder('test')
-        .update(Test)
-        .set({ archived: true })
-        .where('test._id = :_id', { _id: data._id })
-        .execute();
     }
   }
 
@@ -369,7 +363,7 @@ export class TestParametersService {
           .createQueryBuilder('test_parameter')
           .update(TestParameter)
           .set({ archieved: true })
-          .where('test_normal_range.test_id = :test_id', { test_id: data._id })
+          .where('test_parameter._id = :_id', { _id: tpp._id })
           .execute();
       });
 
@@ -378,7 +372,7 @@ export class TestParametersService {
           .createQueryBuilder('test_parameter')
           .update(TestParameter)
           .set({ archieved: true })
-          .where('test_normal_range.test_id = :test_id', { test_id: data._id })
+          .where('test_parameter._id = :_id', { _id: tpc._id })
           .execute();
       });
     }
@@ -436,32 +430,46 @@ export class TestParametersService {
     const test = await this.testRep.findOne({
       where: {
         _id: parent_test_id,
-        archived: Not(true), // equivalent to `archived IS NULL OR archived = false`
+        archived: false, // equivalent to `archived IS NULL OR archived = false`
       },
       relations: ['test_category_id'],
     });
 
-    if (test?.test_category_id.type === 'general') {
-      let mappedTests: any = await this.testParameterRep
-        .createQueryBuilder('test_parameter')
-        .select('test_parameter.*')
-        .where('test_parameter.parent_test_id = :parent_test_id', {
-          parent_test_id,
-        })
-        .andWhere(
-          'test_parameter.archived IS NULL OR test_parameter.archived = false',
-        );
+    if (
+      test?.test_category_id.type === 'general' ||
+      test?.test_category_id.type === ''
+    ) {
+      let mappedTests: any;
 
       if (user.portal === 'limware') {
-        mappedTests = mappedTests
+        mappedTests = await this.testParameterRep
+          .createQueryBuilder('test_parameter')
+          .select('test_parameter.*')
+          .where('test_parameter.parent_test_id = :parent_test_id', {
+            parent_test_id,
+          })
+          .andWhere(
+            'test_parameter.archived IS NULL OR test_parameter.archived = false',
+          )
           .andWhere('test_parameter.facility_id = :facility_id', {
             facility_id: user.facility_id,
           })
           .andWhere('test_parameter.laboratory_id = :laboratory_id', {
             laboratory_id: labModel._id,
-          });
+          })
+          .getRawMany();
+      } else {
+        mappedTests = await this.testParameterRep
+          .createQueryBuilder('test_parameter')
+          .select('test_parameter.*')
+          .where('test_parameter.parent_test_id = :parent_test_id', {
+            parent_test_id,
+          })
+          .andWhere(
+            'test_parameter.archived IS NULL OR test_parameter.archived = false',
+          )
+          .getRawMany();
       }
-      mappedTests.getRawMany();
 
       for (let i = 0; i < mappedTests.length; i++) {
         assignedParametersIds.push(mappedTests[i].child_test_id);
@@ -474,7 +482,7 @@ export class TestParametersService {
       .where('test.single_or_group = :single_or_group', {
         single_or_group: 'single',
       })
-      .andWhere('(test.archived IS NULL OR test.archived = :archived)', {
+      .andWhere('test.archived = :archived', {
         archived: false,
       })
       .andWhere(`test._id NOT IN (:...assignedParametersIds)`, {
@@ -503,25 +511,27 @@ export class TestParametersService {
     for (let i = 0; i < data.length; i++) {
       let parent_test_id = data[i].parent_test_id?._id;
       let childTestWithDetailsObj = data[i].child_test_id;
-      const { code, name, sequence, single_or_group, title_for_print, _id } =
-        childTestWithDetailsObj;
-      const childTestWithDetails = {
-        code,
-        name,
-        sequence,
-        single_or_group,
-        title_for_print,
-        _id,
-        normal_range: [],
-      };
-      let child_test_id = data[i].child_test_id?._id;
+      if (childTestWithDetailsObj) {
+        const { code, name, sequence, single_or_group, title_for_print, _id } =
+          childTestWithDetailsObj;
+        const childTestWithDetails = {
+          code,
+          name,
+          sequence,
+          single_or_group,
+          title_for_print,
+          _id,
+          normal_range: [],
+        };
+        let child_test_id = data[i].child_test_id?._id;
+        Object.assign(data[i], {
+          parent_test_id,
+          child_test_id,
+          childTestWithDetails,
+        });
+      }
       delete data.parent_test_id;
       delete data.child_test_id;
-      Object.assign(data[i], {
-        parent_test_id,
-        child_test_id,
-        childTestWithDetails,
-      });
       const parameterItem = data[i];
       const testGroupId = parameterItem.test_group_id?._id;
       delete parameterItem.test_group_id;

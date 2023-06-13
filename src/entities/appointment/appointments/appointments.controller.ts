@@ -134,10 +134,7 @@ export class AppointmentsController {
         response.status(200).send(data);
         return data;
       } else {
-        throw new HttpException(
-          { err: true, messages: 'Patient not found' },
-          422,
-        );
+        response.status(200).send(null);
       }
     } catch (err) {
       console.log('err in catch', err);
