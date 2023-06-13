@@ -15,6 +15,7 @@ export class FileHandling {
   }
 
   async generatePdf(options: any, content: any, filePath: string) {
+    console.log('content', content);
     return new Promise((resolve, reject) => {
       pdf.create(content, options).toFile(filePath, (err, res) => {
         if (err) {

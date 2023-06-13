@@ -575,6 +575,7 @@ export class ReportsService {
     const content = await this.fileHandling.renderTemplate(reportTemplate, {
       data,
     });
+    console.log('data pdf', data);
     const folderPath = process.cwd() + '/src/common/uploads/invoices';
     const fileName = `patient-due-payment-report-${new Date().getTime()}.pdf`;
     const filePath = path.join(folderPath, fileName);
