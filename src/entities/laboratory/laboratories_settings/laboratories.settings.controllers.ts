@@ -85,15 +85,16 @@ export class LaboratorySettingsController {
       let data = await this.laboratoriesService.getLabSettingForSaveTest(
         loggedInUser,
       );
+      console.log('data', data);
+      // if (data) {
       response.status(200).send(data);
-      if (data) {
-        return data;
-      } else {
-        throw new HttpException(
-          { err: true, messages: 'Lab Settings not found' },
-          422,
-        );
-      }
+      return data;
+      // } else {
+      //   throw new HttpException(
+      //     { err: true, messages: 'Lab Settings not found' },
+      //     422,
+      //   );
+      // }
     } catch (err) {
       console.log('err in catch', err);
       response.status(422).send({ error: err, message: 'Patient not updated' });
