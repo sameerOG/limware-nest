@@ -35,7 +35,7 @@ export class InvoicesService {
     private paymentTransactionRep: Repository<PaymentTRansaction>,
     private fileHandling: FileHandling,
     private patientService: PatientsService,
-  ) { }
+  ) {}
 
   async getWithLineItems(
     invoice_id: string,
@@ -173,7 +173,18 @@ export class InvoicesService {
     const folderPath = process.cwd() + '/src/common/uploads/invoices';
     const fileName = `${data.invoice_id}-${new Date().getTime()}.pdf`;
     const filePath = path.join(folderPath, fileName);
-    return await this.fileHandling.generatePdf(options, content, filePath);
+    const fileContent = await this.fileHandling.generatePdf(
+      options,
+      content,
+      filePath,
+    );
+    await fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error(err);
+        return err;
+      }
+    });
+    return fileContent;
   }
 
   async getPath(pathArray, createDirectory = false) {
@@ -351,12 +362,16 @@ export class InvoicesService {
     });
   }
   async todaySales(patient_id): Promise<Invoice | undefined> {
-    const data = await this.invoiceRep.query(`select paid_amount from public.invoice where patient_id = '${patient_id}'`)
+    const data = await this.invoiceRep.query(
+      `select paid_amount from public.invoice where patient_id = '${patient_id}'`,
+    );
     return data;
   }
 
   async todayDues(patient_id): Promise<Invoice | undefined> {
-    const data = await this.invoiceRep.query(`select * from public.invoice where patient_id = '${patient_id}'`)
+    const data = await this.invoiceRep.query(
+      `select * from public.invoice where patient_id = '${patient_id}'`,
+    );
     return data;
   }
 }

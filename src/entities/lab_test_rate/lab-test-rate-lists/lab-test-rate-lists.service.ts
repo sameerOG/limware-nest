@@ -5,6 +5,7 @@ import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 import { Test } from 'src/entities/test/test.entity';
 import { Repository } from 'typeorm';
 import * as path from 'path';
+import * as fs from 'fs';
 import { LabTestRateList } from '../lab_test_rate_list.entity';
 import { LabTestRateListItem } from '../lab_test_rate_list_item.entity';
 import { LabTestRateListRequestDto } from './dto/request.dto';
@@ -101,7 +102,18 @@ export class LabTestRateListsService {
       labTestRateList?._id
     }-lab-test-rate-list-${new Date().getTime()}.pdf`;
     const filePath = path.join(folderPath, fileName);
-    return await this.fileHandling.generatePdf(options, content, filePath);
+    const fileContent = await this.fileHandling.generatePdf(
+      options,
+      content,
+      filePath,
+    );
+    await fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error(err);
+        return err;
+      }
+    });
+    return fileContent;
   }
 
   async create(
