@@ -623,10 +623,10 @@ export class PatientsService {
       const patientTestId = patient_test_ids[i];
       let testsStatuses = await this.getResultEnteredCounts(patientTestId);
       if (
-        !settingModel.require_results_for_mark_as_done ||
-        (settingModel.require_results_for_mark_as_done &&
-          testsStatuses.result_not_entered == 0 &&
-          testsStatuses.result_entered > 0)
+        !settingModel?.require_results_for_mark_as_done ||
+        (settingModel?.require_results_for_mark_as_done &&
+          testsStatuses?.result_not_entered == 0 &&
+          testsStatuses?.result_entered > 0)
       ) {
         let model = await this.patientTestRep.findOne({
           where: { _id: patientTestId },
@@ -975,18 +975,14 @@ export class PatientsService {
       data.patient?._id
     }-selected-tests-${new Date().getTime()}.pdf`;
     const filePath = path.join(folderPath, fileName);
-    const fileContent = await this.fileHandling.generatePdf(
-      options,
-      content,
-      filePath,
-    );
-    await fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error(err);
-        return err;
-      }
-    });
-    return fileContent;
+    return await this.fileHandling.generatePdf(options, content, filePath);
+    // await fs.unlink(filePath, (err) => {
+    //   if (err) {
+    //     console.error(err);
+    //     return err;
+    //   }
+    // });
+    // return fileContent;
   }
 
   async getPatientTestData(

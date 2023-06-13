@@ -102,18 +102,14 @@ export class LabTestRateListsService {
       labTestRateList?._id
     }-lab-test-rate-list-${new Date().getTime()}.pdf`;
     const filePath = path.join(folderPath, fileName);
-    const fileContent = await this.fileHandling.generatePdf(
-      options,
-      content,
-      filePath,
-    );
-    await fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error(err);
-        return err;
-      }
-    });
-    return fileContent;
+    return await this.fileHandling.generatePdf(options, content, filePath);
+    // await fs.unlink(filePath, (err) => {
+    //   if (err) {
+    //     console.error(err);
+    //     return err;
+    //   }
+    // });
+    // return fileContent;
   }
 
   async create(

@@ -100,18 +100,14 @@ export class ReportsService {
     const folderPath = process.cwd() + '/src/common/uploads/invoices';
     const fileName = `patient-${new Date().getTime()}.pdf`;
     const filePath = path.join(folderPath, fileName);
-    const fileContent = await this.fileHandling.generatePdf(
-      options,
-      content,
-      filePath,
-    );
-    await fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error(err);
-        return err;
-      }
-    });
-    return fileContent;
+    return await this.fileHandling.generatePdf(options, content, filePath);
+    // await fs.unlink(filePath, (err) => {
+    //   if (err) {
+    //     console.error(err);
+    //     return err;
+    //   }
+    // });
+    // return fileContent;
   }
 
   formatDate(date) {
@@ -238,18 +234,14 @@ export class ReportsService {
     const folderPath = process.cwd() + '/src/common/uploads/invoices';
     const fileName = `patient-daily-count-${new Date().getTime()}.pdf`;
     const filePath = path.join(folderPath, fileName);
-    const fileContent = await this.fileHandling.generatePdf(
-      options,
-      content,
-      filePath,
-    );
-    await fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error(err);
-        return err;
-      }
-    });
-    return fileContent;
+    return await this.fileHandling.generatePdf(options, content, filePath);
+    // await fs.unlink(filePath, (err) => {
+    //   if (err) {
+    //     console.error(err);
+    //     return err;
+    //   }
+    // });
+    // return fileContent;
   }
 
   async getSalesReport(body, user): Promise<any> {
@@ -374,18 +366,14 @@ export class ReportsService {
     const folderPath = process.cwd() + '/src/common/uploads/invoices';
     const fileName = `patient-daily-count-${new Date().getTime()}.pdf`;
     const filePath = path.join(folderPath, fileName);
-    const fileContent = await this.fileHandling.generatePdf(
-      options,
-      content,
-      filePath,
-    );
-    await fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error(err);
-        return err;
-      }
-    });
-    return fileContent;
+    return await this.fileHandling.generatePdf(options, content, filePath);
+    // await fs.unlink(filePath, (err) => {
+    //   if (err) {
+    //     console.error(err);
+    //     return err;
+    //   }
+    // });
+    // return fileContent;
   }
 
   async getSalesDailyReport(body, user): Promise<any> {
@@ -511,18 +499,14 @@ export class ReportsService {
     const folderPath = process.cwd() + '/src/common/uploads/invoices';
     const fileName = `patient-daily-sales-report-${new Date().getTime()}.pdf`;
     const filePath = path.join(folderPath, fileName);
-    const fileContent = await this.fileHandling.generatePdf(
-      options,
-      content,
-      filePath,
-    );
-    await fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error(err);
-        return err;
-      }
-    });
-    return fileContent;
+    return await this.fileHandling.generatePdf(options, content, filePath);
+    // await fs.unlink(filePath, (err) => {
+    //   if (err) {
+    //     console.error(err);
+    //     return err;
+    //   }
+    // });
+    // return fileContent;
   }
 
   async getDuePaymentReport(body, user): Promise<any> {
@@ -594,17 +578,13 @@ export class ReportsService {
     const folderPath = process.cwd() + '/src/common/uploads/invoices';
     const fileName = `patient-due-payment-report-${new Date().getTime()}.pdf`;
     const filePath = path.join(folderPath, fileName);
-    const fileContent = await this.fileHandling.generatePdf(
-      options,
-      content,
-      filePath,
-    );
-    await fs.unlink(filePath, (err) => {
-      if (err) {
-        console.error(err);
-        return err;
-      }
-    });
-    return fileContent;
+    return await this.fileHandling.generatePdf(options, content, filePath);
+    // await fs.unlink(filePath, (err) => {
+    //   if (err) {
+    //     console.error(err);
+    //     return err;
+    //   }
+    // });
+    // return fileContent;
   }
 }
