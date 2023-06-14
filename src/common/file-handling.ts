@@ -2,9 +2,6 @@ import * as ejs from 'ejs';
 import * as fs from 'fs';
 import * as path from 'path';
 // import * as pdf from 'html-pdf';
-import * as pdfkit from 'pdfkit';
-import * as htmlToImage from 'html-to-image';
-import * as puppeteer from 'puppeteer';
 const pdf = require('html-pdf-node');
 
 export class FileHandling {
