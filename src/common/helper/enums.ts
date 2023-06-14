@@ -1,3 +1,5 @@
+const path = require('path');
+
 export const limwareFeatures = [
   {
     id: 'dashboardModule.*',
@@ -1671,5 +1673,8 @@ export const options = {
     height: '8px',
   },
 
-  phantomPath: './node_modules/phantomjs-prebuilt/bin/phantomjs',
+  phantomPath: path.join(
+    __dirname,
+    '../../../../node_modules/phantomjs-prebuilt/bin/phantomjs',
+  ),
 };
