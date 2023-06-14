@@ -965,19 +965,23 @@ export class PatientsService {
       reportTemplate,
       payload,
     );
-    const folderPath = process.cwd() + '/src/common/uploads/invoices';
+    const folderPath = process.cwd() + '/src/common/uploads/invoice_files';
     const fileName = `${
       data.patient?._id
     }-selected-tests-${new Date().getTime()}.pdf`;
     const filePath = path.join(folderPath, fileName);
-    return await this.fileHandling.generatePdf(options, content, filePath);
-    // await fs.unlink(filePath, (err) => {
-    //   if (err) {
-    //     console.error(err);
-    //     return err;
-    //   }
-    // });
-    // return fileContent;
+    const fileContent = await this.fileHandling.generatePdf(
+      options,
+      content,
+      filePath,
+    );
+    await fs.unlink(filePath, (err) => {
+      if (err) {
+        console.error(err);
+        return err;
+      }
+    });
+    return fileContent;
   }
 
   async getPatientTestData(
