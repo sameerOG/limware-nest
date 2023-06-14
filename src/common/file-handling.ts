@@ -1,8 +1,8 @@
 import * as ejs from 'ejs';
 import * as fs from 'fs';
 import * as path from 'path';
-// import * as pdf from 'html-pdf';
-const pdf = require('html-pdf-node');
+import * as pdf from 'html-pdf';
+// const pdf = require('html-pdf-node');
 
 export class FileHandling {
   async renderTemplate(template: string, data: any): Promise<string> {
@@ -16,87 +16,50 @@ export class FileHandling {
   }
 
   async generatePdf(options: any, content: any, filePath: string) {
-    // return new Promise((resolve, reject) => {
-    //   pdf.create(content, options).toFile(filePath, (err, res) => {
-    //     if (err) {
-    //       console.error(err);
-    //       reject(err);
-    //     } else {
-    //       console.log(res, filePath);
-    //       fs.readFile(res.filename, (err, fileData) => {
-    //         if (err) {
-    //           console.error(err);
-    //           reject(err);
-    //         } else {
-    //           resolve(fileData);
-    //         }
-    //       });
-    //     }
-    //   });
-    // });
-
-    // const browser = await puppeteer.launch({ headless: 'new' });
-    // const page = await browser.newPage();
-    // await page.setContent(content);
-
-    // await page.emulateMediaType('screen');
-    // const pdfBuffer = await page.pdf({
-    //   path: filePath,
-    //   format: 'A4',
-    //   margin: {
-    //     left: '10px',
-    //     right: '10px',
-    //     top: '0px',
-    //     bottom: '0px',
-    //   },
-    //   displayHeaderFooter: true,
-    //   headerTemplate: '<div style="height: 10px;"></div>',
-    //   footerTemplate: '<div style="height: 8px;"></div>',
-    // });
-
-    // await browser.close();
-
-    // return new Promise<Buffer>((resolve, reject) => {
-    //   fs.writeFile(filePath, pdfBuffer, (err) => {
-    //     if (err) {
-    //       reject(err);
-    //     } else {
-    //       fs.readFile(filePath, (err, fileData) => {
-    //         if (err) {
-    //           reject(err);
-    //         } else {
-    //           resolve(fileData);
-    //         }
-    //       });
-    //     }
-    //   });
-    // });
-
     return new Promise((resolve, reject) => {
-      pdf
-        .generatePdf({ content }, options)
-        .then((pdfBuffer) => {
-          fs.writeFile(filePath, pdfBuffer, (err) => {
+      pdf.create(content, options).toFile(filePath, (err, res) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+        } else {
+          console.log(res, filePath);
+          fs.readFile(res.filename, (err, fileData) => {
             if (err) {
               console.error(err);
               reject(err);
             } else {
-              fs.readFile(filePath, (err, fileData) => {
-                if (err) {
-                  console.error(err);
-                  reject(err);
-                } else {
-                  resolve(fileData);
-                }
-              });
+              resolve(fileData);
             }
           });
-        })
-        .catch((error) => {
-          console.error(error);
-          reject(error);
-        });
+        }
+      });
     });
+
+    // return new Promise((resolve, reject) => {
+    //   pdf
+    //     .generatePdf({ content }, options)
+    //     .then((pdfBuffer) => {
+    //       fs.writeFile(filePath, pdfBuffer, (err) => {
+    //         if (err) {
+    //           console.error(err);
+    //           reject(err);
+    //         } else {
+    //           fs.readFile(filePath, (err, fileData) => {
+    //             if (err) {
+    //               console.error(err);
+    //               reject(err);
+    //             } else {
+    //               resolve(fileData);
+    //             }
+    //           });
+    //         }
+    //       });
+    //     })
+    //     .catch((error) => {
+    //       console.error(error);
+    //       reject(error);
+    //     });
+    // });
   }
 
   async separateDecimalValue(number) {
