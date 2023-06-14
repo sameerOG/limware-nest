@@ -15,6 +15,13 @@ export class FileHandling {
   }
 
   async generatePdf(options: any, content: any, filePath: string) {
+    console.log(
+      'path to file',
+      path.resolve(
+        process.cwd(),
+        'node_modules/phantomjs-prebuilt/bin/phantomjs',
+      ),
+    );
     return new Promise((resolve, reject) => {
       pdf.create(content, options).toFile(filePath, (err, res) => {
         if (err) {

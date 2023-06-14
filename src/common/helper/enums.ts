@@ -1,3 +1,5 @@
+import * as path from 'path';
+
 export const limwareFeatures = [
   {
     id: 'dashboardModule.*',
@@ -1670,4 +1672,8 @@ export const options = {
   footer: {
     height: '8px',
   },
+  phantomPath: path.resolve(
+    process.cwd(),
+    'node_modules/phantomjs-prebuilt/bin/phantomjs',
+  ),
 };
