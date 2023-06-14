@@ -2,7 +2,6 @@ import * as ejs from 'ejs';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as pdf from 'html-pdf';
-import puppeteer from 'puppeteer';
 
 export class FileHandling {
   async renderTemplate(template: string, data: any): Promise<string> {
@@ -16,37 +15,24 @@ export class FileHandling {
   }
 
   async generatePdf(options: any, content: any, filePath: string) {
-    // return new Promise((resolve, reject) => {
-    //   pdf.create(content, options).toFile(filePath, (err, res) => {
-    //     if (err) {
-    //       console.error(err);
-    //       reject(err);
-    //     } else {
-    //       console.log(res, filePath);
-    //       fs.readFile(res.filename, (err, fileData) => {
-    //         if (err) {
-    //           console.error(err);
-    //           reject(err);
-    //         } else {
-    //           resolve(fileData);
-    //         }
-    //       });
-    //     }
-    //   });
-    // });
-    try {
-      const browser = await puppeteer.launch();
-      const page = await browser.newPage();
-      await page.setContent(content);
-      await page.pdf({ path: filePath, format: 'A4' });
-      await browser.close();
-
-      const fileData = await fs.promises.readFile(filePath);
-      return fileData;
-    } catch (err) {
-      console.error(err);
-      throw err;
-    }
+    return new Promise((resolve, reject) => {
+      pdf.create(content, options).toFile(filePath, (err, res) => {
+        if (err) {
+          console.error(err);
+          reject(err);
+        } else {
+          console.log(res, filePath);
+          fs.readFile(res.filename, (err, fileData) => {
+            if (err) {
+              console.error(err);
+              reject(err);
+            } else {
+              resolve(fileData);
+            }
+          });
+        }
+      });
+    });
   }
 
   async separateDecimalValue(number) {
