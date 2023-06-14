@@ -18,6 +18,8 @@ import { AuthGuard } from 'src/guard/auth.guard';
 import {
   MarkAsDoneRequestDto,
   printAllRequestDto,
+  updateAssignedTestResult,
+  updateNotes,
   UpdatePatientRequestDto,
 } from '../dto/request.dto';
 import {
@@ -305,6 +307,48 @@ export class PatientsController {
     } catch (err) {
       console.log('err in catch', err);
       response.status(422).send({ error: err, message: 'Patient not found' });
+    }
+  }
+
+  @Post('/assigned-tests/update-notes')
+  async updateNotes(
+    @Res() response: Response,
+    @Body() body: updateNotes,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<any> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+
+      let data = await this.patientService.updateNotes(body);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({ error: err, message: 'Notes not updated' });
+    }
+  }
+
+  @Put('/assigned-tests/:id')
+  async updateResult(
+    @Res() response: Response,
+    @Param('id') id: string,
+    @Body() body: updateAssignedTestResult,
+    @Headers('Authorization') authHeader: string,
+  ): Promise<any> {
+    try {
+      const token = authHeader.split(' ')[1];
+      const loggedInUser = jwtDecode(token);
+
+      let data = await this.patientService.updateResult(id, body, loggedInUser);
+      console.log('ddddd', data);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Assigned Tests not found' });
     }
   }
 }
