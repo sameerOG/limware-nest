@@ -747,7 +747,7 @@ export class AppointmentsService {
       let testToPush = {
         _id: finalTests[j]._id,
         name: finalTests[j].name,
-        code: finalTests[j].code,
+        code: finalTests[j].code || '',
         title_for_print: finalTests[j].title_for_print,
         price: 0,
         category: '',
