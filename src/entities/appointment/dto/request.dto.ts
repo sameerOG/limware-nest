@@ -150,3 +150,9 @@ export class DeleteTestDto {
   @IsOptional()
   user_comment: string;
 }
+
+export class UpdateAppointmentReference {
+  @IsString()
+  @IsOptional()
+  reference_id: string;
+}

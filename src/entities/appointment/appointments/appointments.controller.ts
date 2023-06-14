@@ -8,6 +8,8 @@ import {
   HttpException,
   Query,
   UseGuards,
+  Param,
+  Put,
 } from '@nestjs/common';
 import { query, Response } from 'express';
 import jwtDecode from 'jwt-decode';
@@ -20,11 +22,13 @@ import {
   AddTestDto,
   DeleteTestDto,
   SearchPatientRequest,
+  UpdateAppointmentReference,
 } from '../dto/request.dto';
 import {
   AddAppointmentResponseDto,
   GetAllReferences,
   GetAllTests,
+  GetReferenceAppointment,
   PatientTestForDeleteResponseDto,
   SearchPatient,
 } from '../dto/response.dto';
@@ -247,6 +251,40 @@ export class AppointmentsController {
       response
         .status(422)
         .send({ error: err, message: 'Patient Test not deleted' });
+    }
+  }
+
+  @Put('/:id')
+  async updateReference(
+    @Res() response: Response,
+    @Query() query,
+    @Body() body: UpdateAppointmentReference,
+  ): Promise<GetReferenceAppointment> {
+    try {
+      const id = query['id'];
+      let data = await this.appointmentService.updateReference(id, body);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Appointment not found' });
+    }
+  }
+
+  @Get('/:id')
+  async getReference(
+    @Res() response: Response,
+    @Param('id') id: string,
+  ): Promise<GetReferenceAppointment> {
+    try {
+      let data = await this.appointmentService.getReference(id);
+      response.status(200).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response.status(422).send({ error: err, message: 'Tests not found' });
     }
   }
 }

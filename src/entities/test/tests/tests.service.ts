@@ -57,15 +57,20 @@ export class TestsService {
     text?: string,
     sort?: string,
   ): Promise<TestResponseDto[]> {
-    let where: any = {}; // Declare an empty where object
+    let where: any = {
+      archived: false,
+    };
 
     if (text) {
-      where = [
-        { name: Like(`%${text}%`) },
-        { title_for_print: Like(`%${text}%`) },
-        { single_or_group: Like(`%${text}%`) },
-        { tags: Like(`%${text}%`) },
-      ];
+      where = {
+        ...where,
+        or: [
+          { name: Like(`%${text}%`) },
+          { title_for_print: Like(`%${text}%`) },
+          { single_or_group: Like(`%${text}%`) },
+          { tags: Like(`%${text}%`) },
+        ],
+      };
     }
     const data: any = await this.testRep.find({
       select: [
@@ -681,7 +686,7 @@ export class TestsService {
         })
         .getRawOne();
       let savedTest: any = await this.testRep.findOne({
-        where: { _id: id, facility_id: user.facility_id },
+        where: { _id: id },
         relations: [
           'test_normal_range',
           'test_parameter_parent',
@@ -692,14 +697,14 @@ export class TestsService {
         ],
       });
       let test;
-      if (user.portal === 'limware') {
-        if (savedTest.laboratory_id?._id === lab?._id) {
-          test = savedTest;
-        }
-      } else {
-        test = savedTest;
-      }
-
+      test = savedTest;
+      // if (user.portal === 'limware') {
+      //   if (savedTest.facility_id?._id === user.facility_id) {
+      //     test = savedTest;
+      //   }
+      // } else {
+      //   test = savedTest;
+      // }
       if (test.patient_test.length === 0 && test.ptpr.length === 0) {
         await this.testNormalRangeRep.delete({ test_id: id });
         await this.testRep.delete(test._id);
@@ -710,8 +715,7 @@ export class TestsService {
           test.patient_test.length,
           test.ptpr.length,
         );
-        test.archived = true;
-        const updatedTest = await this.testRep.update(id, test);
+        const updatedTest = await this.testRep.update(id, { archived: true });
         return updatedTest;
       }
     } catch (err) {

@@ -17,12 +17,14 @@ import {
   AddTestDto,
   DeleteTestDto,
   SearchPatientRequest,
+  UpdateAppointmentReference,
 } from '../dto/request.dto';
 import { isEmpty } from 'lodash';
 import {
   AddAppointmentResponseDto,
   GetAllReferences,
   GetAllTests,
+  GetReferenceAppointment,
   PatientTestForDeleteResponseDto,
   SearchPatient,
 } from '../dto/response.dto';
@@ -150,6 +152,33 @@ export class AppointmentsService {
     //   created_at:patient.created_at.getTime(),
     //   updated_at:patient.updated_at.getTime()
     // })
+  }
+
+  async getReference(id: string): Promise<GetReferenceAppointment> {
+    const data = await this.appointmentRep.findOne({
+      select: ['reference_id'],
+      where: { _id: id },
+    });
+    return data ? data : { reference_id: '' };
+  }
+
+  async updateReference(
+    id: string,
+    body: UpdateAppointmentReference,
+  ): Promise<Appointment> {
+    const data: any = await this.appointmentRep
+      .createQueryBuilder('appointment')
+      .select('appointment.*')
+      .where('appointment._id = :_id', { _id: id })
+      .getRawOne();
+
+    if (data) {
+      data.reference_id = body.reference_id;
+      await this.appointmentRep.update(id, body);
+      return data;
+    } else {
+      return null;
+    }
   }
 
   async __findOrCreatePatientAccount(

@@ -23,6 +23,14 @@ export class GetAllTests {
   }
 }
 
+export class GetReferenceAppointment {
+  readonly reference_id: string;
+
+  constructor(appointment: GetReferenceAppointment) {
+    this.reference_id = appointment.reference_id;
+  }
+}
+
 export class GetAllReferences {
   readonly name: string;
   readonly _id: Object;
