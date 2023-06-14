@@ -2,6 +2,9 @@ import * as ejs from 'ejs';
 import * as fs from 'fs';
 import * as path from 'path';
 import * as pdf from 'html-pdf';
+import * as pdfkit from 'pdfkit';
+import * as htmlToImage from 'html-to-image';
+import * as puppeteer from 'puppeteer';
 
 export class FileHandling {
   async renderTemplate(template: string, data: any): Promise<string> {
@@ -15,23 +18,53 @@ export class FileHandling {
   }
 
   async generatePdf(options: any, content: any, filePath: string) {
-    console.log(
-      'path to file',
-      path.resolve(
-        process.cwd(),
-        'node_modules/phantomjs-prebuilt/bin/phantomjs',
-      ),
-    );
-    return new Promise((resolve, reject) => {
-      pdf.create(content, options).toFile(filePath, (err, res) => {
+    // return new Promise((resolve, reject) => {
+    //   pdf.create(content, options).toFile(filePath, (err, res) => {
+    //     if (err) {
+    //       console.error(err);
+    //       reject(err);
+    //     } else {
+    //       console.log(res, filePath);
+    //       fs.readFile(res.filename, (err, fileData) => {
+    //         if (err) {
+    //           console.error(err);
+    //           reject(err);
+    //         } else {
+    //           resolve(fileData);
+    //         }
+    //       });
+    //     }
+    //   });
+    // });
+
+    const browser = await puppeteer.launch({ headless: 'new' });
+    const page = await browser.newPage();
+    await page.setContent(content);
+
+    await page.emulateMediaType('screen');
+    const pdfBuffer = await page.pdf({
+      path: filePath,
+      format: 'A4',
+      margin: {
+        left: '10px',
+        right: '10px',
+        top: '0px',
+        bottom: '0px',
+      },
+      displayHeaderFooter: true,
+      headerTemplate: '<div style="height: 10px;"></div>',
+      footerTemplate: '<div style="height: 8px;"></div>',
+    });
+
+    await browser.close();
+
+    return new Promise<Buffer>((resolve, reject) => {
+      fs.writeFile(filePath, pdfBuffer, (err) => {
         if (err) {
-          console.error(err);
           reject(err);
         } else {
-          console.log(res, filePath);
-          fs.readFile(res.filename, (err, fileData) => {
+          fs.readFile(filePath, (err, fileData) => {
             if (err) {
-              console.error(err);
               reject(err);
             } else {
               resolve(fileData);
