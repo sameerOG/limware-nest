@@ -18,6 +18,8 @@ import { Repository } from 'typeorm';
 import {
   MarkAsDoneRequestDto,
   printAllRequestDto,
+  updateAssignedTestResult,
+  updateNotes,
   UpdatePatientRequestDto,
 } from '../dto/request.dto';
 import {
@@ -868,7 +870,7 @@ export class PatientsService {
         test_group_name: testGroup ? testGroup.name : null,
         test_group_sequence: testGroup ? testGroup.sequence : null,
         result,
-        result_formatted: null,
+        result_formatted: result ? Number(result).toFixed(2) : null,
         is_abnormal: ptParameterItem.is_abnormal,
         status: ptParameterItem.status,
         code: test.code,
@@ -1174,5 +1176,36 @@ export class PatientsService {
       .getRawMany();
 
     return patients;
+  }
+
+  async updateResult(
+    id: string,
+    body: updateAssignedTestResult,
+    user,
+  ): Promise<any> {
+    const data: any = await this.patientTestParameterResultRep.findOne({
+      where: { _id: id },
+      relations: ['patient_test_id'],
+    });
+    if (data) {
+      await this.patientTestParameterResultRep.update(id, body);
+      return {
+        patient_test_status: data.patient_test_id?.status,
+        status: data.patient_test_id?.sample_status,
+      };
+    }
+  }
+
+  async updateNotes(body: updateNotes): Promise<any> {
+    const id = body.patient_test_id;
+    const data: any = await this.patientTestRep.findOne({
+      where: { _id: id },
+    });
+    if (data) {
+      await this.patientTestRep.update(id, {
+        notes: body.notes,
+      });
+      return true;
+    }
   }
 }

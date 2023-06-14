@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 import { Test } from 'src/entities/test/test.entity';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import * as path from 'path';
 import * as fs from 'fs';
 import { LabTestRateList } from '../lab_test_rate_list.entity';
@@ -64,8 +64,6 @@ export class LabTestRateListsService {
         laboratory_id,
       })
       .getRawOne();
-
-    console.log('labTestRateList', labTestRateList);
 
     const labTestRateListItem = await this.labTestRateListItemRep
       .createQueryBuilder('lab_test_rate_list_item')
@@ -133,6 +131,12 @@ export class LabTestRateListsService {
 
     const data = await this.labTestRateListRep.save(rateListAttributes);
     if (data) {
+      await this.labTestRateListRep
+        .createQueryBuilder()
+        .update()
+        .set({ status: 0 })
+        .where({ _id: Not(data._id) }) // Exclude the specified ID
+        .execute();
       for (let i = 0; i < body.items.length; i++) {
         let item: any = body.items[i];
         let itemAttributes = {
@@ -172,6 +176,12 @@ export class LabTestRateListsService {
     };
     const data = await this.labTestRateListRep.save(rateListAttributes);
     if (labRateList && data) {
+      await this.labTestRateListRep
+        .createQueryBuilder()
+        .update()
+        .set({ status: 0 })
+        .where({ _id: data._id }) // Exclude the specified ID
+        .execute();
       const items = await this.labTestRateListItemRep
         .createQueryBuilder('lab_test_rate_list_item')
         .select('lab_test_rate_list_item.*')
@@ -331,6 +341,14 @@ export class LabTestRateListsService {
       .getRawOne();
 
     if (labRateList.affected > 0) {
+      if (body.status === 1) {
+        await this.labTestRateListRep
+          .createQueryBuilder()
+          .update()
+          .set({ status: 0 })
+          .where({ _id: Not(id) }) // Exclude the specified ID
+          .execute();
+      }
       const labModel = await this.labRep
         .createQueryBuilder('laboratory')
         .select('laboratory.*')

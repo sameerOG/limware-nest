@@ -82,3 +82,23 @@ export class printAllRequestDto {
   @IsOptional()
   print_together: boolean;
 }
+
+export class updateAssignedTestResult {
+  @IsBoolean()
+  @IsNotEmpty()
+  is_abnormal: boolean;
+
+  @IsString()
+  @IsOptional()
+  result: string;
+}
+
+export class updateNotes {
+  @IsString()
+  @IsNotEmpty()
+  notes: string;
+
+  @IsString()
+  @IsNotEmpty()
+  patient_test_id: string;
+}
