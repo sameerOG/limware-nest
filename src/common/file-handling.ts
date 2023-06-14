@@ -1,8 +1,8 @@
 import * as ejs from 'ejs';
 import * as fs from 'fs';
 import * as path from 'path';
-import * as pdf from 'html-pdf';
-// const pdf = require('html-pdf-node');
+// import * as pdf from 'html-pdf';
+const pdf = require('html-pdf-node');
 
 export class FileHandling {
   async renderTemplate(template: string, data: any): Promise<string> {
@@ -16,50 +16,50 @@ export class FileHandling {
   }
 
   async generatePdf(options: any, content: any, filePath: string) {
-    return new Promise((resolve, reject) => {
-      pdf.create(content, options).toFile(filePath, (err, res) => {
-        if (err) {
-          console.error(err);
-          reject(err);
-        } else {
-          console.log(res, filePath);
-          fs.readFile(res.filename, (err, fileData) => {
-            if (err) {
-              console.error(err);
-              reject(err);
-            } else {
-              resolve(fileData);
-            }
-          });
-        }
-      });
-    });
-
     // return new Promise((resolve, reject) => {
-    //   pdf
-    //     .generatePdf({ content }, options)
-    //     .then((pdfBuffer) => {
-    //       fs.writeFile(filePath, pdfBuffer, (err) => {
+    //   pdf.create(content, options).toFile(filePath, (err, res) => {
+    //     if (err) {
+    //       console.error(err);
+    //       reject(err);
+    //     } else {
+    //       console.log(res, filePath);
+    //       fs.readFile(res.filename, (err, fileData) => {
     //         if (err) {
     //           console.error(err);
     //           reject(err);
     //         } else {
-    //           fs.readFile(filePath, (err, fileData) => {
-    //             if (err) {
-    //               console.error(err);
-    //               reject(err);
-    //             } else {
-    //               resolve(fileData);
-    //             }
-    //           });
+    //           resolve(fileData);
     //         }
     //       });
-    //     })
-    //     .catch((error) => {
-    //       console.error(error);
-    //       reject(error);
-    //     });
+    //     }
+    //   });
     // });
+
+    return new Promise((resolve, reject) => {
+      pdf
+        .generatePdf({ content }, options)
+        .then((pdfBuffer) => {
+          fs.writeFile(filePath, pdfBuffer, (err) => {
+            if (err) {
+              console.error(err);
+              reject(err);
+            } else {
+              fs.readFile(filePath, (err, fileData) => {
+                if (err) {
+                  console.error(err);
+                  reject(err);
+                } else {
+                  resolve(fileData);
+                }
+              });
+            }
+          });
+        })
+        .catch((error) => {
+          console.error(error);
+          reject(error);
+        });
+    });
   }
 
   async separateDecimalValue(number) {
