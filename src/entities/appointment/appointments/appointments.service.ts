@@ -410,12 +410,23 @@ export class AppointmentsService {
     const { total_amount, discount_amount, invoiceLineItems, paid_amount } =
       data;
     let total_payable_amount = total_amount - discount_amount;
+    let status;
+    if (total_payable_amount - paid_amount === 0) {
+      status = 3;
+    } else if (
+      total_payable_amount - paid_amount != 0 &&
+      total_payable_amount - paid_amount != total_payable_amount
+    ) {
+      status = 2;
+    } else {
+      status = 1;
+    }
     let invoiceAttributes: any = {
       facility_id,
       patient_account_id,
       patient_id: patient._id,
       appointment_id,
-      status: 1,
+      status,
       title: patient.name,
       invoice_date: String(new Date().getTime()),
       description: '',
