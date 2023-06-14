@@ -769,9 +769,6 @@ export class PatientsService {
       .where('patient_test._id = :_id', {
         _id: patient_test_id,
       })
-      .andWhere('patient_test.facility_id = :facility_id', {
-        facility_id: facility_id,
-      })
       .getRawOne();
     if (!patientTest) {
       patientTest = await this.patientTestRep
@@ -780,12 +777,8 @@ export class PatientsService {
         .where('patient_test.test_id = :test_id', {
           test_id: patient_test_id,
         })
-        .andWhere('patient_test.facility_id = :facility_id', {
-          facility_id: facility_id,
-        })
         .getRawOne();
     }
-
     const testData = await this.testRep.findOne({
       where: { _id: patientTest.test_id },
       relations: ['test_category_id'],
