@@ -1670,4 +1670,6 @@ export const options = {
   footer: {
     height: '8px',
   },
+
+  phantomPath: './node_modules/phantomjs-prebuilt/bin/phantomjs',
 };
