@@ -109,12 +109,13 @@
           <div>
             <span class="h7">Rs.</span>
             <span class="amount-size"
-              ><%= data.reportDataTotals.totals.total_amount_ary['whole_number']
+              ><%= data.reportDataTotals.totals.total_amount_ary ?
+              data.reportDataTotals.totals.total_amount_ary['whole_number'] : 0
               %></span
             ><span class="decimal"
-              >.<%=
-              data.reportDataTotals.totals.total_amount_ary['decimal_number']
-              %></span
+              >.<%= data.reportDataTotals.totals.total_amount_ary ?
+              data.reportDataTotals.totals.total_amount_ary['decimal_number'] :
+              .00 %></span
             >
           </div>
         </div>
@@ -124,13 +125,13 @@
           <div>
             <span class="h7">Rs.</span>
             <span class="amount-size"
-              ><%=
-              data.reportDataTotals.totals.discount_amount_ary['whole_number']
-              %></span
+              ><%= data.reportDataTotals.totals.discount_amount_ary ?
+              data.reportDataTotals.totals.discount_amount_ary['whole_number'] :
+              0 %></span
             ><span class="decimal"
-              >.<%=
+              >.<%= data.reportDataTotals.totals.discount_amount_ary ?
               data.reportDataTotals.totals.discount_amount_ary['decimal_number']
-              %></span
+              : .00 %></span
             >
           </div>
         </div>
@@ -140,11 +141,12 @@
           <div class="warn-fg">
             <span class="h7">Rs.</span>
             <span class="amount-size"
-              ><%= data.reportDataTotals.totals.due_amount_ary['whole_number']
+              ><%= data.reportDataTotals.totals.due_amount_ary ?
+              data.reportDataTotals.totals.due_amount_ary['whole_number'] : 0
               %></span
             ><span class="decimal"
-              >.<%=
-              data.reportDataTotals.totals.due_amount_ary['decimal_number']
+              >.<%= data.reportDataTotals.totals.due_amount_ary ?
+              data.reportDataTotals.totals.due_amount_ary['decimal_number'] : 0
               %></span
             >
           </div>
@@ -155,12 +157,13 @@
           <div>
             <span class="h7">Rs.</span>
             <span class="amount-size"
-              ><%= data.reportDataTotals.totals.paid_amount_ary['whole_number']
+              ><%= data.reportDataTotals.totals.paid_amount_ary ?
+              data.reportDataTotals.totals.paid_amount_ary['whole_number'] : 0
               %></span
             ><span class="decimal"
-              >.<%=
-              data.reportDataTotals.totals.paid_amount_ary['decimal_number']
-              %></span
+              >.<%= data.reportDataTotals.totals.paid_amount_ary ?
+              data.reportDataTotals.totals.paid_amount_ary['decimal_number'] :
+              .00 %></span
             >
           </div>
         </div>
