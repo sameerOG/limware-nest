@@ -6,7 +6,7 @@ export class ReferenceRequestDto {
   name: string;
 
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   mobile_number: string;
 
   @IsString()

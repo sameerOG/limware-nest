@@ -95,7 +95,7 @@ export class updateAssignedTestResult {
 
 export class updateNotes {
   @IsString()
-  @IsNotEmpty()
+  @IsOptional()
   notes: string;
 
   @IsString()
