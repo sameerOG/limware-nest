@@ -707,7 +707,7 @@ export class TestsService {
       // }
       if (test.patient_test.length === 0 && test.ptpr.length === 0) {
         await this.testNormalRangeRep.delete({ test_id: id });
-        await this.testRep.delete(test._id);
+        await this.testRep.softDelete(test._id);
         return test;
       } else if (test.patient_test.length > 0 || test.ptpr.length > 0) {
         await this._archiveEverything(
