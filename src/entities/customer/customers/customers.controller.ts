@@ -75,7 +75,11 @@ export class CustomersController {
       console.log('err in catch', err);
       response
         .status(422)
-        .send({ error: err, message: 'Customer not updated' });
+        .send(
+          err[0] && err[0].field
+            ? err
+            : { error: err, message: 'Customer not updated' },
+        );
     }
   }
 
@@ -97,7 +101,13 @@ export class CustomersController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({ error: err, message: 'Customer not added' });
+      response
+        .status(422)
+        .send(
+          err[0] && err[0].field
+            ? err
+            : { error: err, message: 'Customer not added' },
+        );
     }
   }
 

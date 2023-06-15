@@ -45,6 +45,7 @@ import {
   LabSettingsData,
   ReportPrintSettingsData,
 } from 'src/common/settings/lab.settings.default';
+import { emailRegex } from 'src/common/helper/enums';
 
 const uid = new ShortUniqueId({ length: 6, dictionary: 'number' });
 @Injectable()
@@ -94,6 +95,9 @@ export class AuthService {
         { mobile_number: username },
       ],
     });
+    if (!user) {
+      throw [{ field: 'password', message: 'Incorrect username or password' }];
+    }
 
     const facilities = [];
     if (user.facility_id) {
@@ -357,6 +361,16 @@ export class AuthService {
   }
 
   async register(body: RegisterRequest): Promise<AuthRegisterDto> {
+    if (body.email && body.email !== '') {
+      if (!emailRegex.test(body.email)) {
+        throw [
+          {
+            field: 'email',
+            message: 'Email is not a valid email address.',
+          },
+        ];
+      }
+    }
     const user = await this.userRep.findOne({
       where: [
         { email: body.username },
@@ -585,6 +599,15 @@ export class AuthService {
   async createNewUser(body: CreateUserRequestDto): Promise<SingleUserDto> {
     if (body.email === '') {
       delete body.email;
+    } else {
+      if (!emailRegex.test(body.email)) {
+        throw [
+          {
+            field: 'email',
+            message: 'Email is not a valid email address.',
+          },
+        ];
+      }
     }
     Object.assign(body, { name: body.full_name });
     if (body.portal == 'administration') {

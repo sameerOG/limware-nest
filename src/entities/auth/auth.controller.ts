@@ -64,7 +64,7 @@ export class AuthController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({ error: err, message: 'Invalid Credentials' });
+      response.status(422).send(err);
     }
   }
 
@@ -230,7 +230,13 @@ export class AuthController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({ error: err, message: 'User not added' });
+      response
+        .status(422)
+        .send(
+          err[0] && err[0].field
+            ? err
+            : { error: err, message: 'Facility not added' },
+        );
     }
   }
 

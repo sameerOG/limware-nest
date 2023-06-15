@@ -10,8 +10,9 @@ import {
   Query,
   Headers,
   Res,
-  UseGuards, UploadedFile,
-  UseInterceptors
+  UseGuards,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 
 import { Response } from 'express';
@@ -25,12 +26,14 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import * as fs from 'fs-extra';
 import { FileManagerDto } from 'src/shared/directoryDto';
 
-
 @Controller('facilities')
 @UseGuards(AuthGuard)
 export class FacilitiesController {
   public facility_image_height = 64;
-  constructor(private facilityService: FacilitiesService, private directoryManagerService: DirectoryManagerService) { }
+  constructor(
+    private facilityService: FacilitiesService,
+    private directoryManagerService: DirectoryManagerService,
+  ) {}
 
   @Get('/')
   async getAll(
@@ -108,8 +111,6 @@ export class FacilitiesController {
     }
   }
 
-
-
   @Post('/')
   async add(
     @Res() response: Response,
@@ -128,7 +129,13 @@ export class FacilitiesController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({ error: err, message: 'Facility not added' });
+      response
+        .status(422)
+        .send(
+          err[0] && err[0].field
+            ? err
+            : { error: err, message: 'Facility not added' },
+        );
     }
   }
 
@@ -153,7 +160,11 @@ export class FacilitiesController {
       console.log('err in catch', err);
       response
         .status(422)
-        .send({ error: err, message: 'Facility not updated' });
+        .send(
+          err[0] && err[0].field
+            ? err
+            : { error: err, message: 'Facility not added' },
+        );
     }
   }
 
@@ -184,7 +195,7 @@ export class FacilitiesController {
   @Get('/get-facility-image')
   async getFacilityImage(
     @Headers('Authorization') authHeader: string,
-    @Res() res
+    @Res() res,
   ): Promise<any> {
     try {
       const token = authHeader.split(' ')[1];
@@ -195,7 +206,7 @@ export class FacilitiesController {
       const readfiles = await fs.readdir(facilityDirectory);
       let filePath;
       const file = readfiles.find((file) => {
-        const fileName = file.replace(/\.[^/.]+$/, '')
+        const fileName = file.replace(/\.[^/.]+$/, '');
         if (fileName === id) {
           filePath = `${facilityDirectory}/${file}`;
         }
@@ -204,9 +215,8 @@ export class FacilitiesController {
       res.setHeader('Content-Type', 'image/png');
       res.setHeader('Content-Disposition', 'attachment; filename=image.png');
       res.send(imageBuffer);
-    }
-    catch (err) {
-      console.log('err in catch', err)
+    } catch (err) {
+      console.log('err in catch', err);
     }
   }
 
@@ -219,11 +229,11 @@ export class FacilitiesController {
     @Headers('Authorization') authHeader: string,
   ) {
     try {
-      const data = JSON.parse(body?.data)
+      const data = JSON.parse(body?.data);
       const token = authHeader.split(' ')[1];
       const loggedInUser: any = jwtDecode(token);
       let pathFile;
-      if(file){
+      if (file) {
         const type = 'facility';
         const name = String(loggedInUser?.facility._id);
         if (file) {
@@ -231,19 +241,23 @@ export class FacilitiesController {
             file: file,
             type: type,
             name: name,
-            position: null
-          }
+            position: null,
+          };
           pathFile = await this.directoryManagerService.uploadFile(obj);
         }
       }
-      const facilityData = await this.facilityService.findAndUpdate(loggedInUser?.facility_id, data, pathFile);
-      response.status(200).send({ message: 'Facility updated', data: facilityData })
+      const facilityData = await this.facilityService.findAndUpdate(
+        loggedInUser?.facility_id,
+        data,
+        pathFile,
+      );
+      response
+        .status(200)
+        .send({ message: 'Facility updated', data: facilityData });
       return facilityData;
+    } catch (err) {
+      console.log(err);
     }
-    catch (err) {
-      console.log(err)
-    }
-
   }
   @Get('/:id')
   async getSingle(

@@ -97,7 +97,11 @@ export class OutgoingMailServersController {
       console.log('err in catch', err);
       response
         .status(422)
-        .send({ error: err, message: 'Mail Server not added' });
+        .send(
+          err[0] && err[0].field
+            ? err
+            : { error: err, message: 'Customer not updated' },
+        );
     }
   }
 
@@ -122,7 +126,11 @@ export class OutgoingMailServersController {
       console.log('err in catch', err);
       response
         .status(422)
-        .send({ error: err, message: 'Mail Server not updated' });
+        .send(
+          err[0] && err[0].field
+            ? err
+            : { error: err, message: 'Customer not updated' },
+        );
     }
   }
 

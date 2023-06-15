@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { emailRegex } from 'src/common/helper/enums';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Department } from 'src/entities/department/department.entity';
 import { Facility } from 'src/entities/Facility/facility.entity';
@@ -403,6 +404,16 @@ export class EmployeesService {
   }
 
   async add(body: EmployeeRequestDto, user): Promise<EmployeeResponseDto> {
+    if (body.email && body.email !== '') {
+      if (!emailRegex.test(body.email)) {
+        throw [
+          {
+            field: 'email',
+            message: 'Email is not a valid email address.',
+          },
+        ];
+      }
+    }
     if (!body.facility_id) {
       Object.assign(body, {
         facility_id: user.facility_id,
@@ -424,6 +435,16 @@ export class EmployeesService {
     body: EmployeeRequestDto,
   ): Promise<EmployeeResponseDto> {
     try {
+      if (body.email && body.email !== '') {
+        if (!emailRegex.test(body.email)) {
+          throw [
+            {
+              field: 'email',
+              message: 'Email is not a valid email address.',
+            },
+          ];
+        }
+      }
       await this.empRep.update(id, body);
       const data = await this.empRep.findOne({
         select: [
@@ -452,7 +473,7 @@ export class EmployeesService {
         updated_by: '',
       });
     } catch (err) {
-      return err;
+      throw err;
     }
   }
 
@@ -460,7 +481,7 @@ export class EmployeesService {
     try {
       return await this.empRep.softDelete(id);
     } catch (err) {
-      return err;
+      throw err;
     }
   }
 }

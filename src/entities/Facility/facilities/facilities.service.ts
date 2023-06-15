@@ -8,6 +8,7 @@ import { FacilityRequestDto } from '../dto/request.dto';
 import { FacilityDto, ParentFacilityDto } from '../dto/response.dto';
 import { Facility } from '../facility.entity';
 import { Users } from 'src/entities/user/user.entity';
+import { emailRegex } from 'src/common/helper/enums';
 
 @Injectable()
 export class FacilitiesService {
@@ -18,7 +19,7 @@ export class FacilitiesService {
     private customerRep: Repository<Customers>,
     @InjectRepository(Addons)
     private addonsRep: Repository<Addons>,
-  ) { }
+  ) {}
 
   async getAll(
     skip: number,
@@ -127,6 +128,16 @@ export class FacilitiesService {
   }
 
   async add(body: FacilityRequestDto): Promise<FacilityDto> {
+    if (body.email && body.email !== '') {
+      if (!emailRegex.test(body.email)) {
+        throw [
+          {
+            field: 'email',
+            message: 'Email is not a valid email address.',
+          },
+        ];
+      }
+    }
     const customer = await this.customerRep.findOne({
       where: { _id: body.customer_id },
     });
@@ -163,6 +174,16 @@ export class FacilitiesService {
 
   async update(id: string, body: FacilityRequestDto): Promise<FacilityDto> {
     try {
+      if (body.email && body.email !== '') {
+        if (!emailRegex.test(body.email)) {
+          throw [
+            {
+              field: 'email',
+              message: 'Email is not a valid email address.',
+            },
+          ];
+        }
+      }
       await this.facilityRep.update(id, body);
       const data = await this.facilityRep.findOne({
         select: [
@@ -193,7 +214,7 @@ export class FacilitiesService {
         parent_facility_id: data.parent_facility_id?._id,
       });
     } catch (err) {
-      return err;
+      throw err;
     }
   }
 
@@ -201,7 +222,7 @@ export class FacilitiesService {
     try {
       return await this.facilityRep.softDelete(id);
     } catch (err) {
-      return err;
+      throw err;
     }
   }
 
@@ -223,45 +244,45 @@ export class FacilitiesService {
           'unique_id',
           'updated_at',
         ],
-        where: { _id: user.facility_id }, relations: ['customer_id']
+        where: { _id: user.facility_id },
+        relations: ['customer_id'],
       });
-      const { ...rest } = data
+      const { ...rest } = data;
       return {
         ...rest,
-        customer_id: data.customer_id._id
-      }
-    }
-    catch (err) {
-      return err;
+        customer_id: data.customer_id._id,
+      };
+    } catch (err) {
+      throw err;
     }
   }
 
   async findAndUpdate(facility_id, data: FacilityDto, path): Promise<any> {
     try {
-      const facility = await this.facilityRep.findOne({ where: { _id: facility_id } })     
-      if (facility) {        
+      const facility = await this.facilityRep.findOne({
+        where: { _id: facility_id },
+      });
+      if (facility) {
         facility.unique_id = data?.unique_id;
         facility.name = data?.name;
-        facility.email = data?.email
+        facility.email = data?.email;
         // facility.customer_id = data?.customer_id
         facility.address = data?.address;
         facility.phone_number = data?.phone_number;
         facility.city = data?.city;
         facility.mobile_number = data?.mobile_number;
         facility.type = data?.type;
-        if (path != null && path != undefined) { 
+        if (path != null && path != undefined) {
           facility.facility_image_name = path;
-        } 
-        const resp =  await this.facilityRep.update(facility_id,facility);
+        }
+        const resp = await this.facilityRep.update(facility_id, facility);
         return resp;
-        
       }
-    }
-    catch (err) {
-      return err;
+    } catch (err) {
+      throw err;
     }
   }
-  async getSingleFacilityById(facility_id): Promise<any>{
-    return await this.facilityRep.findOne({where:{_id: facility_id}})
+  async getSingleFacilityById(facility_id): Promise<any> {
+    return await this.facilityRep.findOne({ where: { _id: facility_id } });
   }
 }

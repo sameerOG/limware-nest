@@ -242,7 +242,13 @@ export class EmployeesController {
       }
     } catch (err) {
       console.log('err in catch', err);
-      response.status(422).send({ error: err, message: 'Employee not added' });
+      response
+        .status(422)
+        .send(
+          err[0] && err[0].field
+            ? err
+            : { error: err, message: 'Employee not added' },
+        );
     }
   }
 
@@ -267,7 +273,11 @@ export class EmployeesController {
       console.log('err in catch', err);
       response
         .status(422)
-        .send({ error: err, message: 'Employee not updated' });
+        .send(
+          err[0] && err[0].field
+            ? err
+            : { error: err, message: 'Employee not updated' },
+        );
     }
   }
 

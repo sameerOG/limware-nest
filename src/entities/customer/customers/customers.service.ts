@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { emailRegex } from 'src/common/helper/enums';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Repository, Like } from 'typeorm';
 import { Customers } from '../customer.entity';
@@ -72,6 +73,16 @@ export class CustomersService {
     data: CustomerRequestDto,
   ): Promise<SingleCustomerDto> {
     try {
+      if (data.email && data.email !== '') {
+        if (!emailRegex.test(data.email)) {
+          throw [
+            {
+              field: 'email',
+              message: 'Email is not a valid email address.',
+            },
+          ];
+        }
+      }
       await this.customerRep.update(id, data);
       const savedCustomer = await this.customerRep.findOne({
         select: [
@@ -95,12 +106,22 @@ export class CustomersService {
         updated_by: '',
       });
     } catch (err) {
-      return err;
+      throw err;
     }
   }
 
   async addCustomer(data: CustomerRequestDto): Promise<SingleCustomerDto> {
     try {
+      if (data.email && data.email !== '') {
+        if (!emailRegex.test(data.email)) {
+          throw [
+            {
+              field: 'email',
+              message: 'Email is not a valid email address.',
+            },
+          ];
+        }
+      }
       const customer = await this.customerRep.save(data);
       const { ...rest } = customer;
       return new SingleCustomerDto({
@@ -110,7 +131,7 @@ export class CustomersService {
         updated_by: '',
       });
     } catch (err) {
-      return err;
+      throw err;
     }
   }
 

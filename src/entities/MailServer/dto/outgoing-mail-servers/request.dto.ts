@@ -24,7 +24,7 @@ export class OutgoingMailServersRequestDto {
   @IsNotEmpty()
   encryption: string;
 
-  @IsEmail()
+  @IsString()
   @IsNotEmpty()
   username: string;
 

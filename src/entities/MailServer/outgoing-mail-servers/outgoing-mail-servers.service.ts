@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { emailRegex } from 'src/common/helper/enums';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Repository, Like } from 'typeorm';
 import { OutgoingMailServersRequestDto } from '../dto/outgoing-mail-servers/request.dto';
@@ -96,6 +97,16 @@ export class OutgoingMailServersService {
   async add(
     body: OutgoingMailServersRequestDto,
   ): Promise<OutgoingMailServersDto> {
+    if (body.username && body.username !== '') {
+      if (!emailRegex.test(body.username)) {
+        throw [
+          {
+            field: 'username',
+            message: 'Username is not a valid email address.',
+          },
+        ];
+      }
+    }
     const data = await this.osm.save(body);
     const { ...rest } = data;
     return new OutgoingMailServersDto({
@@ -111,6 +122,16 @@ export class OutgoingMailServersService {
     body: OutgoingMailServersRequestDto,
   ): Promise<OutgoingMailServersDto> {
     try {
+      if (body.username && body.username !== '') {
+        if (!emailRegex.test(body.username)) {
+          throw [
+            {
+              field: 'username',
+              message: 'Username is not a valid email address.',
+            },
+          ];
+        }
+      }
       await this.osm.update(id, body);
       const data = await this.osm.findOne({
         select: [
@@ -135,7 +156,7 @@ export class OutgoingMailServersService {
         updated_by: '',
       });
     } catch (err) {
-      return err;
+      throw err;
     }
   }
 

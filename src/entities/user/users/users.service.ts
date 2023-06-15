@@ -14,6 +14,7 @@ import { Role } from 'src/entities/role/role.entity';
 import { Employee } from 'src/entities/employee/employee.entity';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
+import { emailRegex } from 'src/common/helper/enums';
 
 const SALT_ROUNDS = 10;
 
@@ -255,7 +256,17 @@ export class UsersService {
     try {
       if (data.email === '') {
         delete data.email;
+      } else {
+        if (!emailRegex.test(data.email)) {
+          throw [
+            {
+              field: 'email',
+              message: 'Email is not a valid email address.',
+            },
+          ];
+        }
       }
+
       if (data.portal == 'administration') {
         Object.assign(data, { isSuperUser: 1 });
       }
@@ -269,7 +280,7 @@ export class UsersService {
         created_at: user.created_at.getTime(), // set created_at field as timestamp
       });
     } catch (err) {
-      return err;
+      throw err;
     }
   }
 
@@ -277,6 +288,15 @@ export class UsersService {
     try {
       if (data.email === '') {
         delete data.email;
+      } else {
+        if (!emailRegex.test(data.email)) {
+          throw [
+            {
+              field: 'email',
+              message: 'Email is not a valid email address.',
+            },
+          ];
+        }
       }
       const savedUser = await this.usersRep.findOne({
         where: [
