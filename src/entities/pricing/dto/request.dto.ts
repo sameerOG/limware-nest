@@ -12,8 +12,15 @@ export class PricingPlanRequestDto {
   title: string;
 
   @IsString()
+  @IsOptional()
+  name: string;
+
+  @IsString()
   @IsNotEmpty()
   plan_for: string;
+
+  @IsOptional()
+  trial_days: number;
 
   @IsString()
   @IsNotEmpty()
@@ -26,7 +33,7 @@ export class PricingPlanRequestDto {
   @IsOptional()
   discount: number;
 
-  @IsNotEmpty()
+  @IsOptional()
   packages: any;
 
   @IsOptional()

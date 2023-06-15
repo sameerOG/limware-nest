@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -77,6 +78,23 @@ export class PricingPlansController {
       response
         .status(422)
         .send({ error: err, message: 'Pricing Plan not added' });
+    }
+  }
+
+  @Delete('/:id')
+  async delete(
+    @Param('id') id: string,
+    @Res() response: Response,
+  ): Promise<PricingPlanResponseDto> {
+    try {
+      let data = await this.pricingPlanService.delete(id);
+      response.status(204).send(data);
+      return data;
+    } catch (err) {
+      console.log('err in catch', err);
+      response
+        .status(422)
+        .send({ error: err, message: 'Pricing Plan not deleted' });
     }
   }
 }

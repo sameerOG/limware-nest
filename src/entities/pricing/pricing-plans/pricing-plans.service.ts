@@ -34,6 +34,7 @@ export class PricingPlansService {
         'plan_type',
         'created_at',
         'updated_at',
+        'name',
       ],
       where,
       skip,
@@ -59,6 +60,7 @@ export class PricingPlansService {
         'plan_type',
         'created_at',
         'updated_at',
+        'name',
       ],
       where,
     });
@@ -71,6 +73,9 @@ export class PricingPlansService {
   }
 
   async add(body: PricingPlanRequestDto): Promise<PricingPlanResponseDto> {
+    if (body.name == '') {
+      body.name = body.title;
+    }
     const pricingPlan = await this.pricingPlanRep.save(body);
     const { ...rest } = pricingPlan;
     return new PricingPlanResponseDto({
@@ -78,5 +83,9 @@ export class PricingPlansService {
       created_at: pricingPlan.created_at.getTime(),
       updated_at: pricingPlan.updated_at.getTime(),
     });
+  }
+
+  async delete(id: string): Promise<any> {
+    return await this.pricingPlanRep.delete(id);
   }
 }
