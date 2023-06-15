@@ -58,7 +58,9 @@ export class DeletedTestsService {
         .where('patient_test.patient_id = :patient_id', {
           patient_id: patient?._id,
         })
+        .andWhere('patient_test.deleted_at IS NOT NULL')
         .getRawMany();
+      console.log('patientTests', patientTests);
 
       for (let j = 0; j < patientTests.length; j++) {
         let patientData = { ...patient };
