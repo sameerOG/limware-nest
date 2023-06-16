@@ -72,7 +72,8 @@ export class TestParametersService {
 
       query.where = {
         ...query.where,
-        laboratoryId: labModel._id,
+        parent_test_id: { _id: parent_test_id },
+        // laboratory_id: { _id: labModel._id },
       };
     }
     const testParameter = await this.testParameterRep.find(query);

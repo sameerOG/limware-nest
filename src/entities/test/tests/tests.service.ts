@@ -548,20 +548,19 @@ export class TestsService {
     if (user.portal === 'administration') {
       Object.assign(testData, { is_template: true });
     } else if (user.portal === 'limware') {
-      const lab = await this.labRep
-        .createQueryBuilder('laboratory')
-        .select('laboratory.*')
-        .where('laboratoty.facility_id = :facility_id', {
-          facility_id: user.facility_id,
-        })
-        .getRawOne();
+      const lab = await this.labRep.findOne({
+        where: {
+          facility_id: {
+            _id: user.facility_id,
+          },
+        },
+      });
       Object.assign(testData, {
         facility_id: user.facility_id,
         laboratory_id: lab._id,
         department_id: department_id,
       });
     }
-
     const savedTest = await this.testRep.save(testData);
     if (savedTest) {
       if (normal_ranges?.length > 0) {
@@ -573,15 +572,14 @@ export class TestsService {
         savedTest._id,
         data.test_category_id,
       );
-
       if (user.portal === 'limware') {
-        const lab = await this.labRep
-          .createQueryBuilder('laboratory')
-          .select('laboratory.*')
-          .where('laboratoty.facility_id = :facility_id', {
-            facility_id: user.facility_id,
-          })
-          .getRawOne();
+        const lab = await this.labRep.findOne({
+          where: {
+            facility_id: {
+              _id: user.facility_id,
+            },
+          },
+        });
         const rateListData = {
           facility_id: user.facility_id,
           laboratory_id: lab._id,
@@ -670,7 +668,10 @@ export class TestsService {
 
     if (rateLists.length > 0) {
       for (let i = 0; i < rateLists.length; i++) {
-        Object.assign(data, { lab_test_rate_list_id: rateLists[i]._id });
+        Object.assign(data, {
+          lab_test_rate_list_id: rateLists[i]._id,
+          name: rateLists[i].name,
+        });
         await this.labTestRateItemRep.save(data);
       }
     }
