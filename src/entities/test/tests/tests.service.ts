@@ -447,7 +447,7 @@ export class TestsService {
       duration: duration || null,
       single_or_group,
       print_on_separate_page,
-      report_template,
+      report_template: report_template !== '' ? report_template : null,
       tags: tag,
       status: 1,
       sequence: 1, //check this from php code
