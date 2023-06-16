@@ -539,7 +539,7 @@ export class TestsService {
       default_notes: default_notes || '',
       single_or_group,
       print_on_separate_page,
-      report_template,
+      report_template: report_template === '' ? null : report_template,
       tags: tag,
       status: 1,
       sequence: 1, //check this from php code

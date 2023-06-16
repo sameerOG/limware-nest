@@ -93,7 +93,7 @@ export class TestRequestDto {
   normal_ranges: any;
 
   @IsOptional()
-  report_template: number | null;
+  report_template: any;
 
   @IsOptional()
   res_input_options: any;
