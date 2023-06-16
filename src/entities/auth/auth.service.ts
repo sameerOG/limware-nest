@@ -349,9 +349,9 @@ export class AuthService {
 
   async validateOtp(body: ValidateOtpRequest): Promise<any> {
     const user = await this.userRep.findOne({
-      where: [{ _id: body.user_id }, { otp: String(body.otp) }],
+      where: { _id: body.user_id },
     });
-    if (user) {
+    if (user && user.otp == String(body.otp)) {
       user.status = 1;
       await this.userRep.update(body.user_id, user);
       return user;

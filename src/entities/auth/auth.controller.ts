@@ -285,15 +285,8 @@ export class AuthController {
   ): Promise<any> {
     try {
       let data = await this.authService.validateOtp(body);
-      if (data) {
-        response.status(200).send(data);
-        return data;
-      } else {
-        throw new HttpException(
-          { err: true, messages: 'Invalid Verification Code' },
-          422,
-        );
-      }
+      response.status(200).send(data);
+      return data;
     } catch (err) {
       console.log('err in catch', err);
       response
