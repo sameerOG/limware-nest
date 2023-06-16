@@ -35,6 +35,7 @@ export class PricingPlansService {
         'created_at',
         'updated_at',
         'name',
+        'unit_price',
       ],
       where,
       skip,
@@ -61,6 +62,7 @@ export class PricingPlansService {
         'created_at',
         'updated_at',
         'name',
+        'unit_price',
       ],
       where,
     });
