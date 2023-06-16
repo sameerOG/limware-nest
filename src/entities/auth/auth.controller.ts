@@ -9,9 +9,6 @@ import {
   UploadedFile,
   HttpException,
 } from '@nestjs/common';
-import * as moment from 'moment';
-import * as uuid from 'uuid';
-let uniqueId = uuid.v4();
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import {
@@ -20,7 +17,6 @@ import {
   checkUserVerified,
   GenerateVerificationPinRequest,
   LoginIntoFacility,
-  ProfileRequest,
   RegisterRequest,
   ValidateOtpRequest,
 } from './dto/request.dto';
@@ -33,9 +29,6 @@ import {
 } from './dto/response.dto';
 import jwtDecode from 'jwt-decode';
 import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { promisify } from 'util';
-import { existsSync, mkdirSync, mkdir, writeFile } from 'fs';
 import { FileInterceptor } from '@nestjs/platform-express';
 import {
   addFileName,
@@ -113,9 +106,11 @@ export class AuthController {
     try {
       const token = authHeader.split(' ')[1];
       const loggedInUser = jwtDecode(token);
-      const fileData = file.filename;
+      const fileData = file?.filename;
       let parsedData = JSON.parse(body.data);
-      Object.assign(parsedData, { profile_image_name: fileData });
+      if (fileData) {
+        Object.assign(parsedData, { profile_image_name: fileData });
+      }
       let data = await this.authService.updateProfile(parsedData, loggedInUser);
       if (data) {
         response.status(200).send(data);
