@@ -78,7 +78,7 @@ export class LaboratorySettingsController {
   async getLabSettingForSaveTest(
     @Res() response,
     @Headers('Authorization') authHeader: string,
-  ): Promise<LaboratorySetting> {
+  ): Promise<LaboratorySetting | Laboratory> {
     try {
       const token = authHeader.split(' ')[1];
       const loggedInUser = jwtDecode(token);

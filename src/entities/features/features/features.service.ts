@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BaseService } from 'src/common/baseService';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Like, Repository } from 'typeorm';
 import { Feature } from '../feature.entity';
@@ -11,9 +12,12 @@ import {
 
 @Injectable()
 export class FeaturesService {
+  private featureRep: BaseService<Feature>;
   constructor(
-    @InjectRepository(Feature) private featureRep: Repository<Feature>,
-  ) {}
+    @InjectRepository(Feature) private featureRepository: Repository<Feature>,
+  ) {
+    this.featureRep = new BaseService<Feature>(this.featureRepository);
+  }
 
   async getAll(
     skip: number,
@@ -25,7 +29,7 @@ export class FeaturesService {
     if (text) {
       where = [{ title: Like(`%${text}%`) }];
     }
-    const features = await this.featureRep.find({
+    const features = await this.featureRep.findAll({
       select: ['_id', 'title', 'is_published'],
       where,
       skip,

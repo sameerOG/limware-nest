@@ -1,15 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BaseService } from 'src/common/baseService';
 import { Repository } from 'typeorm';
 import { PrintReportSettingDto } from '../invoice/invoice_print_setting/dto/request.dto';
 import { ReportPrintSetting } from './report_print_setting.entity';
 
 @Injectable()
 export class ReportPrintSettingService {
+  private repPrintSetRep: BaseService<ReportPrintSetting>;
+
   constructor(
     @InjectRepository(ReportPrintSetting)
-    private repPrintSetRep: Repository<ReportPrintSetting>,
-  ) {}
+    private repPrintSetRepository: Repository<ReportPrintSetting>,
+  ) {
+    this.repPrintSetRep = new BaseService<ReportPrintSetting>(
+      this.repPrintSetRepository,
+    );
+  }
 
   async getReportPrintSettings(
     laboratory_id,

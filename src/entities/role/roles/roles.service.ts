@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BaseService } from 'src/common/baseService';
 import {
   administrationFeatures,
   limwareFeatures,
@@ -13,8 +14,13 @@ import { Role } from '../role.entity';
 
 @Injectable()
 export class RolesService {
+  private rolesRep: BaseService<Role>;
   private newPermissions = [];
-  constructor(@InjectRepository(Role) private rolesRep: Repository<Role>) {}
+  constructor(
+    @InjectRepository(Role) private rolesRepository: Repository<Role>,
+  ) {
+    this.rolesRep = new BaseService<Role>(this.rolesRepository);
+  }
 
   async getRoles(
     skip: number,
@@ -27,7 +33,7 @@ export class RolesService {
     if (text) {
       where.name = Like(`%${text}%`);
     }
-    const roles = await this.rolesRep.find({
+    const roles = await this.rolesRep.findAll({
       select: ['_id', 'name', 'portal', 'status'],
       skip,
       take,
@@ -103,7 +109,7 @@ export class RolesService {
       portal = 'limware';
     }
 
-    return await this.rolesRep.find({
+    return await this.rolesRep.findAll({
       where: { portal },
       order: {
         name: 'ASC',

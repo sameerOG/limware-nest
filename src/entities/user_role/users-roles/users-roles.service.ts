@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BaseService } from 'src/common/baseService';
 import { Users } from 'src/entities/user/user.entity';
 import { Repository } from 'typeorm';
 import { UserRoleRequestDto, UserRoleResponseDto } from '../dto/request.dto';
@@ -8,10 +9,17 @@ import { UserRole } from '../user_role.entity';
 
 @Injectable()
 export class UsersRolesService {
+  private userRoleRep: BaseService<UserRole>;
+  private usersRep: BaseService<Users>;
+
   constructor(
-    @InjectRepository(UserRole) private userRoleRep: Repository<UserRole>,
-    @InjectRepository(Users) private usersRep: Repository<Users>,
-  ) {}
+    @InjectRepository(UserRole)
+    private userRoleRepository: Repository<UserRole>,
+    @InjectRepository(Users) private usersRepository: Repository<Users>,
+  ) {
+    this.userRoleRep = new BaseService<UserRole>(this.userRoleRepository);
+    this.usersRep = new BaseService<Users>(this.usersRepository);
+  }
 
   async getUsersByRole(
     skip: number,
@@ -19,13 +27,13 @@ export class UsersRolesService {
     role_id: string,
   ): Promise<UserRoleDto[]> {
     try {
-      const userRoles = await this.userRoleRep
-        .createQueryBuilder('user_role')
-        .select('user_role.*')
-        .skip(skip)
-        .take(take)
-        .where({ role_id: role_id })
-        .getRawMany();
+      const userRoles = await this.userRoleRep.findAll({
+        skip,
+        take,
+        where: {
+          role_id,
+        },
+      });
       let user_roles_arr = [];
       for (let i = 0; i < userRoles.length; i++) {
         let user_role = userRoles[i];

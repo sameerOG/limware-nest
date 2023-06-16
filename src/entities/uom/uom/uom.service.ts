@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BaseService } from 'src/common/baseService';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Like, Repository } from 'typeorm';
 import { UomRequestDto } from '../dto/request.dto';
@@ -8,10 +9,14 @@ import { UOM } from '../uom.entity';
 
 @Injectable()
 export class UomService {
+  private uomRep: BaseService<UOM>;
+
   constructor(
     @InjectRepository(UOM)
-    private uomRep: Repository<UOM>,
-  ) {}
+    private uomRepository: Repository<UOM>,
+  ) {
+    this.uomRep = new BaseService<UOM>(this.uomRepository);
+  }
 
   async getAll(
     skip: number,
@@ -24,7 +29,7 @@ export class UomService {
     if (text) {
       where = [{ name: Like(`%${text}%`) }, { description: Like(`%${text}%`) }];
     }
-    const data = await this.uomRep.find({
+    const data = await this.uomRep.findAll({
       select: ['_id', 'name', 'description'],
       where,
       skip,
@@ -35,7 +40,7 @@ export class UomService {
   }
 
   async getAllComplete(): Promise<UomDto[]> {
-    const data = await this.uomRep.find({
+    const data = await this.uomRep.findAll({
       select: ['_id', 'name', 'description'],
     });
     return data;

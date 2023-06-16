@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BaseService } from 'src/common/baseService';
 import { emailRegex } from 'src/common/helper/enums';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Repository, Like } from 'typeorm';
@@ -9,10 +10,13 @@ import { OutgoingMailServer } from '../outgoing_mail_server.entity';
 
 @Injectable()
 export class OutgoingMailServersService {
+  private osm: BaseService<OutgoingMailServer>;
   constructor(
     @InjectRepository(OutgoingMailServer)
-    private osm: Repository<OutgoingMailServer>,
-  ) {}
+    private osmRep: Repository<OutgoingMailServer>,
+  ) {
+    this.osm = new BaseService<OutgoingMailServer>(this.osmRep);
+  }
 
   async getAll(
     skip: number,
@@ -31,7 +35,7 @@ export class OutgoingMailServersService {
         { encryption: Like(`%${text}%`) },
       ];
     }
-    const data = await this.osm.find({
+    const data = await this.osm.findAll({
       select: [
         '_id',
         'title',
@@ -80,7 +84,7 @@ export class OutgoingMailServersService {
   }
 
   async getOutgoingMailServers(): Promise<OutgoingMailServersDto[]> {
-    const data = await this.osm.find({
+    const data = await this.osm.findAll({
       select: [
         '_id',
         'title',

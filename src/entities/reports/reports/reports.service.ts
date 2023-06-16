@@ -8,32 +8,50 @@ import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
 import { Patient } from 'src/entities/patient/patient.entity';
 import { Repository } from 'typeorm';
 import * as fs from 'fs';
+import { BaseService } from 'src/common/baseService';
 
 @Injectable()
 export class ReportsService {
+  private patientRep: BaseService<Patient>;
+  private invoiceRep: BaseService<Invoice>;
+  private labRep: BaseService<Laboratory>;
+
   constructor(
-    @InjectRepository(Patient) private patientRep: Repository<Patient>,
-    @InjectRepository(Invoice) private invoiceRep: Repository<Invoice>,
-    @InjectRepository(Laboratory) private labRep: Repository<Laboratory>,
+    @InjectRepository(Patient) private patientRepository: Repository<Patient>,
+    @InjectRepository(Invoice) private invoiceRepository: Repository<Invoice>,
+    @InjectRepository(Laboratory) private labRepository: Repository<Laboratory>,
     private fileHandling: FileHandling,
-  ) {}
+  ) {
+    this.patientRep = new BaseService<Patient>(this.patientRepository);
+    this.invoiceRep = new BaseService<Invoice>(this.invoiceRepository);
+    this.labRep = new BaseService<Laboratory>(this.labRepository);
+  }
 
   async getPatientCountReport(body, user): Promise<any> {
     const startDate = new Date(body.start_date);
     const endDate = new Date(body.end_date);
     const facility_id = user.facility_id;
-
-    const patients = await this.patientRep
-      .createQueryBuilder('patient')
-      .select('patient.*,appointment.lab_number,appointment.is_completed')
-      .leftJoin('patient.appointment', 'appointment')
-      .where('patient.facility_id = :facility_id', { facility_id })
-      .andWhere('patient.deleted_at IS NULL')
-      //   .andWhere(
-      //     `patient.created_at BETWEEN '${startDate.toISOString()}' AND '${endDate.toISOString()}'`,
-      //   )
-      .orderBy('patient.registration_date', 'DESC')
-      .getRawMany();
+    const patients: any = await this.patientRep.findAll({
+      select: [
+        'patient.*',
+        'appointment.lab_number',
+        'appointment.is_completed',
+      ],
+      join: {
+        alias: 'patient',
+        leftJoin: {
+          appointment: 'patient.appointment',
+        },
+      },
+      where: {
+        facility_id: facility_id,
+        deleted_at: null,
+        // created_at: Between(startDate.toISOString(), endDate.toISOString()),
+      },
+      order: {
+        registration_date: 'DESC',
+      },
+    });
 
     let totals = {
       total: patients.length,
@@ -46,11 +64,11 @@ export class ReportsService {
 
     for (let i = 0; i < patients.length; i++) {
       let item = patients[i];
-      const invoice = await this.invoiceRep
-        .createQueryBuilder('invoice')
-        .select('invoice.*')
-        .where('invoice.patient_id = :patient_id', { patient_id: item._id })
-        .getRawOne();
+      const invoice = await this.invoiceRep.findOne({
+        where: {
+          patient_id: item._id,
+        },
+      });
 
       if (invoice) {
         Object.assign(invoice, { invoice_status: invoice?.status });
@@ -79,13 +97,11 @@ export class ReportsService {
 
   async printPatientCountReport(body, user): Promise<any> {
     const reportData = await this.getPatientCountReport(body, user);
-    const labModel = await this.labRep
-      .createQueryBuilder('laboratory')
-      .select('laboratory.*')
-      .where('laboratory.facility_id = :facility_id', {
-        facility_id: user.facility_id,
-      })
-      .getRawOne();
+    const labModel = await this.labRep.findOne({
+      facility_id: {
+        _id: user.facility_id,
+      },
+    });
     const data = {
       labModel,
       startDate: body.start_date,
@@ -152,14 +168,22 @@ export class ReportsService {
     const startDateStamp = new Date(startDate).getTime() / 1000;
     const endDateStamp = new Date(endDate).getTime() / 1000;
 
-    const patients = await this.patientRep
-      .createQueryBuilder('patient')
-      .select('patient.*,appointment.lab_number,appointment.is_completed')
-      .leftJoin('patient.appointment', 'appointment')
-      .where('patient.facility_id = :facility_id', {
+    const patients: any = await this.patientRep.findAll({
+      select: [
+        'patient.*',
+        'appointment.lab_number',
+        'appointment.is_completed',
+      ],
+      join: {
+        alias: 'patient',
+        leftJoin: {
+          appointment: 'patient.appointment',
+        },
+      },
+      where: {
         facility_id: user.facility_id,
-      })
-      .getRawMany();
+      },
+    });
 
     let totals = {
       total: 0,
@@ -183,11 +207,11 @@ export class ReportsService {
       for (let j = 0; j < patients.length; j++) {
         let item = patients[j];
         if (this.formatDate(item.created_at) === dateItem) {
-          const invoice = await this.invoiceRep
-            .createQueryBuilder('invoice')
-            .select('invoice.*')
-            .where('invoice.patient_id = :patient_id', { patient_id: item._id })
-            .getRawOne();
+          const invoice = await this.invoiceRep.findOne({
+            where: {
+              patient_id: item._id,
+            },
+          });
           if (invoice) {
             Object.assign(invoice, { invoice_status: invoice?.status });
           }
@@ -216,13 +240,11 @@ export class ReportsService {
 
   async printPatientDailyCountReport(body, user): Promise<any> {
     let reportData = await this.getPatientDailyCountReport(body, user);
-    const labModel = await this.labRep
-      .createQueryBuilder('laboratory')
-      .select('laboratory.*')
-      .where('laboratory.facility_id = :facility_id', {
-        facility_id: user.facility_id,
-      })
-      .getRawOne();
+    const labModel = await this.labRep.findOne({
+      facility_id: {
+        _id: user.facility_id,
+      },
+    });
 
     const data = {
       labModel,
@@ -257,22 +279,36 @@ export class ReportsService {
     const endDate = new Date(body.end_date).getTime();
     const facility_id = user.facility_id;
 
-    const patients = await this.patientRep
-      .createQueryBuilder('patient')
-      .select(
-        'patient.age,patient.age_unit,patient.gender,patient.mobile_number,patient.name,patient.registration_date,patient.unique_id,patient._id,patient.created_at as registration_date_formatted,appointment.lab_number,appointment.is_completed',
-      )
-      .leftJoin('patient.appointment', 'appointment')
-      .where('patient.facility_id = :facility_id', { facility_id })
-      .andWhere('patient.deleted_at IS NULL')
-      //   .andWhere('patient.registration_date >= :start_date', {
-      //     start_date: startDate,
-      //   })
-      //   .andWhere('patient.registration_date <= :end_date', {
-      //     end_date: endDate,
-      //   })
-      .orderBy('patient.registration_date', 'DESC')
-      .getRawMany();
+    const patients = await this.patientRep.findAll({
+      select: [
+        'patient.age',
+        'patient.age_unit',
+        'patient.gender',
+        'patient.mobile_number',
+        'patient.name',
+        'patient.registration_date',
+        'patient.unique_id',
+        '_id',
+        'patient.created_at as registration_date_formatted',
+        'appointment.lab_number',
+        'appointment.is_completed',
+      ],
+      join: {
+        alias: 'patient',
+        leftJoin: {
+          appointment: 'patient.appointment',
+        },
+      },
+      where: {
+        facility_id: facility_id,
+        deleted_at: null,
+        // registration_date: MoreThanOrEqual(startDate),
+        // registration_date: LessThanOrEqual(endDate),
+      },
+      order: {
+        registration_date: 'DESC',
+      },
+    });
 
     let totals = {
       total_amount: 0,
@@ -283,11 +319,11 @@ export class ReportsService {
 
     for (let i = 0; i < patients.length; i++) {
       let item = patients[i];
-      const invoice = await this.invoiceRep
-        .createQueryBuilder('invoice')
-        .select('invoice.*')
-        .where('invoice.patient_id = :patient_id', { patient_id: item._id })
-        .getRawOne();
+      const invoice = await this.invoiceRep.findOne({
+        where: {
+          patient_id: item._id,
+        },
+      });
 
       totals.total_amount = invoice
         ? invoice.total_amount + invoice.total_amount
@@ -354,13 +390,11 @@ export class ReportsService {
 
   async printSalesReport(body, user): Promise<any> {
     let reportData = await this.getSalesReport(body, user);
-    const labModel = await this.labRep
-      .createQueryBuilder('laboratory')
-      .select('laboratory.*')
-      .where('laboratory.facility_id = :facility_id', {
-        facility_id: user.facility_id,
-      })
-      .getRawOne();
+    const labModel = await this.labRep.findOne({
+      facility_id: {
+        _id: user.facility_id,
+      },
+    });
     const data = {
       labModel,
       startDate: body.start_date,
@@ -414,14 +448,22 @@ export class ReportsService {
     const startDateStamp = new Date(startDate).getTime() / 1000;
     const endDateStamp = new Date(endDate).getTime() / 1000;
 
-    const patients = await this.patientRep
-      .createQueryBuilder('patient')
-      .select('patient.*,appointment.lab_number,appointment.is_completed')
-      .leftJoin('patient.appointment', 'appointment')
-      .where('patient.facility_id = :facility_id', {
+    const patients = await this.patientRep.findAll({
+      select: [
+        'patient.*',
+        'appointment.lab_number',
+        'appointment.is_completed',
+      ],
+      join: {
+        alias: 'patient',
+        leftJoin: {
+          appointment: 'patient.appointment',
+        },
+      },
+      where: {
         facility_id: user.facility_id,
-      })
-      .getRawMany();
+      },
+    });
 
     let totals = {
       total: 0,
@@ -454,11 +496,11 @@ export class ReportsService {
       for (let j = 0; j < patients.length; j++) {
         let item = patients[j];
         if (this.formatDate(item.created_at) === dateItem) {
-          const invoice = await this.invoiceRep
-            .createQueryBuilder('invoice')
-            .select('invoice.*')
-            .where('invoice.patient_id = :patient_id', { patient_id: item._id })
-            .getRawOne();
+          const invoice = await this.invoiceRep.findOne({
+            where: {
+              patient_id: item._id,
+            },
+          });
           if (invoice) {
             totals.total = totals.total + invoice.total_amount;
             totals.paid = totals.paid + invoice.paid_amount;
@@ -490,13 +532,11 @@ export class ReportsService {
 
   async printSalesDailyReport(body, user): Promise<any> {
     let reportData = await this.getSalesDailyReport(body, user);
-    const labModel = await this.labRep
-      .createQueryBuilder('laboratory')
-      .select('laboratory.*')
-      .where('laboratory.facility_id = :facility_id', {
-        facility_id: user.facility_id,
-      })
-      .getRawOne();
+    const labModel = await this.labRep.findOne({
+      facility_id: {
+        _id: user.facility_id,
+      },
+    });
 
     const data = {
       labModel,
@@ -530,22 +570,36 @@ export class ReportsService {
     const endDate = new Date(body.end_date).getTime();
     const facility_id = user.facility_id;
 
-    const patients = await this.patientRep
-      .createQueryBuilder('patient')
-      .select(
-        'patient.age,patient.age_unit,patient.gender,patient.mobile_number,patient.name,patient.registration_date,patient.created_at as registration_date_formatted,patient.unique_id,patient._id,appointment.lab_number,appointment.is_completed',
-      )
-      .leftJoin('patient.appointment', 'appointment')
-      .where('patient.facility_id = :facility_id', { facility_id })
-      .andWhere('patient.deleted_at IS NULL')
-      //   .andWhere('patient.registration_date >= :start_date', {
-      //     start_date: startDate,
-      //   })
-      //   .andWhere('patient.registration_date <= :end_date', {
-      //     end_date: endDate,
-      //   })
-      .orderBy('patient.registration_date', 'DESC')
-      .getRawMany();
+    const patients = await this.patientRep.findAll({
+      select: [
+        'patient.age',
+        'patient.age_unit',
+        'patient.gender',
+        'patient.mobile_number',
+        'patient.name',
+        'patient.registration_date',
+        'patient.created_at as registration_date_formatted',
+        'patient.unique_id',
+        '_id',
+        'appointment.lab_number',
+        'appointment.is_completed',
+      ],
+      join: {
+        alias: 'patient',
+        leftJoin: {
+          appointment: 'patient.appointment',
+        },
+      },
+      where: {
+        facility_id: facility_id,
+        deleted_at: null,
+        // registration_date: MoreThanOrEqual(startDate),
+        // registration_date: LessThanOrEqual(endDate),
+      },
+      order: {
+        'patient.registration_date': 'DESC',
+      },
+    });
 
     let payment = {
       due: 0,
@@ -554,11 +608,11 @@ export class ReportsService {
 
     for (let i = 0; i < patients.length; i++) {
       let item = patients[i];
-      const invoice = await this.invoiceRep
-        .createQueryBuilder('invoice')
-        .select('invoice.*')
-        .where('invoice.patient_id = :patient_id', { patient_id: item._id })
-        .getRawOne();
+      const invoice = await this.invoiceRep.findOne({
+        where: {
+          patient_id: item._id,
+        },
+      });
       if (invoice) {
         payment.due = payment.due + invoice.due_amount;
         Object.assign(item, { due_payment: invoice.due_amount });
@@ -573,13 +627,11 @@ export class ReportsService {
 
   async printDuePaymentReport(body, user): Promise<any> {
     let reportData = await this.getDuePaymentReport(body, user);
-    const labModel = await this.labRep
-      .createQueryBuilder('laboratory')
-      .select('laboratory.*')
-      .where('laboratory.facility_id = :facility_id', {
-        facility_id: user.facility_id,
-      })
-      .getRawOne();
+    const labModel = await this.labRep.findOne({
+      facility_id: {
+        _id: user.facility_id,
+      },
+    });
 
     const data = {
       labModel,

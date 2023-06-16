@@ -46,44 +46,95 @@ import {
   ReportPrintSettingsData,
 } from 'src/common/settings/lab.settings.default';
 import { emailRegex } from 'src/common/helper/enums';
+import { BaseService } from 'src/common/baseService';
 
 const uid = new ShortUniqueId({ length: 6, dictionary: 'number' });
 @Injectable()
 export class AuthService {
+  private userRep: BaseService<Users>;
+  private empRep: BaseService<Employee>;
+  private userTokenRep: BaseService<UserAccessToken>;
+  private userRoleRep: BaseService<UserRole>;
+  private empFacilityRep: BaseService<EmployeeFacility>;
+
+  private customerRep: BaseService<Customers>;
+  private facilityRep: BaseService<Facility>;
+  private labRep: BaseService<Laboratory>;
+  private roleRep: BaseService<Role>;
+  private departmentRep: BaseService<Department>;
+  private empFacilityDepartment: BaseService<EmployeeFacilityDepartment>;
+  private labSettingsRep: BaseService<LaboratorySetting>;
+  private reportPrintSettinRep: BaseService<ReportPrintSetting>;
+  private invoicePrintSettingRep: BaseService<InvoicePrintSettings>;
+  private facilitySmsSettingRep: BaseService<FacilitySmsSetting>;
+  private addonsRep: BaseService<Addons>;
+
   constructor(
     @InjectRepository(Users)
-    private userRep: Repository<Users>,
+    private userRepository: Repository<Users>,
     @InjectRepository(UserAccessToken)
-    private userTokenRep: Repository<UserAccessToken>,
+    private userTokenRepository: Repository<UserAccessToken>,
     @InjectRepository(Customers)
-    private customerRep: Repository<Customers>,
+    private customerRepository: Repository<Customers>,
     @InjectRepository(Facility)
-    private facilityRep: Repository<Facility>,
+    private facilityRepository: Repository<Facility>,
     @InjectRepository(Laboratory)
-    private labRep: Repository<Laboratory>,
+    private labRepository: Repository<Laboratory>,
     @InjectRepository(Employee)
-    private empRep: Repository<Employee>,
+    private empRepository: Repository<Employee>,
     @InjectRepository(Role)
-    private roleRep: Repository<Role>,
+    private roleRepository: Repository<Role>,
     @InjectRepository(Department)
-    private departmentRep: Repository<Department>,
+    private departmentRepository: Repository<Department>,
     @InjectRepository(EmployeeFacility)
-    private empFacilityRep: Repository<EmployeeFacility>,
+    private empFacilityRepository: Repository<EmployeeFacility>,
     @InjectRepository(EmployeeFacilityDepartment)
-    private empFacilityDepartment: Repository<EmployeeFacilityDepartment>,
+    private empFacilityDepartmentRepository: Repository<EmployeeFacilityDepartment>,
     @InjectRepository(UserRole)
-    private userRoleRep: Repository<UserRole>,
+    private userRoleRepository: Repository<UserRole>,
     @InjectRepository(LaboratorySetting)
-    private labSettingsRep: Repository<LaboratorySetting>,
+    private labSettingsRepository: Repository<LaboratorySetting>,
     @InjectRepository(ReportPrintSetting)
-    private reportPrintSettinRep: Repository<ReportPrintSetting>,
+    private reportPrintSettinRepository: Repository<ReportPrintSetting>,
     @InjectRepository(InvoicePrintSettings)
-    private invoicePrintSettingRep: Repository<InvoicePrintSettings>,
+    private invoicePrintSettingRepository: Repository<InvoicePrintSettings>,
     @InjectRepository(FacilitySmsSetting)
-    private facilitySmsSettingRep: Repository<FacilitySmsSetting>,
+    private facilitySmsSettingRepository: Repository<FacilitySmsSetting>,
     @InjectRepository(Addons)
-    private addonsRep: Repository<Addons>,
-  ) {}
+    private addonsRepository: Repository<Addons>,
+  ) {
+    this.userRep = new BaseService<Users>(this.userRepository);
+    this.empRep = new BaseService<Employee>(this.empRepository);
+    this.userTokenRep = new BaseService<UserAccessToken>(
+      this.userTokenRepository,
+    );
+    this.userRoleRep = new BaseService<UserRole>(this.userRoleRepository);
+    this.empFacilityRep = new BaseService<EmployeeFacility>(
+      this.empFacilityRepository,
+    );
+
+    this.customerRep = new BaseService<Customers>(this.customerRepository);
+    this.facilityRep = new BaseService<Facility>(this.facilityRepository);
+    this.labRep = new BaseService<Laboratory>(this.labRepository);
+    this.roleRep = new BaseService<Role>(this.roleRepository);
+    this.departmentRep = new BaseService<Department>(this.departmentRepository);
+    this.empFacilityDepartment = new BaseService<EmployeeFacilityDepartment>(
+      this.empFacilityDepartmentRepository,
+    );
+    this.labSettingsRep = new BaseService<LaboratorySetting>(
+      this.labSettingsRepository,
+    );
+    this.reportPrintSettinRep = new BaseService<ReportPrintSetting>(
+      this.reportPrintSettinRepository,
+    );
+    this.invoicePrintSettingRep = new BaseService<InvoicePrintSettings>(
+      this.invoicePrintSettingRepository,
+    );
+    this.facilitySmsSettingRep = new BaseService<FacilitySmsSetting>(
+      this.facilitySmsSettingRepository,
+    );
+    this.addonsRep = new BaseService<Addons>(this.addonsRepository);
+  }
 
   async login(body: AuthRequest): Promise<AuthDto | Error[]> {
     const username = body.username.replace(/-/g, '');
@@ -129,11 +180,13 @@ export class AuthService {
         user['password'],
       );
 
-      const employee = await this.empRep
-        .createQueryBuilder('employee')
-        .select('employee.*')
-        .where('employee.user_id = :user_id', { user_id: user._id })
-        .getRawOne();
+      const employee = await this.empRep.findOne({
+        where: {
+          user_id: {
+            _id: user._id,
+          },
+        },
+      });
 
       if (authenticated) {
         const {
@@ -164,11 +217,13 @@ export class AuthService {
           _id,
         };
         const token = jwt.sign(obj, 'secretOrKey');
-        const tokenExists: UserAccessToken = await this.userTokenRep
-          .createQueryBuilder('user_access_token')
-          .select('user_access_token.*')
-          .where('user_access_token.user_id = :user_id', { user_id: user._id })
-          .getRawOne();
+        const tokenExists: UserAccessToken = await this.userTokenRep.findOne({
+          where: {
+            user_id: {
+              _id: user._id,
+            },
+          },
+        });
         if (tokenExists) {
           tokenExists.access_token = token;
           await this.userTokenRep.update(tokenExists._id, tokenExists);
@@ -195,11 +250,13 @@ export class AuthService {
 
   async _getEmployeeFacilities(facility_id: string) {
     let employeeFacilities = [];
-    let assignedFacilities = await this.empFacilityRep
-      .createQueryBuilder('employee_facility')
-      .select('employee_facility.*')
-      .where('employee_facility.facility_id = :facility_id', { facility_id })
-      .getRawMany();
+    let assignedFacilities = await this.empFacilityRep.findAll({
+      where: {
+        facility_id: {
+          _id: facility_id,
+        },
+      },
+    });
 
     for (let i = 0; i < assignedFacilities.length; i++) {
       let employeeFacility = assignedFacilities[i];
@@ -220,11 +277,13 @@ export class AuthService {
   async _getAssignedPermissions_AdminPortal(user) {
     let permissions = [];
     if (!user.isSuperUser) {
-      const userRole = await this.userRoleRep
-        .createQueryBuilder('user_role')
-        .select('user_role.*')
-        .where('user_role.user_id = :user_id', { user_id: user._id })
-        .getRawOne();
+      const userRole = await this.userRoleRep.findOne({
+        where: {
+          user_id: {
+            _id: user._id,
+          },
+        },
+      });
 
       if (userRole) {
         const role = await this.roleRep.findOne({
@@ -332,11 +391,13 @@ export class AuthService {
     const user: any = await this.userRep.findOne({
       where: { _id: body.user_id },
     });
-    const userToken: UserAccessToken = await this.userTokenRep
-      .createQueryBuilder('user_access_token')
-      .select('user_access_token.*')
-      .where('user_access_token.user_id = :user_id', { user_id: user._id })
-      .getRawOne();
+    const userToken: UserAccessToken = await this.userTokenRep.findOne({
+      where: {
+        user_id: {
+          _id: user._id,
+        },
+      },
+    });
     if (userToken) {
       userToken.access_token = body.token;
       userToken.facility_id = body.facility_id;
@@ -513,11 +574,13 @@ export class AuthService {
   async saveWithDepartments(data, id) {
     let model;
     if (id) {
-      model = await this.empFacilityRep
-        .createQueryBuilder('employee_facility')
-        .select('employee_facility.*')
-        .where('employee_facility._id = :_id', { _id: id })
-        .getRawOne();
+      model = await this.empFacilityRep.findOne({
+        where: {
+          facility_id: {
+            _id: id,
+          },
+        },
+      });
     } else {
       model = new EmployeeFacility();
     }
@@ -527,15 +590,9 @@ export class AuthService {
 
     if (id) {
       await this.empFacilityRep.update(id, model);
-      await this.empFacilityDepartment
-        .createQueryBuilder('employee_facility_department')
-        .delete()
-        .from(EmployeeFacilityDepartment)
-        .where(
-          'employee_facility_department.employee_facility_id = :employee_facility_id',
-          { employee_facility_id: model._id },
-        )
-        .execute();
+      await this.empFacilityDepartment.delete({
+        employee_facility: { id: model._id },
+      });
     } else {
       model = await this.empFacilityRep.save(model);
     }

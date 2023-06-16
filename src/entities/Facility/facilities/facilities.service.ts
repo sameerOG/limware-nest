@@ -9,17 +9,26 @@ import { FacilityDto, ParentFacilityDto } from '../dto/response.dto';
 import { Facility } from '../facility.entity';
 import { Users } from 'src/entities/user/user.entity';
 import { emailRegex } from 'src/common/helper/enums';
+import { BaseService } from 'src/common/baseService';
 
 @Injectable()
 export class FacilitiesService {
+  private facilityRep: BaseService<Facility>;
+  private customerRep: BaseService<Customers>;
+  private addonsRep: BaseService<Addons>;
+
   constructor(
     @InjectRepository(Facility)
-    private facilityRep: Repository<Facility>,
+    private facilityRepository: Repository<Facility>,
     @InjectRepository(Customers)
-    private customerRep: Repository<Customers>,
+    private customerRepository: Repository<Customers>,
     @InjectRepository(Addons)
-    private addonsRep: Repository<Addons>,
-  ) {}
+    private addonsRepository: Repository<Addons>,
+  ) {
+    this.facilityRep = new BaseService<Facility>(this.facilityRepository);
+    this.customerRep = new BaseService<Customers>(this.customerRepository);
+    this.addonsRep = new BaseService<Addons>(this.addonsRepository);
+  }
 
   async getAll(
     skip: number,
@@ -35,7 +44,7 @@ export class FacilitiesService {
         { city: Like(`%${text}%`) },
       ];
     }
-    const data: any[] = await this.facilityRep.find({
+    const data: any[] = await this.facilityRep.findAll({
       select: [
         '_id',
         'address',
@@ -63,24 +72,47 @@ export class FacilitiesService {
   }
 
   async getParentFacilities(customer_id: string): Promise<ParentFacilityDto[]> {
-    const data: Facility[] = await this.facilityRep
-      .createQueryBuilder('facility')
-      .select('facility._id,facility.unique_id,facility.name,facility.city')
-      .where('facility.customer_id = :customer_id', { customer_id })
-      .andWhere('facility.type = :type', { type: 'main' })
-      .getRawMany();
+    const data: Facility[] = await this.facilityRep.findAll({
+      select: ['_id', 'unique_id', 'name', 'city'],
+      where: {
+        customer_id: {
+          _id: customer_id,
+        },
+        type: 'main',
+      },
+    });
 
     return data;
   }
 
   async getAllByCustomer(customer_id: string): Promise<FacilityDto[]> {
-    const data: any = await this.facilityRep
-      .createQueryBuilder('facility')
-      .select(
-        'facility._id,facility.address,facility.city,facility.created_at,facility.email,facility.mobile_number,facility.name,facility.phone_number,facility.status,facility.type,facility.unique_id,facility.updated_at',
-      )
-      .where('facility.customer_id = :customer_id', { customer_id })
-      .getRawMany();
+    const data = await this.facilityRep.findAll({
+      select: [
+        '_id',
+        'address',
+        'city',
+        'created_at',
+        'email',
+        'mobile_number',
+        'name',
+        'phone_number',
+        'status',
+        'type',
+        'unique_id',
+        'updated_at',
+      ],
+      where: {
+        customer_id: {
+          _id: customer_id,
+        },
+      },
+      relations: ['customer_id'],
+    });
+    data.forEach((info) => {
+      let customer_id = info.customer_id?._id;
+      delete info.customer_id;
+      Object.assign(info, { customer_id });
+    });
     return data;
   }
 

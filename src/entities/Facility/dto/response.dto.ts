@@ -2,8 +2,8 @@ export class FacilityDto {
   readonly _id: string;
   readonly address: string;
   readonly city: string;
-  readonly created_at: number;
-  readonly customer_id: string;
+  readonly created_at: number | Date;
+  readonly customer_id: any;
   readonly email: string;
   readonly mobile_number: string;
   readonly name: string;
@@ -11,11 +11,11 @@ export class FacilityDto {
   readonly status: number;
   readonly type: string;
   readonly unique_id: string;
-  readonly updated_at: number;
-  readonly updated_by: string;
+  readonly updated_at: number | Date;
+  readonly updated_by?: string;
   readonly customer?: Object;
   readonly laboratories?: Object[];
-  readonly parent_facility_id?: string;
+  readonly parent_facility_id?: any;
 
   constructor(user: FacilityDto) {
     (this._id = user._id),

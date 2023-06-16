@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BaseService } from 'src/common/baseService';
 import { emailRegex } from 'src/common/helper/enums';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Repository, Like } from 'typeorm';
@@ -9,9 +10,14 @@ import { CustomerDto, SingleCustomerDto } from '../dto/response.dto';
 
 @Injectable()
 export class CustomersService {
+  private customerRep: BaseService<Customers>;
+
   constructor(
-    @InjectRepository(Customers) private customerRep: Repository<Customers>,
-  ) {}
+    @InjectRepository(Customers)
+    private customerRepository: Repository<Customers>,
+  ) {
+    this.customerRep = new BaseService<Customers>(this.customerRepository);
+  }
 
   async getCustomers(
     skip: number,
@@ -21,7 +27,6 @@ export class CustomersService {
   ): Promise<CustomerDto[]> {
     let where: any = {}; // Declare an empty where object
     if (text) {
-      // where.full_name = Like(`%${text}%`);
       where = [
         { name: Like(`%${text}%`) },
         { mobile_number: Like(`%${text}%`) },
@@ -29,7 +34,7 @@ export class CustomersService {
         { city: Like(`%${text}%`) },
       ];
     }
-    const customers = await this.customerRep.find({
+    const customers = await this.customerRep.findAll({
       select: ['_id', 'name', 'city', 'email', 'mobile_number', 'status'],
       where,
       skip,

@@ -1,7 +1,7 @@
 export class LabRequestDto {
   readonly _id: string;
-  readonly customer_id: string;
-  readonly facility_id: string;
+  readonly customer_id: any;
+  readonly facility_id: any;
   readonly created_at: number;
   readonly mobile_number: string;
   readonly name: string;
@@ -33,8 +33,8 @@ export class LabRequestDto {
 
 export class LabResponseDto {
   readonly _id: string;
-  readonly customer_id: string;
-  readonly facility_id: string;
+  readonly customer_id: any;
+  readonly facility_id: any;
   readonly mobile_number: string;
   readonly name: string;
   readonly status: number;

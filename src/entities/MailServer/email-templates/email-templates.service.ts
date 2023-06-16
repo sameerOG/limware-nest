@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BaseService } from 'src/common/baseService';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Repository, Like } from 'typeorm';
 import { EmailTemplateRequestDto } from '../dto/email-templates/request.dto';
@@ -10,10 +11,16 @@ import { OutgoingMailServer } from '../outgoing_mail_server.entity';
 
 @Injectable()
 export class EmailTemplatesService {
+  private emailTemplateRep: BaseService<EmailTemplate>;
+
   constructor(
     @InjectRepository(EmailTemplate)
-    private emailTemplateRep: Repository<EmailTemplate>,
-  ) {}
+    private emailTemplateRepository: Repository<EmailTemplate>,
+  ) {
+    this.emailTemplateRep = new BaseService<EmailTemplate>(
+      this.emailTemplateRepository,
+    );
+  }
 
   async getAll(
     skip: number,
@@ -25,7 +32,7 @@ export class EmailTemplatesService {
     if (text) {
       where = [{ title: Like(`%${text}%`) }, { subject: Like(`%${text}%`) }];
     }
-    const data = await this.emailTemplateRep.find({
+    const data = await this.emailTemplateRep.findAll({
       select: ['_id', 'title', 'action', 'subject', 'outgoing_mail_server_id'],
       relations: ['outgoing_mail_server_id'],
       where,
@@ -74,12 +81,21 @@ export class EmailTemplatesService {
 
   async add(body: any): Promise<EmailTemplatesDto> {
     const data = await this.emailTemplateRep.save(body);
-    const { ...rest } = data;
+    const savedData = await this.emailTemplateRep.findOne({
+      where: {
+        _id: data._id,
+      },
+      relations: ['outgoing_mail_server_id'],
+    });
+    const { ...rest } = savedData;
+    let outgoing_mail_server_id = savedData.outgoing_mail_server_id?._id;
+    delete savedData.outgoing_mail_server_id;
     return new EmailTemplatesDto({
       ...rest,
       created_at: data.created_at.getTime(),
       updated_at: data.updated_at.getTime(),
       updated_by: '',
+      outgoing_mail_server_id,
     });
   }
 

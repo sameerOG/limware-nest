@@ -9,17 +9,26 @@ import { Facility } from 'src/entities/Facility/facility.entity';
 import { FacilitiesService } from 'src/entities/Facility/facilities/facilities.service';
 import { LaboratorySetting } from '../laboratory_setting.entity';
 import { LaboratoriesSettingsDto } from 'src/entities/laboratory/laboratories_settings/laboratories.settings.dto';
+import { BaseService } from 'src/common/baseService';
 
 @Injectable()
 export class LaboratoriesService {
+  private labRep: BaseService<Laboratory>;
+  private labSetRep: BaseService<LaboratorySetting>;
+  private facilityRep: BaseService<Facility>;
+
   constructor(
     @InjectRepository(Laboratory)
-    private labRep: Repository<Laboratory>,
+    private labRepository: Repository<Laboratory>,
     @InjectRepository(LaboratorySetting)
-    private labSetRep: Repository<LaboratorySetting>,
+    private labSetRepository: Repository<LaboratorySetting>,
     @InjectRepository(Facility)
-    private facilityRep: Repository<Facility>,
-  ) {}
+    private facilityRepository: Repository<Facility>,
+  ) {
+    this.labRep = new BaseService<Laboratory>(this.labRepository);
+    this.labSetRep = new BaseService<LaboratorySetting>(this.labSetRepository);
+    this.facilityRep = new BaseService<Facility>(this.facilityRepository);
+  }
 
   async getAll(
     skip: number,
@@ -35,7 +44,7 @@ export class LaboratoriesService {
         { type: Like(`%${text}%`) },
       ];
     }
-    const data: any[] = await this.labRep.find({
+    const data: any[] = await this.labRep.findAll({
       select: ['_id', 'mobile_number', 'name', 'status', 'type', 'unique_id'],
       relations: ['customer_id', 'facility_id'],
       where,
@@ -53,13 +62,28 @@ export class LaboratoriesService {
   }
 
   async getMainLab(customer_id: string): Promise<LabResponseDto[]> {
-    const data = await this.labRep
-      .createQueryBuilder('laboratory')
-      .select(
-        'laboratory._id,laboratory.mobile_number,laboratory.name,laboratory.status,laboratory.type,laboratory.unique_id,laboratory.customer_id,laboratory.facility_id',
-      )
-      .where(`laboratory.customer_id = :customer_id`, { customer_id })
-      .getRawMany();
+    const data = await this.labRep.findAll({
+      select: [
+        '_id',
+        'mobile_number',
+        'name',
+        'status',
+        'type',
+        'unique_id',
+        'customer_id',
+        'facility_id',
+      ],
+      where: {
+        customer_id: {
+          _id: customer_id,
+        },
+      },
+      relations: ['customer_id', 'facility_id'],
+    });
+    data.forEach((info: any) => {
+      info.customer_id = info.customer_id?._id;
+      info.facility_id = info.facility_id?._id;
+    });
     return data;
   }
 
@@ -103,7 +127,7 @@ export class LaboratoriesService {
   }
 
   async getByCustomer(id: string): Promise<LabRequestDto[]> {
-    const data: any = await this.labRep.find({
+    const data: any = await this.labRep.findAll({
       select: [
         '_id',
         'mobile_number',
@@ -151,13 +175,13 @@ export class LaboratoriesService {
   ): Promise<LabRequestDto> {
     try {
       if (id === 'update-lab-for-limware') {
-        const lab = await this.labRep
-          .createQueryBuilder('laboratory')
-          .select('laboratory.*')
-          .where('laboratory.facility_id = :facility_id', {
-            facility_id: user.facility_id,
-          })
-          .getRawOne();
+        const lab = await this.labRep.findOne({
+          where: {
+            facility_id: {
+              _id: user.facility_id,
+            },
+          },
+        });
 
         await this.facilityRep.update(user.facility_id, {
           address: body.address,
@@ -196,14 +220,14 @@ export class LaboratoriesService {
     }
   }
   async getLab(facility_id: any): Promise<any> {
-    return await this.labRep
-      .createQueryBuilder('laboratory')
-      .select('laboratory.*')
-      .where('laboratory.facility_id = :facility_id', {
-        facility_id: facility_id,
-      })
-      // .leftJoin('facility','f','f._id=laboratory.facility_id')
-      .getRawOne();
+    const lab = await this.labRep.findOne({
+      where: {
+        facility_id: {
+          _id: facility_id,
+        },
+      },
+    });
+    return lab;
   }
 
   // async getLabForSetting(facility_id: any): Promise<any>{
@@ -215,15 +239,25 @@ export class LaboratoriesService {
   // }
 
   async getLabForSetting(facility_id): Promise<Laboratory | any> {
-    const data = await this.labRep.query(
-      `select _id from public.laboratory where facility_id = '${facility_id}'`,
-    );
-    return data[0];
+    const data = await this.labRep.findAll({
+      select: ['_id'],
+      where: {
+        facility_id: {
+          _id: facility_id,
+        },
+      },
+    });
+    return data.length > 0 ? data[0] : [];
   }
   async getSingleLabSettings(facility_id): Promise<LaboratorySetting | any> {
-    const data = await this.labSetRep.query(
-      `select * from public.laboratory_setting where facility_id = '${facility_id}'`,
-    );
+    // const data = await this.labSetRep.query(
+    //   `select * from public.laboratory_setting where facility_id = '${facility_id}'`,
+    // );
+    const data = await this.labSetRep.findAll({
+      where: {
+        facility_id,
+      },
+    });
     return data[0];
   }
   async updateLabSettings(
@@ -246,22 +280,22 @@ export class LaboratoriesService {
       }
     }
   }
-  async getLabSettingForSaveTest(user): Promise<LaboratorySetting> {
-    const labModel = await this.labRep
-      .createQueryBuilder('laboratory')
-      .select('laboratory.*')
-      .where('laboratory.facility_id = :facility_id', {
-        facility_id: user.facility_id,
-      })
-      .getRawOne();
+  async getLabSettingForSaveTest(
+    user,
+  ): Promise<LaboratorySetting | Laboratory> {
+    const labModel = await this.labRep.findOne({
+      where: {
+        facility_id: {
+          _id: user.facility_id,
+        },
+      },
+    });
     if (labModel) {
-      const laboratorySetting = await this.labSetRep
-        .createQueryBuilder('laboratory_setting')
-        .select('laboratory_setting.*')
-        .where('laboratory_setting.laboratory_id = :laboratory_id', {
+      const laboratorySetting = await this.labSetRep.findOne({
+        where: {
           laboratory_id: labModel._id,
-        })
-        .getRawOne();
+        },
+      });
       return laboratorySetting ? laboratorySetting : labModel;
     } else {
       return null;

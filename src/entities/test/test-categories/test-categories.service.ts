@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BaseService } from 'src/common/baseService';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Department } from 'src/entities/department/department.entity';
 import { Laboratory } from 'src/entities/laboratory/laboratory.entity';
@@ -14,13 +15,17 @@ import { TestCategory } from '../test_category.entity';
 
 @Injectable()
 export class TestCategoriesService {
+  private testCategoryRep: BaseService<TestCategory>;
+  private labRep: BaseService<Laboratory>;
+  private testRep: BaseService<Test>;
+
   constructor(
     @InjectRepository(TestCategory)
-    private testCategoryRep: Repository<TestCategory>,
+    private testCategoryRepository: Repository<TestCategory>,
     @InjectRepository(Laboratory)
-    private labRep: Repository<Laboratory>,
+    private labRepository: Repository<Laboratory>,
     @InjectRepository(Test)
-    private testRep: Repository<Test>,
+    private testRepository: Repository<Test>,
   ) {}
 
   async getAll(
@@ -39,7 +44,7 @@ export class TestCategoriesService {
         { title_for_print: Like(`%${text}%`) },
       ];
     }
-    const data = await this.testCategoryRep.find({
+    const data = await this.testCategoryRep.findAll({
       select: ['_id', 'name', 'title_for_print', 'description', 'is_template'],
       relations: ['facility_id', 'department_id'],
       where,
@@ -75,24 +80,22 @@ export class TestCategoriesService {
     }
     for (let i = 0; i < filterData.length; i++) {
       let info = filterData[i];
-      let testCount = await this.testRep
-        .createQueryBuilder('test')
-        .select('test.*')
-        .where('test.test_category_id = :test_category_id', {
-          test_category_id: info._id,
-        })
-        .getCount();
+      const testCount = await this.testRep.count({
+        where: {
+          test_category_id: { _id: info._id },
+        },
+      });
       Object.assign(info, { testCount });
     }
     return filterData;
   }
 
   async getParentCategories(): Promise<TestCategoryDto[]> {
-    return await this.testCategoryRep.find({ where: { is_template: true } });
+    return await this.testCategoryRep.findAll({ where: { is_template: true } });
   }
 
   async getAllComplete(): Promise<TestCategoryDto[]> {
-    const data = await this.testCategoryRep.find({
+    const data = await this.testCategoryRep.findAll({
       select: ['_id', 'name', 'report_template'],
     });
     return data;
@@ -155,13 +158,13 @@ export class TestCategoriesService {
   async add(body: any, user): Promise<SingleTestCategory> {
     try {
       if (user.portal === 'limware') {
-        const lab = await this.labRep
-          .createQueryBuilder('laboratory')
-          .select('laboratory.*')
-          .where('laboratory.facility_id = :facility_id', {
-            facility_id: user.facility_id,
-          })
-          .getRawOne();
+        const lab = await this.labRep.findOne({
+          where: {
+            facility_id: {
+              _id: user.facility_id,
+            },
+          },
+        });
         Object.assign(body, {
           facility_id: user.facility_id,
           laboratory_id: lab?._id,

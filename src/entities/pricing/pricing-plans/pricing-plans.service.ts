@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BaseService } from 'src/common/baseService';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Like, Repository } from 'typeorm';
 import { PricingPlanRequestDto } from '../dto/request.dto';
@@ -8,10 +9,16 @@ import { PricingPlan } from '../pricing_plan.entity';
 
 @Injectable()
 export class PricingPlansService {
+  private pricingPlanRep: BaseService<PricingPlan>;
+
   constructor(
     @InjectRepository(PricingPlan)
-    private pricingPlanRep: Repository<PricingPlan>,
-  ) {}
+    private pricingPlanRepository: Repository<PricingPlan>,
+  ) {
+    this.pricingPlanRep = new BaseService<PricingPlan>(
+      this.pricingPlanRepository,
+    );
+  }
 
   async getAll(
     skip: number,
@@ -23,7 +30,7 @@ export class PricingPlansService {
     if (text) {
       where = [{ title: Like(`%${text}%`) }];
     }
-    const pricingPlans = await this.pricingPlanRep.find({
+    const pricingPlans = await this.pricingPlanRep.findAll({
       select: [
         '_id',
         'title',

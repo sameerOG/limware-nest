@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BaseService } from 'src/common/baseService';
 import { Repository } from 'typeorm';
 import { Reference } from '../reference.entity';
 import { ReferenceRequestDto } from './dto/request.dto';
@@ -10,10 +11,14 @@ import {
 
 @Injectable()
 export class ReferencesService {
+  private referenceRep: BaseService<Reference>;
+
   constructor(
     @InjectRepository(Reference)
-    private referenceRep: Repository<Reference>,
-  ) {}
+    private referenceRepository: Repository<Reference>,
+  ) {
+    this.referenceRep = new BaseService<Reference>(this.referenceRepository);
+  }
 
   async create(body: any): Promise<ReferencesCreateResponseDto> {
     const data = await this.referenceRep.save(body);
@@ -28,13 +33,13 @@ export class ReferencesService {
   }
 
   async getAll(user): Promise<ReferencesListResponseDto[]> {
-    return await this.referenceRep
-      .createQueryBuilder('reference')
-      .select('reference._id,reference.name')
-      .where('reference.facility_id = :facility_id', {
+    const data = await this.referenceRep.findAll({
+      select: ['_id', 'name'],
+      where: {
         facility_id: user.facility_id,
-      })
-      .getRawMany();
+      },
+    });
+    return data;
   }
 
   async findOne(id: string): Promise<ReferencesCreateResponseDto> {

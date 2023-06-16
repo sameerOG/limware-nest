@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { BaseService } from 'src/common/baseService';
 import { transformSortField } from 'src/common/utils/transform-sorting';
 import { Like, Repository } from 'typeorm';
 import { SpecimenRequestDto } from '../dto/request.dto';
@@ -8,9 +9,14 @@ import { specimen } from '../specimen.entity';
 
 @Injectable()
 export class SpecimensService {
+  private specimenRep: BaseService<specimen>;
+
   constructor(
-    @InjectRepository(specimen) private specimenRep: Repository<specimen>,
-  ) {}
+    @InjectRepository(specimen)
+    private specimenRepository: Repository<specimen>,
+  ) {
+    this.specimenRep = new BaseService<specimen>(this.specimenRepository);
+  }
 
   async getSpecimens(
     skip: number,
@@ -23,7 +29,7 @@ export class SpecimensService {
     if (text) {
       where = [{ name: Like(`%${text}%`) }, { description: Like(`%${text}%`) }];
     }
-    const specimens = await this.specimenRep.find({
+    const specimens = await this.specimenRep.findAll({
       select: ['_id', 'name', 'description'],
       where,
       skip,
@@ -34,7 +40,7 @@ export class SpecimensService {
   }
 
   async getAll(): Promise<SpecimenDto[]> {
-    const specimens = await this.specimenRep.find({
+    const specimens = await this.specimenRep.findAll({
       select: ['_id', 'name', 'description'],
     });
     return specimens;
