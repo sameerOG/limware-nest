@@ -905,13 +905,16 @@ export class AppointmentsService {
       (body.total_amount - body.discount_amount);
     let total_amount = invoice.total_amount + body.total_amount;
     let discount_amount = invoice.discount_amount + body.discount_amount;
-    let due_amount =
-      invoice.due_amount + (body.total_amount - body.discount_amount);
+    let due_amount = body.due_amount;
 
     invoice.total_payable_amount = total_payable_amount;
     invoice.total_amount = total_amount;
     invoice.discount_amount = discount_amount;
+    invoice.paid_amount = invoice.paid_amount + body.paid_amount;
     invoice.due_amount = due_amount;
+    if (invoice.paid_amount < invoice.total_payable_amount) {
+      invoice.status = 2;
+    }
 
     const savedData = await this.invoiceRep.update(invoice._id, invoice);
     if (savedData.affected > 0) {
